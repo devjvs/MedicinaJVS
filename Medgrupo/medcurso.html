@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Estudos por Especialidade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; 
+            color: #e2e8f0; 
+            overflow-x: hidden; 
+        }
+        .module-list-item {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            cursor: pointer;
+            margin-bottom: 0.75rem;
+            border: 1px solid #4a5568;
+        }
+        .module-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .module-list-item.active {
+            border-left: 4px solid #63b3ed; 
+            background-color: #4a5568;
+        }
+        .details-section-container {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            border: 1px solid #4a5568;
+            height: calc(100vh - 84px); 
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; 
+            scrollbar-width: thin; 
+            scrollbar-color: #718096 #2d3748; 
+        }
+        .details-section-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .details-section-container::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+        .details-section-container::-webkit-scrollbar-thumb {
+            background: #718096;
+            border-radius: 10px;
+        }
+        .details-section-container::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        .content-viewer-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            background-color: #000; 
+            border-radius: 0.375rem;
+            overflow: hidden; 
+            margin-bottom: 1rem; 
+            flex-shrink: 0; 
+        }
+        #module-content-viewer { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0; 
+        }
+        #details-content-list-container {
+            flex-grow: 1; 
+            overflow-y: auto;
+            min-height: 120px; 
+        }
+        .content-item {
+            border-bottom: 1px solid #4a5568;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .content-item:hover {
+            background-color: #4a5568;
+        }
+        .content-item:last-child {
+            border-bottom: none;
+        }
+        .content-item.active-content {
+            background-color: #3b82f6; 
+            color: white;
+        }
+        .content-item.active-content .content-title,
+        .content-item.active-content .content-status {
+            color: white;
+        }
+         .content-item.active-content svg {
+            stroke: white;
+            color: white;
+        }
+        .module-icon-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            color: white;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #718096;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+        .specialty-header { 
+            font-size: 0.875rem; 
+            font-weight: 700; 
+            color: #cbd5e1; 
+            margin-bottom: 0.75rem; 
+            padding-top: 0.5rem; 
+            text-align: center; 
+            text-transform: uppercase;
+            border-bottom: 1px solid #4a5568; 
+            padding-bottom: 0.25rem;
+        }
+        .label-icon-container { 
+            min-height: 2.25rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+        }
+        .item-count { 
+            font-size: 0.875rem; 
+            font-weight: 600; 
+            color: #e2e8f0; 
+            display: block;
+            margin-top: 0.125rem; 
+            text-align: center; 
+        }
+
+        /* Gradientes para ícones de especialidades */
+        .gradient-gray { background-image: linear-gradient(to bottom right, #6b7280, #4b5563); } 
+        .gradient-red-pink { background-image: linear-gradient(to bottom right, #ef4444, #ec4899); } 
+        .gradient-sky-blue { background-image: linear-gradient(to bottom right, #38bdf8, #0ea5e9); } 
+        .gradient-amber-orange { background-image: linear-gradient(to bottom right, #f59e0b, #f97316); } 
+        .gradient-lime-emerald { background-image: linear-gradient(to bottom right, #84cc16, #10b981); } 
+        .gradient-fuchsia-pink-alt { background-image: linear-gradient(to bottom right, #c026d3, #db2777); } 
+        .gradient-yellow-orange-dark { background-image: linear-gradient(to bottom right, #eab308, #d97706); } 
+        .gradient-violet-grape { background-image: linear-gradient(to bottom right, #8b5cf6, #7c3aed); } 
+        .gradient-cyan-sky { background-image: linear-gradient(to bottom right, #06b6d4, #0ea5e9); } 
+        .gradient-indigo-deepPurple { background-image: linear-gradient(to bottom right, #6366f1, #8b5cf6); } 
+        .gradient-lightGreen-green { background-image: linear-gradient(to bottom right, #86efac, #22c55e); } 
+        .gradient-blueGray-slate { background-image: linear-gradient(to bottom right, #64748b, #475569); } 
+        .gradient-cyan-lightBlue { background-image: linear-gradient(to bottom right, #22d3ee, #38bdf8); } 
+        .gradient-indigo-violet { background-image: linear-gradient(to bottom right, #6366f1, #7c3aed); } 
+        .gradient-magenta-purple { background-image: linear-gradient(to bottom right, #d946ef, #a855f7); } 
+        .gradient-green-teal { background-image: linear-gradient(to bottom right, #10b981, #14b8a6); }  
+        .gradient-pink-purple { background-image: linear-gradient(to bottom right, #ec4899, #a855f7); } 
+        .gradient-rose-fuchsia { background-image: linear-gradient(to bottom right, #f43f5e, #d946ef); } 
+        .gradient-yellow-amber { background-image: linear-gradient(to bottom right, #f59e0b, #facc15); } 
+        .gradient-teal-cyan { background-image: linear-gradient(to bottom right, #14b8a6, #06b6d4); } 
+
+
+        @media (max-width: 1023px) { 
+            .main-content-flex {
+                flex-direction: column;
+                height: auto;
+            }
+            #modules-list-column {
+                width: 100%;
+                max-height: 45vh; 
+                margin-bottom: 1rem;
+                height: auto;
+            }
+            #details-column {
+                width: 100%;
+                height: auto;
+            }
+            .details-section-container {
+                height: auto; 
+                max-height: none; 
+            }
+            .content-viewer-container { 
+                min-height: 250px; 
+                padding-bottom: 56.25%; 
+                height: 0; 
+            }
+            #details-content-list-container{
+                 max-height: 200px; 
+                 height: auto; 
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <header class="bg-gray-800 shadow-md py-3 px-4 sm:px-6 lg:px-8 sticky top-0 z-20">
+        <div class="container mx-auto flex justify-between items-center max-w-full px-4">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-100">Plataforma de Estudos</h1>
+            <div class="relative">
+                <input type="search" id="search-input" placeholder="Pesquisar módulos ou especialidades..." class="pl-10 pr-4 py-2 rounded-lg border bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:px-8 max-w-full" style="height: calc(100vh - 60px);">
+        <div class="flex flex-col lg:flex-row gap-6 main-content-flex h-full">
+            <div id="modules-list-column" class="w-full lg:w-1/3 xl:w-1/4 h-full overflow-hidden">
+                <div id="modules-list-container" class="custom-scrollbar pr-2 h-full overflow-y-auto">
+                    </div>
+            </div>
+
+            <div id="details-column" class="w-full lg:w-2/3 xl:w-3/4 h-full">
+                <div id="details-panel" class="details-section-container p-4 sm:p-6">
+                                        
+                    <div class="content-viewer-container"> 
+                        <iframe 
+                            id="module-content-viewer" 
+                            class="content-viewer-frame" 
+                            src="about:blank" 
+                            title="Visualizador de Conteúdo do Módulo"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+
+                    <h3 id="materials-header" class="text-sm font-semibold text-gray-300 mb-2 flex-shrink-0 text-center">MATERIAIS DO MÓDULO:</h3>
+                    <div id="details-content-list-container" class="custom-scrollbar">
+                        <div id="details-content-list">
+                             <p class="text-gray-400 initial-details-message">Selecione um módulo para ver os materiais.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <template id="module-list-item-template">
+        <div class="module-list-item p-3 flex items-center gap-3">
+            <div class="module-icon-box flex-shrink-0">
+                </div>
+            <div class="flex-grow overflow-hidden">
+                <h3 class="module-title text-sm font-semibold text-gray-100" style="white-space: normal; overflow-wrap: break-word; line-height: 1.4;">Título do Módulo</h3>
+                <div class="mt-2 grid grid-cols-3 gap-x-2 sm:gap-x-3">
+                    <div class="progress-item text-center">
+                        <div class="label-icon-container text-xs text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-blue-400"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            Aulas
+                        </div>
+                        <span class="item-count aulas-count">0</span>
+                    </div>
+                    <div class="progress-item text-center">
+                        <div class="label-icon-container text-xs text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-green-400"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                            Apostilas
+                        </div>
+                        <span class="item-count apostilas-count">0</span>
+                    </div>
+                    <div class="progress-item text-center"> 
+                        <div class="label-icon-container text-xs text-gray-400">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1 text-yellow-400"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>
+                            Aulas Bônus
+                        </div>
+                        <span class="item-count aulasBonus-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="content-item-template">
+        <div class="content-item py-2.5 px-2 hover:bg-gray-700 rounded-md cursor-pointer">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="content-title text-sm text-gray-300 font-medium truncate">Título do Conteúdo</span>
+                </div>
+                <span class="content-status text-xs text-gray-400"></span>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        let currentModuleId = 0;
+        const createModule = (specialty, shortcode, title, subtitle, contentCounts, iconType, contentLinks = {aulas: [], apostilas: [], aulasBonus: []}) => {
+            currentModuleId++;
+            const aulasLinks = Array.isArray(contentLinks.aulas) ? contentLinks.aulas : [];
+            const apostilasLinks = Array.isArray(contentLinks.apostilas) ? contentLinks.apostilas : [];
+            const aulasBonusLinks = Array.isArray(contentLinks.aulasBonus) ? contentLinks.aulasBonus : [];
+
+            const aulasPlaceholders = Array(contentCounts.aulas).fill({}).map((_, i) => ({ title: `Aula ${i + 1}`, url: aulasLinks[i] || "#" }));
+            const apostilasPlaceholders = Array(contentCounts.apostilas).fill({}).map((_, i) => ({ title: `Apostila ${i + 1}`, url: apostilasLinks[i] || "#" }));
+            const aulasBonusPlaceholders = Array(contentCounts.aulasBonus).fill({}).map((_, i) => ({ title: `Aula Bônus ${i + 1}`, url: aulasBonusLinks[i] || "#" }));
+
+            return { 
+                specialty, 
+                id: currentModuleId, 
+                shortcode, 
+                title, 
+                subtitle, 
+                iconType, 
+                content: { 
+                    aulas: aulasPlaceholders, 
+                    apostilas: apostilasPlaceholders, 
+                    aulasBonus: aulasBonusPlaceholders 
+                },
+                contentCounts: contentCounts 
+            };
+        };
+        
+        const modulesData = [
+            createModule("Introdução", "INT", "Princípios Fundamentais da Medicina", "Introdução", { aulas: 1, apostilas: 0, aulasBonus: 0 }, 'gradient-gray', {aulas: ["https://drive.google.com/file/d/1Rtt3SvLT8r4jCrNDvucCbzPkovI5_jFO/preview?usp=drive_link"]}),
+            createModule("Cardiologia", "CAR I", "Cardiologia: Módulo I", "Cardiologia", { aulas: 7, apostilas: 1, aulasBonus: 4 }, 'gradient-red-pink',
+                { apostilas: ["https://drive.google.com/file/d/1NN1am0Na78eXWsdy-z491UAXhqkbgDy7/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1eBZ0HvP8as1UlEPQ2gwoJSyy35VZU0Ua/preview?usp=drive_link", "https://drive.google.com/file/d/1eGI_lwqEDUJQ9ok0MvBjDFTnamwaE2dM/preview?usp=drive_link", "https://drive.google.com/file/d/1eHJdCXD0knD1HohAnFkCq_vnr0Q_FsPT/preview?usp=drive_link", "https://drive.google.com/file/d/1eH4HOYw2iEoykzr_yaC8O8tZuvgbLyQ4/preview?usp=drive_link", "https://drive.google.com/file/d/1eCNnlH-Me5UiiRreKbKi8n_zO3EChxrh/preview?usp=drive_link", "https://drive.google.com/file/d/1eC0Jxk3wQ6oYcVbBJSZu20ZHnDcA6vbp/preview?usp=drive_link", "https://drive.google.com/file/d/1PiEHxD7OQvclMlLhVbFb0t2KuiZ3lBL_/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1e9ziV4cg7xeg7K68f8IJVXxO19eyrDHn/preview?usp=drive_link", "https://drive.google.com/file/d/1e8Iq0mXD-BmqUpntzEsTNGXfoTJa2Pyd/preview?usp=drive_link", "https://drive.google.com/file/d/1QDf7rbUscVQdHdeyl-BJP9iZDFhZaBRz/preview?usp=drive_link", "https://drive.google.com/file/d/1e8bH1fgIRTzRa10KivEsmuBXjzOZlEA2/preview?usp=drive_link"] }
+            ),
+            createModule("Cardiologia", "CAR II", "Cardiologia: Módulo II", "Cardiologia", { aulas: 11, apostilas: 1, aulasBonus: 7 }, 'gradient-red-pink',
+                { apostilas: ["https://drive.google.com/file/d/1dxHu1ODiCxlmcwdpb3I9oZPXvA-A7MTM/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1dw19f7BRJPvXgfnRSmuHkBYAyEAyQjg3/preview?usp=drive_link", "https://drive.google.com/file/d/1dv6spBEL3Cg0A07Hm2ZOboy7wjZ0XScS/preview?usp=drive_link", "https://drive.google.com/file/d/1dsb36rx3rIOZLjqGgioUlZGD4yFl7UfZ/preview?usp=drive_link", "https://drive.google.com/file/d/1dt2mnIdgn8AtyTkQgwaAw68KKSj3U98z/preview?usp=drive_link", "https://drive.google.com/file/d/1dqv6ULCODDsfvj1uJxQy0TEMY89qRF6x/preview?usp=drive_link", "https://drive.google.com/file/d/1dr0vv5OzLSfdpTzwkmzeGzvNSUNBgWoB/preview?usp=drive_link", "https://drive.google.com/file/d/1dtoqHjj23qJG4xC4GMUp5k-z5vm0lYGC/preview?usp=drive_link", "https://drive.google.com/file/d/1drRpoYSY9Ck8RIcJrMu-MsjL2Z5gY8Ox/preview?usp=drive_link", "https://drive.google.com/file/d/1drLQn2Z2FadZ1wLFdX_v9vymee_IeUVV/preview?usp=drive_link", "https://drive.google.com/file/d/1PIe_sEFF80I3tdaqrBDjE2q8jPJnvezO/preview?usp=drive_link", "https://drive.google.com/file/d/1dvfQIx0CLR0S9JKUPIzJiN6jNw07EPRF/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1dzSpsSEz93cyXcIfJQwbsewpoMrXjyEa/preview?usp=drive_link", "https://drive.google.com/file/d/1dxai-lESPGfa7CYAoUbQio_wA6h68ggP/preview?usp=drive_link", "https://drive.google.com/file/d/1dyh6Ppy5GcKVuTCKgK6unLKBA57c31Rg/preview?usp=drive_link", "https://drive.google.com/file/d/1dxja9tQmT_Zkv7KZfqBcQeC3X9eAit5d/preview?usp=drive_link", "https://drive.google.com/file/d/1dz0yXO5O0BWL3lqtQeukU152jIUFBtkD/preview?usp=drive_link", "https://drive.google.com/file/d/1dxoN0Ex9C3KyT3MyOlAumdmkib4ZSMKF/preview?usp=drive_link", "https://drive.google.com/file/d/1e08WkBSTEKYTX1g3CA4OXtUNyesM44vq/preview?usp=drive_link"] }
+            ),
+            createModule("Cardiologia", "CAR III", "Cardiologia: Módulo III", "Cardiologia", { aulas: 2, apostilas: 1, aulasBonus: 1 }, 'gradient-red-pink',
+                { apostilas: ["https://drive.google.com/file/d/1IgWPKpiQW-Axh6lDwK8gewGLfpYdhSB3/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1dgcZ0Ulc8LGMlRvEmb38J7tt2Np2qOdy/preview?usp=drive_link", "https://drive.google.com/file/d/1QTugnXkpJlLkWxYsr7c3SFiGo5WeXjpU/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1dfHtzThX9YRm5mbOjYWS6uGNmqrC0Q-n/view?usp=drive_link"] }
+            ),
+            createModule("Dermatologia", "DER", "Dermatologia: Módulo Único", "Dermatologia", { aulas: 4, apostilas: 1, aulasBonus: 2 }, 'gradient-sky-blue',
+                { apostilas: ["https://drive.google.com/file/d/1eIuBliDnyp73D3UXP1G__sm6723EsJGe/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1eRNTrN-NbhoEi4iK6jnuJF6JCCydMmFj/preview?usp=drive_link", "https://drive.google.com/file/d/1eSpoVueyXKDH55B1CqbxO7aa3vIMrU4j/preview?usp=drive_link", "https://drive.google.com/file/d/1eQymytupRXJZp4YrcHP_jC4VadIypiq8/preview?usp=drive_link", "https://drive.google.com/file/d/1eTm_EkZpFtktW7anOzBHet0Vy3Qh14U2/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1eR5DYslpvJykFaqVKPAItDlnoXAYs7cO/preview?usp=drive_link", "https://drive.google.com/file/d/1eR0BtcNp7Kl7s_nqzeiZY7CeKr9yoAHA/preview?usp=drive_link"] }
+            ),
+            createModule("Endocrinologia", "END I", "Endocrinologia: Módulo I", "Endocrinologia", { aulas: 7, apostilas: 1, aulasBonus: 15 }, 'gradient-amber-orange',
+                { apostilas: ["https://drive.google.com/file/d/1morz-tCCWXvcj36iME4AHWRA8bATSlyT/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1mSkx7SMJuth1aoSZejxiHRaMDxtGVlj5/preview?usp=drive_link", "https://drive.google.com/file/d/1mSUrbO6XizfIUQOcW54zZJp_zUY7hpk0/preview?usp=drive_link", "https://drive.google.com/file/d/1mZe0VAFDPk1ct95blFtJn2cp7f0iDXAr/preview?usp=drive_link", "https://drive.google.com/file/d/1mZc7AOYYABHAoZU63JgFnLMW7Opo-EDU/preview?usp=drive_link", "https://drive.google.com/file/d/1mZbYRe78s55djdd7HqtQjIm6SYBAJibO/preview?usp=drive_link", "https://drive.google.com/file/d/1mZqmrcl2VP_s6CgZ_Li1C7J0Bu_9oxS5/preview?usp=drive_link", "https://drive.google.com/file/d/1m_BoaF9gBZA9JmwKVbrDlh9DaLRBbYVp/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1mRJLdNEHmzu587OjrdXRl9A-w0T9LAiG/preview?usp=drive_link", "https://drive.google.com/file/d/1mQGiUcRh4xIMRUiz0tMgPDBIbXuITfmA/preview?usp=drive_link", "https://drive.google.com/file/d/1msIpNBTdUGklNeMIa6DNZYJ9LfS5Brau/preview?usp=drive_link", "https://drive.google.com/file/d/1mpqwlYv33W1uwirHEdwx_rmkKiyZOPib/preview?usp=drive_link", "https://drive.google.com/file/d/1mtnwFeSqdiqph-GcyA2XvaNI7Zq2lUCz/preview?usp=drive_link", "https://drive.google.com/file/d/1muZvyS3L3DyzW5o-1101zvENdE2gTPRB/preview?usp=drive_link", "https://drive.google.com/file/d/1mqgoxj715AAKwTXUMHUj-5NZUxJ3Y2Br/preview?usp=drive_link", "https://drive.google.com/file/d/1mt34FX33RKrNGki6nfTjI3oD9T1Ttm8T/preview?usp=drive_link", "https://drive.google.com/file/d/1mvzl1132SPFPmWMqiWYW48utiqVrNjcz/preview?usp=drive_link", "https://drive.google.com/file/d/1mv2gJOduOl0KJ70rqvoLXZIXqkT_6k5l/preview?usp=drive_link", "https://drive.google.com/file/d/1muz78cH3tTxw05ZW-WtHfXGMkCXo0QxY/preview?usp=drive_link", "https://drive.google.com/file/d/1mpc-IuPDosVe0ep2PnTKcU0wbzz5PI9-/preview?usp=drive_link", "https://drive.google.com/file/d/1mttcx6wnRjYxs0bOt7_B4PrYG8eMp9gS/preview?usp=drive_link", "https://drive.google.com/file/d/1mp6eBTaPbNedWMDO7yo-jsqmFV_0MEAK/preview?usp=drive_link", "https://drive.google.com/file/d/1mr_SQKPfJimkFyGmN58iAjXpXrX8XWId/preview?usp=drive_link"] }
+            ),
+            createModule("Endocrinologia", "END II", "Endocrinologia: Módulo II", "Endocrinologia", { aulas: 3, apostilas: 1, aulasBonus: 9 }, 'gradient-amber-orange',
+                { apostilas: ["https://drive.google.com/file/d/1mYiwcHc1JoI0m_-4Wzo4lZmL2rt6Ok8G/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1mVp177m42eyZV8jwy3B-aJf75NxcX9bP/preview?usp=drive_link", "https://drive.google.com/file/d/1mVZLFEe_VeGxGfENQ9K1slXQEy9Q2kHa/preview?usp=drive_link", "https://drive.google.com/file/d/1mWsuLocQBmBBikVrt9EzjDnmv1-rBljF/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1mUNFQAkyL3jXhCURfrfGP-bBK0aPZsA5/preview?usp=drive_link", "https://drive.google.com/file/d/1mUoYuMERXw5dWqEVaTCn2GlATLCV-Voo/preview?usp=drive_link", "https://drive.google.com/file/d/1mTNYxLfRdtX8_Fdwa80KPkHPFHXd_7Ur/preview?usp=drive_link", "https://drive.google.com/file/d/1mVL3HA3d7KWa4XO-HdyEQh6sINy3pe9k/preview?usp=drive_link", "https://drive.google.com/file/d/1mUAlW3sCqksKlXQi36gCo8CVKArIC-xF/preview?usp=drive_link", "https://drive.google.com/file/d/1mSyCsOyJPZApjwmhfrujkGVUHCFBv7aS/preview?usp=drive_link", "https://drive.google.com/file/d/1mU5fLC2rMUQ8K7AtBr1prWn0gyc_EAMX/preview?usp=drive_link", "https://drive.google.com/file/d/1lyy3upcXB9HLLDsYu4Rb23TNVtvPEKSy/preview?usp=drive_link", "https://drive.google.com/file/d/1lyy5lfXZusbb64LOUKXOAuQHRm1SIvV-/preview?usp=drive_link"] }
+            ),
+            createModule("Gastrologia", "GAS I", "Gastrologia: Módulo I", "Gastrologia", { aulas: 10, apostilas: 2, aulasBonus: 12 }, 'gradient-lime-emerald',
+                { apostilas: ["https://drive.google.com/file/d/1WXD1YaKzH5mbtYu7K9ODBfVgdCsJRycZ/preview?usp=drive_link", "https://drive.google.com/file/d/1lJ8EuqeluDD2cEnPv6Dc7-qXlmMAdp40/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1_V2A8GO5kpbtxS4NXrwxQgB60tNsAAHL/preview?usp=drive_link", "https://drive.google.com/file/d/1VbrVctg3RPVDnj4iYN2AzanrGnelOZa6/preview?usp=drive_link", "https://drive.google.com/file/d/1C701hojmM0aNL4UJK3OCNpw0vsHqZ9Gy/preview?usp=drive_link", "https://drive.google.com/file/d/17qowdJxpuovL5XUadlm_seXuDYx1yHj5/preview?usp=drive_link", "https://drive.google.com/file/d/141Djn9RO-BfjwOHcuw5Fc9fw41YSQK3R/preview?usp=drive_link", "https://drive.google.com/file/d/18KDxAlWJa4gJqqKoXiHjwfzQnzW4Zrnv/preview?usp=drive_link", "https://drive.google.com/file/d/1FmIEwh2T0G-tf86pThnXG52NnOEKvzdK/preview?usp=drive_link", "https://drive.google.com/file/d/1XWoX6O39vwdOv6zu16OTYniF5m8LYaID/preview?usp=drive_link", "https://drive.google.com/file/d/1PfqPpIxcw5Og3E4thJzhLUlOqToFhbkQ/preview?usp=drive_link", "https://drive.google.com/file/d/1h4rynFETjV0H2m2riiutlA4u5bMX1CC0/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1dfh8uC84I6xXPDuypQKdgE4DnoUg-wsA/preview?usp=drive_link", "https://drive.google.com/file/d/1BCPqrJ-sl_cQqaNPDpsd4ZBA2wU0X3vo/preview?usp=drive_link", "https://drive.google.com/file/d/1V4cQ9-k0m1BEUY7x6_CTaM-Vj9otWUUQ/preview?usp=drive_link", "https://drive.google.com/file/d/1XcQhCbjEAxbhCc57WVt8nifgDCrBplto/preview?usp=drive_link", "https://drive.google.com/file/d/15dZjgiIChAF4BESy11Um98tSNyGd7xNg/preview?usp=drive_link", "https://drive.google.com/file/d/1xYy-0eH4rvEkeSGnxchdSbShmaMhcxX3/preview?usp=drive_link", "https://drive.google.com/file/d/1CXSYovhagQK-5LYF7jrjc-pkkVSYNmr9/preview?usp=drive_link", "https://drive.google.com/file/d/1bgvV1iPV-7HwxMMsaLRqBxVSDXt3VYKY/preview?usp=drive_link", "https://drive.google.com/file/d/1ooIrX7WtGTWAjrqk9KX9nz1hVxztivja/preview?usp=drive_link", "https://drive.google.com/file/d/1jw6DKmy9PzibcFLtU0sgnnyWDykyuJ4z/preview?usp=drive_link", "https://drive.google.com/file/d/1iEv-FgdYbjCdDgieLKwhaLTYk34uXnx8/preview?usp=drive_link", "https://drive.google.com/file/d/19JyejWuknatrdpEAcabPMrAIL9FqmL8F/preview?usp=drive_link"] }
+            ),
+            createModule("Gastrologia", "GAS II", "Gastrologia: Módulo II", "Gastrologia", { aulas: 11, apostilas: 1, aulasBonus: 3 }, 'gradient-lime-emerald',
+                { apostilas: ["https://drive.google.com/file/d/1gZ9jm8Rff0-S6XDlFaFa2Zk6C258WeeH/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1gbQuspqPcy4LsGO9oxWRyHmjinCo2D50/preview?usp=drive_link", "https://drive.google.com/file/d/1gZyI0xT1KZJgXeUWCvOWyCvSk06g3kis/preview?usp=drive_link", "https://drive.google.com/file/d/1gbmuj5BGEP8WwDQuotPnSrSadHbNDM3m/preview?usp=drive_link", "https://drive.google.com/file/d/1gZioEcv28aA6Rf1iMR7Gnns3GfNRKdF4/preview?usp=drive_link", "https://drive.google.com/file/d/1gaxYSQuig4AzY6DdaERh9mb3ZzoaHbTO/preview?usp=drive_link", "https://drive.google.com/file/d/1ga-47gfSz5dDyzmD322GsZPalgPjMsZ-/preview?usp=drive_link", "https://drive.google.com/file/d/1ga-nmIGi48HUmtdMliYWREh_ooTqN4T7/preview?usp=drive_link", "https://drive.google.com/file/d/1gaHtV23lHG9NzeqIvGhbEGhwelK6vLfB/preview?usp=drive_link", "https://drive.google.com/file/d/1gaOwbDwvWPyv0V68t1kHdb-S56DtdOxp/preview?usp=drive_link", "https://drive.google.com/file/d/1gbrt4mMlcsQNhyfq_yhuVAx6sfTKYyCL/preview?usp=drive_link", "https://drive.google.com/file/d/1g_QCwwxqjMLSHxcoWZLAd7aa8SxfCwnn/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1gDtFp67Pprh1OPffmUqsb2T7UnexkH-9/preview?usp=drive_link", "https://drive.google.com/file/d/1gDl8dyZme4LJI-WpDGarq-yjjOH4FlXV/preview?usp=drive_link", "https://drive.google.com/file/d/1gDRqYg_N7AHGRickC7_ib_4zPf5KKmK2/preview?usp=drive_link"] }
+            ),
+            createModule("Gastrologia", "GAS III", "Gastrologia: Módulo III", "Gastrologia", { aulas: 8, apostilas: 1, aulasBonus: 12 }, 'gradient-lime-emerald',
+                { apostilas: ["https://drive.google.com/file/d/1hWYfaK9I0kA-Ytwm-kQROiUIdTOvVKRz/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1hDWRQBDuRPnx1JsHqPZKgmr-SThmoMpH/preview?usp=drive_link", "https://drive.google.com/file/d/1hEauQRRNLHSzJbH6LjSKzfJU1vbxmRhb/preview?usp=drive_link", "https://drive.google.com/file/d/1hE1wjxCSFPuRRJGBQp_0uIKKeeWe10AH/preview?usp=drive_link", "https://drive.google.com/file/d/1hFsGP-20DGOUkHQnBdXoG2RHknCYolT8/preview?usp=drive_link", "https://drive.google.com/file/d/1hFd5n3YoB6B3f_s9ae4twTZeOIFW1X3z/preview?usp=drive_link", "https://drive.google.com/file/d/1hEx9nyka08q2DkFVTiZkFOJwS12e7Dth/preview?usp=drive_link", "https://drive.google.com/file/d/1hEBl1aIKHGulz6-KFJn95-wTehAXLwOU/preview?usp=drive_link", "https://drive.google.com/file/d/1hFtJtlvjPfG7GthTiw3CXTXQd08n8KeU/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1hXmnRMnxkZB_xH6GsGU90xVAZBDZfY-j/preview?usp=drive_link", "https://drive.google.com/file/d/1hWgV0sDrT72-aeGvD8YdXztmEUU17dce/preview?usp=drive_link", "https://drive.google.com/file/d/1h_bpI75R9NAqnwN2yGlpS5oMs3Hz1JhG/preview?usp=drive_link", "https://drive.google.com/file/d/1hYV02K6Z5_8agwKvZSCn6SgsFCgHnrlJ/preview?usp=drive_link", "https://drive.google.com/file/d/1h_-9FwYQx7jJXp3ZY03unI_xaaHqSUdR/preview?usp=drive_link", "https://drive.google.com/file/d/1hYhrSa0jWY3FBqDHR2Q8HFVwjSAR-7Yf/preview?usp=drive_link", "https://drive.google.com/file/d/1hZFAOgSb9hy5dlnrHearaYvPxEw3qM2-/preview?usp=drive_link", "https://drive.google.com/file/d/1h_zjP0NwtjX8OV5Zx4DSWejA-MaQvyHy/preview?usp=drive_link", "https://drive.google.com/file/d/1hXOYnohoSIy7n16F7DSovUaXDSeqMOTq/preview?usp=drive_link", "https://drive.google.com/file/d/1hYvYFPcamP_UWaKXDkJmOdcAl857cxT5/preview?usp=drive_link", "https://drive.google.com/file/d/1hZhyNjio9SVssjqqnzIxrOS03kdYA6g7/preview?usp=drive_link", "https://drive.google.com/file/d/1hYgj3SWphbb26mdnMizv2qp-e9mcTGZb/preview?usp=drive_link"] }
+            ),
+            createModule("Hematologia", "HEM I", "Hematologia: Módulo I", "Hematologia", { aulas: 6, apostilas: 2, aulasBonus: 5 }, 'gradient-fuchsia-pink-alt',
+                { apostilas: ["https://drive.google.com/file/d/1Y-atWpc1jOor1m9Yfi_UKH34_WmVtulH/preview?usp=drive_link", "https://drive.google.com/file/d/1YxFeEoTS-9Mb9boLeixIy9dbB6BVNBjh/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1Rc5GVRI0iY2FoF9OlQ75T-087vRxX5pb/preview?usp=drive_link", "https://drive.google.com/file/d/1FDKEmsqz2vDaocC0RgsW8IcNNbVyEDu-/preview?usp=drive_link", "https://drive.google.com/file/d/1B7muBUjog9my7f8dWff-iY22ye-I8Rj_/preview?usp=drive_link", "https://drive.google.com/file/d/1D9ZOHQsLdF5AL-LnR7dres_GWudf-gi-/preview?usp=drive_link", "https://drive.google.com/file/d/1jSpuesauZjKL9CiOtFIVxlfmdCMAw3B0/preview?usp=drive_link", "https://drive.google.com/file/d/1ytsfeRTyL1fWWvbODZLosYtC0ScvBj4o/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1nSunrMm0rZqYi5YUyLxXnGSh-KH40Wjg/preview?usp=drive_link", "https://drive.google.com/file/d/1Dz6-6vHQ7hmNRnuiVBcGGP2iXX5pufYZ/preview?usp=drive_link", "https://drive.google.com/file/d/1OBW0UMnGLyUAFMaijANn0SB8JssJ6LXi/preview?usp=drive_link", "https://drive.google.com/file/d/17ueRxVpqgzRCP-pPn1S9bbj_d_GpKT--/preview?usp=drive_link", "https://drive.google.com/file/d/19PpmQ85uiVg1BICEVkykX5zEE0Soy07S/preview?usp=drive_link"] }
+            ),
+            createModule("Hematologia", "HEM II", "Hematologia: Módulo II", "Hematologia", { aulas: 11, apostilas: 2, aulasBonus: 4 }, 'gradient-fuchsia-pink-alt',
+                { apostilas: ["https://drive.google.com/file/d/1RmpTqfI5obnQbrG9q8LGJdow7ZsSnvKz/preview?usp=drive_link", "https://drive.google.com/file/d/1R4WEtZsiGQCLQrw9CkvBsWiCinLWjG_A/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1pex4NZmpKfuh9PxfzowMjzv9DkJAML_o/preview?usp=drive_link", "https://drive.google.com/file/d/1kJDc21ckKA48BBlBYaPPSNaUlKjS96qN/preview?usp=drive_link", "https://drive.google.com/file/d/1Lvb_Hr9K_8M6KYTnLFH79lCntlNDGStz/preview?usp=drive_link", "https://drive.google.com/file/d/1Hz-By0to3pVNag5nF7ulhMPi_cicWZrc/preview?usp=drive_link", "https://drive.google.com/file/d/1YNyG37Bl4j3uziFWCxDG2IYWzVSODt1d/preview?usp=drive_link", "https://drive.google.com/file/d/1vaj3_QDcYxvY8jSdXyyc4gzfUp_RdZIR/preview?usp=drive_link", "https://drive.google.com/file/d/1aUCCygF2zvLVDkfb7GxCDWoubKiHDnWW/preview?usp=drive_link", "https://drive.google.com/file/d/18DIMnQC9QXCkJImlcQBYVAXvm0B4TtFk/preview?usp=drive_link", "https://drive.google.com/file/d/1-1bwbi7TP3dE3hlGe2YOj1VZYiYcTCa2/preview?usp=drive_link", "https://drive.google.com/file/d/17ZtItgjDj_5t286s0Iv_eTapThdU4c_y/preview?usp=drive_link", "https://drive.google.com/file/d/15qqEyrgTw9YrcCVcA58P7Qedp0o1t-2g/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1mNMvtBIL7KpodfTLgUMInDXx4rWrWcNv/preview?usp=drive_link", "https://drive.google.com/file/d/1nChpqR3R85Y43ELcW_5AtBLQwyfTaDzN/preview?usp=drive_link", "https://drive.google.com/file/d/1mLPvloqUopcAPxEaI1skJJbp8doWGqmK/preview?usp=drive_link", "https://drive.google.com/file/d/1mMMQQd2WDV6fT_zj1OGRoO4sWuFOz_83/preview?usp=drive_link"] }
+            ),
+            createModule("Hepatologia", "HEP I", "Hepatologia: Módulo I", "Hepatologia", { aulas: 5, apostilas: 1, aulasBonus: 1 }, 'gradient-yellow-orange-dark',
+                { apostilas: ["https://drive.google.com/file/d/1fI6j5ZpQyuK-pLhVfPLzw7g8gbrBckLo/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1fFuDuyxqJalHxh3H57H1iFmzz-rtXMNT/preview?usp=drive_link", "https://drive.google.com/file/d/1fF_w_efliMMSo89wKT8Zr095RfVBCw7G/preview?usp=drive_link", "https://drive.google.com/file/d/1fCsWM3OAULH2XhOs7VmCW2IshVpHqDJq/preview?usp=drive_link", "https://drive.google.com/file/d/1fG9uhNEy91j2cPAajs-t0Jm5zb_CAfSi/preview?usp=drive_link", "https://drive.google.com/file/d/1fCp48g7NduUW9_SUUQRKhr1DwR3ERfsr/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1eymsRrVjfyxIVuStTIMWH-J90vgjX0m-/view?usp=drive_link"] }
+            ),
+            createModule("Hepatologia", "HEP II", "Hepatologia: Módulo II", "Hepatologia", { aulas: 7, apostilas: 1, aulasBonus: 3 }, 'gradient-yellow-orange-dark',
+                { apostilas: ["https://drive.google.com/file/d/1evEoyhTOHbz20_uPQleaBG6BZBuksO97/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1eyAQofhh2H4Rh82vQqC-OQ6KVapgNGxg/preview?usp=drive_link", "https://drive.google.com/file/d/1eyCyZ9TKx-W9bg7xpT19d_YNXPAP1Pi-/preview?usp=drive_link", "https://drive.google.com/file/d/1ewdaqvtBScEmQSRh1KAagiCriYSS6D47/preview?usp=drive_link", "https://drive.google.com/file/d/1eyIiDR5zLFzGX3yVsYY96IJ9VgrOp_QW/preview?usp=drive_link", "https://drive.google.com/file/d/1ext3qj35BaS-g41A9QvOBKg0xo9iV2am/preview?usp=drive_link", "https://drive.google.com/file/d/1exEUj9Rcm9SZaKhOw_RYYSJ1nQA2pyrM/preview?usp=drive_link", "https://drive.google.com/file/d/1ewhl8tSwXUVwy7NWXmQ53XzK1Zvlv-5n/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1euwbAuKsedkEqwwNjHOwbqvOB6fSeuEh/preview?usp=drive_link", "https://drive.google.com/file/d/1eucqU676pE8DJm83NKRVUBWeEFsQNY2W/preview?usp=drive_link", "https://drive.google.com/file/d/1ev5CjasdM1b9RtC5FoQd-mWdB7Xo4eiS/preview?usp=drive_link"] }
+            ),
+            createModule("Infectologia", "INF I", "Infectologia: Módulo I", "Infectologia", { aulas: 3, apostilas: 1, aulasBonus: 5 }, 'gradient-violet-grape',
+                { apostilas: ["https://drive.google.com/file/d/1hwxs1vqfAh5AJo69eykCxGaaKRETFWle/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1hwdhkVI0AQWGHGFTCSJ-Ivhs5a8o4Hnc/preview?usp=drive_link", "https://drive.google.com/file/d/1hvUNhntycqN8roViu5d4Gi6fOAkeNoNF/preview?usp=drive_link", "https://drive.google.com/file/d/1hvjoZupr0jDCqHRl1XoupoDrhLizH-EO/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1hxFx5wb4F4AwBoitcvQv1udMS3nbjckn/preview?usp=drive_link", "https://drive.google.com/file/d/1hxRn4Hml1PeajXl1_oIIQhRRfkHJwgPt/preview?usp=drive_link", "https://drive.google.com/file/d/1hyK7DocBAgs4OhTwBReZtbJe_-Za1xdW/preview?usp=drive_link", "https://drive.google.com/file/d/1hxKzhJZAeg7hily0u2iW_mNemeS97lto/preview?usp=drive_link", "https://drive.google.com/file/d/1hy07E1NYwyKi9L8LxabULfJaC-mbcq0W/preview?usp=drive_link"] }
+            ),
+            createModule("Infectologia", "INF II", "Infectologia: Módulo II", "Infectologia", { aulas: 4, apostilas: 1, aulasBonus: 7 }, 'gradient-violet-grape',
+                { apostilas: ["https://drive.google.com/file/d/1hb9_5MTIDROppqI5AkxVJM-pKMD8_nIQ/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1htHdMCKw8VtD8JzsneR_1MWPyQjY_my9/preview?usp=drive_link", "https://drive.google.com/file/d/1hsbr2y2QrWzpjNg8m9dfCHOtnguzkgY5/preview?usp=drive_link", "https://drive.google.com/file/d/1hsPde-GQvMTJZlEk7mh-FYpr7wjyoJdg/preview?usp=drive_link", "https://drive.google.com/file/d/1hstPEZtmE7_ZAZmBUbslSGZ_Qn0XOm28/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1ho4FWLXp40qYxbxb8PnFtc-HS-Z6E_7i/preview?usp=drive_link", "https://drive.google.com/file/d/1hqnwm1IrMFyEvyKFYt4ujOldGJ4GRVTV/preview?usp=drive_link", "https://drive.google.com/file/d/1hpQrlSUm-6WD_XrCiXZskEfU3LVf94Ry/preview?usp=drive_link", "https://drive.google.com/file/d/1hp5Px_8FxgNTGxPHwrXDeH-MV6_C6Ene/preview?usp=drive_link", "https://drive.google.com/file/d/1hpEYjn8RJo0s9gjIQIPg1Pnvvi7jLc06/preview?usp=drive_link", "https://drive.google.com/file/d/1ho6VwummeVskq3vmUXpmeY7lv-apjMt2/preview?usp=drive_link", "https://drive.google.com/file/d/1hrHvwXa-XvCxxo0lXcumDRLtNiuLsaVz/preview?usp=drive_link"] }
+            ),
+            createModule("Infectologia", "INF III", "Infectologia: Módulo III", "Infectologia", { aulas: 2, apostilas: 1, aulasBonus: 6 }, 'gradient-violet-grape',
+                { apostilas: ["https://drive.google.com/file/d/1i4KsEtJTCuf9PuNQqNFfBRL0Wm3G_AMN/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1i6QV8vbqX9EpFA3qQOVfBSaFDBr1SCL5/preview?usp=drive_link", "https://drive.google.com/file/d/1i5esXOWylDAOgUzwR_C3QpVtMF00s9aT/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1i2sLvD3Ck66dy-Bc5z4EpTw16mvmExwo/preview?usp=drive_link", "https://drive.google.com/file/d/1i2GP2F7iMMZG1aH3U1dXJYEUDfJQRiC-/preview?usp=drive_link", "https://drive.google.com/file/d/1i0etVHrZUzEjQqp8UPNRs5tO7Gx3HeUx/preview?usp=drive_link", "https://drive.google.com/file/d/1hzwSVXh0eFd59U1I974LG_XRIoCl84sO/preview?usp=drive_link", "https://drive.google.com/file/d/1i35mnBwU-LWqRcllibgJ12z7HvwoSUC3/preview?usp=drive_link", "https://drive.google.com/file/d/1i2xMxMxddpuPFrywUwMgd-III0f94Zud/preview?usp=drive_link"] }
+            ),
+            createModule("Nefrologia", "NEF I", "Nefrologia: Módulo I", "Nefrologia", { aulas: 8, apostilas: 1, aulasBonus: 6 }, 'gradient-cyan-sky',
+                { apostilas: ["https://drive.google.com/file/d/1fsVz0G08euSXmbNiXY0eEdFcirW3cU8O/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1L7-FzhVQr8DjbFBBohj3KbG29Jix6Q1O/preview?usp=drive_link", "https://drive.google.com/file/d/1d8OW-GjXwdcuo7QgwwvXCx0po2uQjMnH/preview?usp=drive_link", "https://drive.google.com/file/d/1WM153JC25YivZzCKWbV9stKic0yLrilc/preview?usp=drive_link", "https://drive.google.com/file/d/1OrDkvhaRCSDYholPBHcuuSydgaxOwfy9/preview?usp=drive_link", "https://drive.google.com/file/d/1e0NZIj_3trULLQws-d50REsh18diw-Km/preview?usp=drive_link", "https://drive.google.com/file/d/17dQaEtd7rmByS5M4X7WzDzio1FRqWNbG/preview?usp=drive_link", "https://drive.google.com/file/d/1VLwzGr3XL-ecesslpSUaMYsH0apZyifA/preview?usp=drive_link", "https://drive.google.com/file/d/1RP7bvIw68Yx6lQCodlw2RtO8uAB0U4Hl/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/11HUAB8JhAdu5G3-Eh0f8lEpTIH5jIC8j/preview?usp=drive_link", "https://drive.google.com/file/d/1xP6IbIkdTOH3ValuIeM3ZAOImk6BQVFF/preview?usp=drive_link", "https://drive.google.com/file/d/1LGK_2Pj5jIMGtmN9Ys53GTItiWZmOrgF/preview?usp=drive_link", "https://drive.google.com/file/d/1w-BlAwu7YXPOOaEcO6mHwrt7IJN0xdiO/preview?usp=drive_link", "https://drive.google.com/file/d/1gNcp0eYLDhpGri0NYP6wyH6FVxf_Zh-N/preview?usp=drive_link", "https://drive.google.com/file/d/1qzJclz50WznWc-ZlzTtg7cB_7NBomgFO/preview?usp=drive_link"] }
+            ),
+            createModule("Nefrologia", "NEF II", "Nefrologia: Módulo II", "Nefrologia", { aulas: 6, apostilas: 2, aulasBonus: 6 }, 'gradient-cyan-sky',
+                { apostilas: ["https://drive.google.com/file/d/1H7rf9YR2VgH1YizkzUWCO_OHVETkmEaW/preview?usp=drive_link", "https://drive.google.com/file/d/1w7KBh0BVgF0zDbKDdFEM9LrMOyLvN2G6/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1oKrUT2urEYW3_fCBnF8MndVD3Q5ROGgK/preview?usp=drive_link", "https://drive.google.com/file/d/1tB3N7QpheqBXjatJDrdU_2ZjZzXtFdoO/preview?usp=drive_link", "https://drive.google.com/file/d/1bBFkhwjkdSyVIk-ecKqF6Pu3g29v2_jo/preview?usp=drive_link", "https://drive.google.com/file/d/1_gP4gW8i-4pPO22H0qJmjIjLtKJeFORX/preview?usp=drive_link", "https://drive.google.com/file/d/1LINXj6STHw9Bgg5sxj6YjbxQBWAorQyI/preview?usp=drive_link", "https://drive.google.com/file/d/1bHblgfaNOdCEO8EYVT2qVA_U0SORDvAh/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1DQ1wYyU0erHJuZHsfA84xnJQhfVU0TDq/preview?usp=drive_link", "https://drive.google.com/file/d/1AXJo3FoIezWgse-ncmTBOfpHNSNbACdj/preview?usp=drive_link", "https://drive.google.com/file/d/1Caf1sK2i-KIKUDw11L1WRMJTfDXx_TfQ/preview?usp=drive_link", "https://drive.google.com/file/d/1pWIB6i2gvb89lNLLkAq60B_9j2cpbKVc/preview?usp=drive_link", "https://drive.google.com/file/d/1ziXQni4H5NQIann_EAa8r7GeB5WPiLuQ/preview?usp=drive_link", "https://drive.google.com/file/d/11JX8i9-Wo6uifTylEsEzXWa3dzNYx9X8/preview?usp=drive_link"] }
+            ),
+            createModule("Nefrologia", "NEF III", "Nefrologia: Módulo III", "Nefrologia", { aulas: 11, apostilas: 2, aulasBonus: 4 }, 'gradient-cyan-sky',
+                { apostilas: ["https://drive.google.com/file/d/1zMe4Gac1TXee0hGuEGNo-gE895slR6WY/preview?usp=drive_link", "https://drive.google.com/file/d/1xQYQcrAZDkTFKYTiLPlbO0VY5nwPqNVm/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1gY4BZ_NHXr6hLZXhBFhFh988h60rLn58/preview?usp=drive_link", "https://drive.google.com/file/d/14SVjMqzSwyYblo1MzwEKV0yDMOe417lj/preview?usp=drive_link", "https://drive.google.com/file/d/1yh4e0TcAQYVdYReszcedAiHBQ4RGGGSz/preview?usp=drive_link", "https://drive.google.com/file/d/1PxQ2JJSx12NYbQvwMvIyW6LiAu2GPna6/preview?usp=drive_link", "https://drive.google.com/file/d/162h04Q6flSXl9AY5A1Pt4WOpYfkXql1r/preview?usp=drive_link", "https://drive.google.com/file/d/1gtT13fvHVoJtXbc1N-JBiEF8i2_s1jba/preview?usp=drive_link", "https://drive.google.com/file/d/1vP5CezcI-XS398NdU5iFcIYIODYYn7Ba/preview?usp=drive_link", "https://drive.google.com/file/d/1BiZgkd0STH2XB_-rZ294ZyaQyxv4FdT7/preview?usp=drive_link", "https://drive.google.com/file/d/19suqZlj-98fESVVESagS9g9yjVPG6NFw/preview?usp=drive_link", "https://drive.google.com/file/d/1uBGZ_m9THWyEIda1KP4fx_F8cOGqbQ2J/preview?usp=drive_link", "https://drive.google.com/file/d/1RnrK8uwQGvs6DssqOec4U16lT1wxfx5f/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/132mYLS-bH0N7DA7o_x1sGv11MBm5Ck8A/preview?usp=drive_link", "https://drive.google.com/file/d/18KaUcvwyi71-mdFr7AnDXdowoyeH9bp0/preview?usp=drive_link", "https://drive.google.com/file/d/1fRW8ZJ3a_VBxcaYBsgSCYJPwVfwKDABI/preview?usp=drive_link", "https://drive.google.com/file/d/1fS84zvK2fvdFAnBwwtdbTOf7da0Pu_J2/preview?usp=drive_link"] }
+            ),
+            createModule("Neurologia", "NEU", "Neurologia: Módulo Único", "Neurologia", { aulas: 9, apostilas: 1, aulasBonus: 3 }, 'gradient-indigo-deepPurple',
+                { apostilas: ["https://drive.google.com/file/d/1liMl0N5WE5E0QY-NwcSEHir_Ps2Vp1BP/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1ligq-YaqjvTU9sOZWtiTtNaabhlayJY0/preview?usp=drive_link", "https://drive.google.com/file/d/1ljBj1nnn1wNbMyIArYW9roBiirOvPjz5/preview?usp=drive_link", "https://drive.google.com/file/d/1liSS5xMC01m2KyWfXBNX2iFx1sRdQJFa/preview?usp=drive_link", "https://drive.google.com/file/d/1lkOuGCZTGMtc_WC1bCtiJfFPt_3cgfYY/preview?usp=drive_link", "https://drive.google.com/file/d/1ljMmRlN7wL0MpWp844CeU5DKd_c6ofy_/preview?usp=drive_link", "https://drive.google.com/file/d/1lktfHKS7pW42GE67W_f4LEUlKy6tmkak/preview?usp=drive_link", "https://drive.google.com/file/d/1ljZ-31GqUYf_k4pCm-XDRLZj7SjM2cg_/preview?usp=drive_link", "https://drive.google.com/file/d/1ljadm53yGL9SZVD6luY-IzJSop8pj7z-/preview?usp=drive_link", "https://drive.google.com/file/d/1ljI-IWvxAait2YlM5TytBUtU4M5jdSG9/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1lgOPb11KdewkldGFmKBk408Ot0PKm7lN/preview?usp=drive_link", "https://drive.google.com/file/d/1lhoi6fYCaICQCM1sTGBw7gdDHCoAGeJ2/preview?usp=drive_link", "https://drive.google.com/file/d/1lgtO1h-B7VBKCkVkbyFZ3NQGjjZOUP-0/preview?usp=drive_link"] }
+            ),
+            createModule("Oftalmologia", "OFT", "Oftalmologia: Módulo Único", "Oftalmologia", { aulas: 6, apostilas: 1, aulasBonus: 0 }, 'gradient-lightGreen-green',
+                { apostilas: ["https://drive.google.com/file/d/1buCeWYn86Ie2uSZ0O0pSipzVXiUcZv3z/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1KK8u0L8U4aGEvxmiEpsAoSB2i7pjsBBH/preview?usp=drive_link", "https://drive.google.com/file/d/13-ZU8hS2-l6Pxxhhof06fRPAcNtLy00J/preview?usp=drive_link", "https://drive.google.com/file/d/1OPPrRYhTuPGZ_8SumKfHBCVWntSThibt/preview?usp=drive_link", "https://drive.google.com/file/d/1kh4jmLGk_kXGQn6wP88bH4ExQzmsGLrS/preview?usp=drive_link", "https://drive.google.com/file/d/1mfgwD_QpUQjqvUDGtHltb6SHpzAsPzos/preview?usp=drive_link", "https://drive.google.com/file/d/1SxIhYnAOAH5s9VCJIBowPfMI6hZobV0-/preview?usp=drive_link"], aulasBonus: [] }
+            ),
+            createModule("Ortopedia", "ORT", "Ortopedia: Módulo Único", "Ortopedia", { aulas: 5, apostilas: 1, aulasBonus: 2 }, 'gradient-blueGray-slate',
+                { apostilas: ["https://drive.google.com/file/d/1n3PjKkqjHlPYsrtdww6W7qnWD1dO4FHV/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1n28IUKfIJNorQzNaI18Lt31WguAXnFw9/preview?usp=drive_link", "https://drive.google.com/file/d/1n2X8cKF0Q5K5Yt-tyAYVstLJV9qDfxD0/preview?usp=drive_link", "https://drive.google.com/file/d/1n1kKrMxwPG__r2-oO3UeMRMi34E0hwHV/preview?usp=drive_link", "https://drive.google.com/file/d/1n1B2vKcGbNzAtPUahwZIAgWL0Ki8aBX2/preview?usp=drive_link", "https://drive.google.com/file/d/1n2Ypb0EvP-8udzPOhbphO0VIoIWRELCN/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1n3Gzr8rQCgT4XKv-6JlY7S8eMJuJ-IST/preview?usp=drive_link", "https://drive.google.com/file/d/1n2fUDretCg08FSYKLb61IjzT5GBZ8dWt/preview?usp=drive_link"] }
+            ),
+            createModule("Pneumologia", "PNE I", "Pneumologia: Módulo I", "Pneumologia", { aulas: 4, apostilas: 1, aulasBonus: 6 }, 'gradient-cyan-lightBlue',
+                { apostilas: ["https://drive.google.com/file/d/1RbHvGwywrez8xosCZryRi6Kk4oC_8yon/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1R_yX2QswUksP56hBAoFeExkYhud2jaLj/preview?usp=drive_link", "https://drive.google.com/file/d/1R_OKT39xS5YxPpAvRHYX2tfIeMNoEGOx/preview?usp=drive_link", "https://drive.google.com/file/d/1Ra9KlZlmVxJ9MYWFDC1JqMlGpR5cYYoe/preview?usp=drive_link", "https://drive.google.com/file/d/1R_HUVvsKsfKlO5IornRoIfGqF0B0o6Dn/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1R_-V9LKnnzlTUwAXd53ANdSESa_xqkOj/preview?usp=drive_link", "https://drive.google.com/file/d/1RZM6rkaAuoJrklUXt46QGo77hNCyV9_X/preview?usp=drive_link", "https://drive.google.com/file/d/1RZDjsGpUmDK6KfbgEnZ10CzoLKbHNXRl/preview?usp=drive_link", "https://drive.google.com/file/d/1RZZkrXzFE330BH-_dGtWIxu4bgAZhfoJ/preview?usp=drive_link", "https://drive.google.com/file/d/1RYlTZk4TgvCbI_oTdJJgebPQeXWilV6Q/preview?usp=drive_link", "https://drive.google.com/file/d/1RZe1zocZto1gCXaDracksMnJetG7YRmx/preview?usp=drive_link"] }
+            ),
+            createModule("Pneumologia", "PNE II", "Pneumologia: Módulo II", "Pneumologia", { aulas: 7, apostilas: 1, aulasBonus: 1 }, 'gradient-cyan-lightBlue',
+                { apostilas: ["https://drive.google.com/file/d/1SpPF1U_c4NZ7pdzOJwGRuGCEFp0JWise/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1ScesVN_Lb4Q6ykLNKt2taw4N_aOiYb2X/preview?usp=drive_link", "https://drive.google.com/file/d/1Se6S5y1auyIM0A0EEKKd02J2VmaoBo_P/preview?usp=drive_link", "https://drive.google.com/file/d/1SeLiVB2i4NRqu4D6fC7lSENNwZnXwarY/preview?usp=drive_link", "https://drive.google.com/file/d/1SegaTKXxYm99itG_pw6h0xJ9wrVzuVQ9/preview?usp=drive_link", "https://drive.google.com/file/d/1ScJjHN8EV1MYHCBg2ZvjP_M2_umzibsQ/preview?usp=drive_link", "https://drive.google.com/file/d/1Sd6j38obypUgC9K2JPDfo61JMFcQOIv0/preview?usp=drive_link", "https://drive.google.com/file/d/1SePhlDKPxaIQK8n1QG936wSHIhRVBVIV/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1SpedxVziRVvPMbMmtxX7B7GqmkncZUO2/view?usp=drive_link"] }
+            ),
+            createModule("Psiquiatria", "PSI", "Psiquiatria: Módulo Único", "Psiquiatria", { aulas: 5, apostilas: 1, aulasBonus: 2 }, 'gradient-indigo-violet',
+                { apostilas: ["https://drive.google.com/file/d/1cVJZgl-yPbMyeTzqMvq9hXTGtFXTbg60/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1cX-BuEBdWmn6PT11_XX4ZJzT7Fc1gVAF/preview?usp=drive_link", "https://drive.google.com/file/d/1cXjxrcecPUSY8CJ3eMLhcJGl9R79sE3M/preview?usp=drive_link", "https://drive.google.com/file/d/1cW-9cHAJCcWrFtFeQJFma7Z5-n9rO_Ib/preview?usp=drive_link", "https://drive.google.com/file/d/1cXuXzAwuqxpLZaO-7sgcHdxdwz7ahfJk/preview?usp=drive_link", "https://drive.google.com/file/d/1cX9tDEN7V1z0C0GGhUlEkP8ISNEtc7az/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1cN0FKdR9CK-k8zwD1spdcJC0SImb2f-x/preview?usp=drive_link", "https://drive.google.com/file/d/1cMppXYTD-jne0DjGSWr8mqcg8hzfGnCD/preview?usp=drive_link"] }
+            ),
+            createModule("Reumatologia", "REU I", "Reumatologia: Módulo I", "Reumatologia", { aulas: 5, apostilas: 2, aulasBonus: 3 }, 'gradient-magenta-purple',
+                { apostilas: ["https://drive.google.com/file/d/1UbC97nB91NncgubigVJOA-qRpZYTHkv8/preview?usp=drive_link", "https://drive.google.com/file/d/1yoPsWkJCmzLjSQQJcdlNkEYoW7jZKHdu/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1l25fdFkGctsY0gt1gftRpIiaDauvRQt-/preview?usp=drive_link", "https://drive.google.com/file/d/1qogGb7gbx-8bgoRKlRoj13UBy9M3OYR1/preview?usp=drive_link", "https://drive.google.com/file/d/1vGToRtxhHkOZq_Db7cIdIoNor8pMNggw/preview?usp=drive_link", "https://drive.google.com/file/d/17XK6cGdRnTGGl0sR9v5uL__IS7WOYGE1/preview?usp=drive_link", "https://drive.google.com/file/d/1gl9axDYiyZ4lNuMmwVJEqY2o8A9LcyjG/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1WSKYj2oSG-ipkqAx2Z0QCOYIZono0sqH/preview?usp=drive_link", "https://drive.google.com/file/d/13kQ0prrmO137Je2rHmPDA30NIOnNicTi/preview?usp=drive_link", "https://drive.google.com/file/d/1N434XT74nXSbF6L37ASXxde5T7MkTwbw/preview?usp=drive_link"] }
+            ),
+            createModule("Reumatologia", "REU II", "Reumatologia: Módulo II", "Reumatologia", { aulas: 8, apostilas: 2, aulasBonus: 3 }, 'gradient-magenta-purple',
+                { apostilas: ["https://drive.google.com/file/d/1PRVVuEoZyuBXA4C82yASiv_-3bNc0pJD/preview?usp=drive_link", "https://drive.google.com/file/d/13xok8kfVe2PB7PuTZTwpveWE7ZrmdRz0/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1BLGwZ9IQa185gKrLtEIh0tF_UinlpaTc/preview?usp=drive_link", "https://drive.google.com/file/d/1lZ2acGK27kL3IB22NdyzJVxwbYpZii8D/preview?usp=drive_link", "https://drive.google.com/file/d/1_AijAxINjntrH29WL2hUdeG9PDjdmvJW/preview?usp=drive_link", "https://drive.google.com/file/d/1xq2NZtLWUNKD0VoQJ41WRLDbS8ISNO2G/preview?usp=drive_link", "https://drive.google.com/file/d/1ASujPm0dxYYCNXr00EvNZHgXuy1TTaEV/preview?usp=drive_link", "https://drive.google.com/file/d/1orWaTBPE-y9aRd2cYmQGbV_Eri_Wc7XQ/preview?usp=drive_link", "https://drive.google.com/file/d/1kNicjPH-noO4NonQIlVL0IEwXJ9bV9eC/preview?usp=drive_link", "https://drive.google.com/file/d/1JJMwS9Yw6-aQKfq6tQcAnEytAAD-CRyn/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1VuaOxuz_YGBvQddDK_bS-wU2Q0nqMiFe/preview?usp=drive_link", "https://drive.google.com/file/d/1Vxm7KPDyoT79-f05Zng_0VnA0dhDOSEV/preview?usp=drive_link", "https://drive.google.com/file/d/1VxdpVyyUdSb_4qzIkPme-wVUGt4xi2-q/preview?usp=drive_link"] }
+            ),
+            createModule("Cirurgia", "CIR I", "Cirurgia: Módulo I", "Cirurgia", { aulas: 4, apostilas: 2, aulasBonus: 11 }, 'gradient-green-teal', 
+                { apostilas: ["https://drive.google.com/file/d/1LLw6AerSxAzOnmDlZVC6MFaGq-HtWAOt/preview?usp=drive_link", "https://drive.google.com/file/d/1ySzPPOODep_6sjJP04gLHjFvW0fvz9Tb/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/15q8HxLmCC4uaosSgSBOof3mVwxtAYFp-/preview?usp=drive_link", "https://drive.google.com/file/d/1FRZ6fdQeg77km6ATW4ScbGofYwcdtYOe/preview?usp=drive_link", "https://drive.google.com/file/d/1RFZv0rZM5sxFZ15eOXnIhGisIHU1c8UZ/preview?usp=drive_link", "https://drive.google.com/file/d/1ob_8J_K7wbIKN05FNPsuoLNYOQMz2QUs/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1T3XpyIeaU3eCkneP1US0MmHnWl9zPJ1Z/preview?usp=drive_link", "https://drive.google.com/file/d/1bwVbfWJGzwcQbdNjqAyvYxF0TU_LRKs3/preview?usp=drive_link", "https://drive.google.com/file/d/1c0ZOQS1CfBwwdBZNFaG152V1i1NLMWxH/preview?usp=drive_link", "https://drive.google.com/file/d/1bxH_oJ-spHBPlRjvbymW3FJUvrSMhAMZ/preview?usp=drive_link", "https://drive.google.com/file/d/1c2LmC_hd1YK7O6O7uQTq78HhZKp-HjVq/preview?usp=drive_link", "https://drive.google.com/file/d/1d_4hrv5kjJJ0w5wZy1tI4EoEnuWRY6r0/preview?usp=drive_link", "https://drive.google.com/file/d/1by3bwIK0h7n-oREDcvXbde5p0Rhmbd_F/preview?usp=drive_link", "https://drive.google.com/file/d/1c-wEIks7ZrVW--NsjbGX1Tm3oOc1m0El/preview?usp=drive_link", "https://drive.google.com/file/d/1bzHF5hTl9EBT_f-Ta9cuL0r6GV1qLF-n/preview?usp=drive_link", "https://drive.google.com/file/d/1c0UpFAuFh1HI2TeLMArCkjn0_JL5g4q4/preview?usp=drive_link", "https://drive.google.com/file/d/1bzILBjOpbM_kq_GY1AZa40uOG61JSQHL/preview?usp=drive_link"] }
+            ),
+            createModule("Cirurgia", "CIR II", "Cirurgia: Módulo II", "Cirurgia", { aulas: 6, apostilas: 2, aulasBonus: 18 }, 'gradient-green-teal',
+                { apostilas: ["https://drive.google.com/file/d/1aSTW5rZvk-hoRbKlDtExVIvifLybXdEm/preview?usp=drive_link", "https://drive.google.com/file/d/1aCa6HryoxtXfqflORsxcN21sl7jikAP5/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1OiyEmYGH4z8agazq51Or0HvsZ-z6DVg1/preview?usp=drive_link", "https://drive.google.com/file/d/1JC8FJFB9whAOxOptnl8VwcjBFk5JzqUQ/preview?usp=drive_link", "https://drive.google.com/file/d/14SIEZ0bXL5Rq7Fn1LN7YYdTdlS8MD2tR/preview?usp=drive_link", "https://drive.google.com/file/d/1l8pqq2fEC9zrlKbxBjqJonIOe5Jt6eVr/preview?usp=drive_link", "https://drive.google.com/file/d/1wQd-tE2sdVYGGC397h8MC18GkNLMopWG/preview?usp=drive_link", "https://drive.google.com/file/d/1bt86BezWSqLPjMbYaKuYB-tFrKzNm_yV/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1bttIssEXU3KFz_tPJcPy7sqWo5xB0LOG/preview?usp=drive_link", "https://drive.google.com/file/d/1bsot29opargp1bqNGs81AOBpG975qejw/preview?usp=drive_link", "https://drive.google.com/file/d/1bsJ5VrK6xVQcFlMtyfDbhR80cIjIg2sP/preview?usp=drive_link", "https://drive.google.com/file/d/1dSUKxLk7zrLcGdn0iKRgnlyCi7Cp2oL0/preview?usp=drive_link", "https://drive.google.com/file/d/1buNeEAHrBAlbFHFsUdwdNAenL8xYFnVd/preview?usp=drive_link", "https://drive.google.com/file/d/1bvBPBnJzb8P5vD9kE0UfnXQ5yWKlFsA1/preview?usp=drive_link", "https://drive.google.com/file/d/1fogsg0qcPd4GAgRetoNqYeFBsIqBqibe/preview?usp=drive_link", "https://drive.google.com/file/d/1ygURHurdwxDZYhigSj4uxGaTd3DcD98G/preview?usp=drive_link", "https://drive.google.com/file/d/1r1LSi1bro18_h3uCgbwh1ZC0ITWxmmzo/preview?usp=drive_link", "https://drive.google.com/file/d/1fNm0V0VGQcusL4ZxILSoWYDn0ZeOG8U_/preview?usp=drive_link", "https://drive.google.com/file/d/15Rb0saZGxfsLp0IxW9r_rdMtJGvKHZ8W/preview?usp=drive_link", "https://drive.google.com/file/d/1OHSivoJRkibSnRwZ4o3mLIR3QY6dAl_t/preview?usp=drive_link", "https://drive.google.com/file/d/1h1_diXTaJqvujQth4HRoCAUd1J6R7gJg/preview?usp=drive_link", "https://drive.google.com/file/d/1aTof80z-0feWbkFglUyVoZ675dUI5Vyj/preview?usp=drive_link", "https://drive.google.com/file/d/15Dbgc3y51wHR-CuHLaj-mRUD7EgUYwZI/preview?usp=drive_link", "https://drive.google.com/file/d/1uSFbcZkOZGBJK6kmtRBridPOIKAYL3tH/preview?usp=drive_link", "https://drive.google.com/file/d/1bv0U-iFyXudNHS9JXESL0IzuSenYz5Hg/preview?usp=drive_link", "https://drive.google.com/file/d/1buBfmOUllu6XOAinKHR1arSsEuOIjINO/preview?usp=drive_link"] }
+            ),
+            createModule("Cirurgia", "CIR III", "Cirurgia: Módulo III", "Cirurgia", { aulas: 6, apostilas: 2, aulasBonus: 16 }, 'gradient-green-teal',
+                { apostilas: ["https://drive.google.com/file/d/1lPaXdIOJ_gY4-k19jImLCTuahVpz4QNW/preview?usp=drive_link", "https://drive.google.com/file/d/1pGUpj3MwRei-m1ok4-64T0vQPAyoHvUS/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/10ISvkG1m6gb9BD0dXs-TV55G_zQNI8aa/preview?usp=drive_link", "https://drive.google.com/file/d/1RIuXFc751jc_NtTM0zSjFRSGGbZAAey-/preview?usp=drive_link", "https://drive.google.com/file/d/1HPn0_bY3yqkI1frFiMCuss3ZC31j4oc-/preview?usp=drive_link", "https://drive.google.com/file/d/1ZNiZAN1e1FKghUqbxCVZ6aeoNawS1QU8/preview?usp=drive_link", "https://drive.google.com/file/d/1smAIDieD-nTbIdevSF1ibXP9TMyn8D6N/preview?usp=drive_link", "https://drive.google.com/file/d/1ZcSVq5s3sawkxy8J5nKi6z8KG1ko7Tah/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1bWeDf596oypPC96uabX4GxEl3XpwA9ue/preview?usp=drive_link", "https://drive.google.com/file/d/1M0IWsUTUYjVIi-J0AQeX8JsBrtX0RZkB/preview?usp=drive_link", "https://drive.google.com/file/d/1bXmsI9N9YgLs8FOWjbAwXJEUP0BEP9sp/preview?usp=drive_link", "https://drive.google.com/file/d/1bUyPwDdOxJL8S0XMvAOo7H6seZ04WNIn/preview?usp=drive_link", "https://drive.google.com/file/d/1bYdLNOCiLW4dFZ94LF-aB4NITKVcfLy7/preview?usp=drive_link", "https://drive.google.com/file/d/1bWJwv_abQKh720e9D9OATDusmsqfWbaN/preview?usp=drive_link", "https://drive.google.com/file/d/1bWnXtlimOVeVRbyrvHVYVJoRpGTVPk-u/preview?usp=drive_link", "https://drive.google.com/file/d/1bZLX0h1__LFeQdVAziH-ExPoKfnLZ12P/preview?usp=drive_link", "https://drive.google.com/file/d/1bYbEI-OpAjpHCcNoshd0bBtu-rf4Pm7K/preview?usp=drive_link", "https://drive.google.com/file/d/19g_aWFDSdxoDZYn1hvpvaGoQF4KJkSAr/preview?usp=drive_link", "https://drive.google.com/file/d/1JO1saf9gvID1gfdRbog78nbBe-x3cOuS/preview?usp=drive_link", "https://drive.google.com/file/d/1bW7-e1gBVa9OH2NLKEfZZhkhxlyqrAZ2/preview?usp=drive_link", "https://drive.google.com/file/d/1bYMCF3YU_udEzKztGVtQBBx9G6U9AJSd/preview?usp=drive_link", "https://drive.google.com/file/d/1ooA7jPLuV4va-8CiBhVNkfqEdb7KPqaj/preview?usp=drive_link", "https://drive.google.com/file/d/1c-va_KMwQy9N2wCrykr5CpAF2xwVXhKz/preview?usp=drive_link", "https://drive.google.com/file/d/1bgusAvf0V8-rsgphJyhjGpJhDeXLS8Mb/preview?usp=drive_link"] }
+            ),
+            createModule("Cirurgia", "CIR IV", "Cirurgia: Módulo IV", "Cirurgia", { aulas: 8, apostilas: 1, aulasBonus: 9 }, 'gradient-green-teal',
+                { apostilas: ["https://drive.google.com/file/d/1DwJ-3B914-r_uh-kJa8oeW3UFcJ1PQSh/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1csH1S8qCrkgFpVqH9_dGT-0dbiOBSxtK/preview?usp=drive_link", "https://drive.google.com/file/d/1cImG9eoTma7l228itN0UKxbbjan-WmGy/preview?usp=drive_link", "https://drive.google.com/file/d/1cHgVEs9Ckipl5CDYERYqeMcHLN2647Fe/preview?usp=drive_link", "https://drive.google.com/file/d/1cGn_KQ6TiJucQK7APt_ucO91Q-wkdin-/preview?usp=drive_link", "https://drive.google.com/file/d/1cGCXLtEZPENAj5RKAt3HtqT41FytwQ0z/preview?usp=drive_link", "https://drive.google.com/file/d/1cGl6sXUahIf36xLSG5ZjJ7sI3EBeMWyK/preview?usp=drive_link", "https://drive.google.com/file/d/1cqjgAxrVTY_dHYu2aNk0Dh92Fb4_BZjQ/preview?usp=drive_link", "https://drive.google.com/file/d/1cHyE4w3YRgZ0TSXp9a5m57NI_5v_ISCj/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1pUtNTFqoEPiHUj-pH7mm5ECRUwTRdtwH/preview?usp=drive_link", "https://drive.google.com/file/d/1cMKroO0fpAL2kFNSdK5FWEBoYUF8BnwK/preview?usp=drive_link", "https://drive.google.com/file/d/1cMX_lVMVu-uwNQaP08dS4VqAFDZEJVP_/preview?usp=drive_link", "https://drive.google.com/file/d/1cngEKivWf-0BT4jaKSDTtsRmAagw2QIN/preview?usp=drive_link", "https://drive.google.com/file/d/1cpjgxpNkCkbOUUaFOMOeypj8I-_t9oHW/preview?usp=drive_link", "https://drive.google.com/file/d/1cq5TvUY6tSFUwz1qy6AIgi67FnE1dGZn/preview?usp=drive_link", "https://drive.google.com/file/d/1edoGjeZ-2iWuKj_Bm8Jc5OG3OJSMKk8K/preview?usp=drive_link", "https://drive.google.com/file/d/1cMjeIbj4eWyowFFuzmwep5luKhbirtOw/preview?usp=drive_link", "https://drive.google.com/file/d/1cLRYKv33SvVSIU1Vy0uyG2ACWvFjC4lA/preview?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN I", "Ginecologia: Módulo I", "Ginecologia", { aulas: 6, apostilas: 2, aulasBonus: 1 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/19w_DDIuY_zyaDDEWzvdbSnD_5eCbMCSM/preview?usp=drive_link", "https://drive.google.com/file/d/1pdddzextRM363jubkX1_WnEavY9ONVkS/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1tqIAaNkfsStvVUFt_yC7P_feEOzo4voN/preview?usp=drive_link", "https://drive.google.com/file/d/1sWXIAuA_Sxkb23P0WwKHCHNTQtyhf3-R/preview?usp=drive_link", "https://drive.google.com/file/d/1RKOv_A43ntHhxbL6De9izW2z2-gC0S_j/preview?usp=drive_link", "https://drive.google.com/file/d/1zsr2kW4LLQJmasCat7Fm3W3UtE0KwcCz/preview?usp=drive_link", "https://drive.google.com/file/d/1Q9KUADKTI31474zVDbZEwArVLohosXZJ/preview?usp=drive_link", "https://drive.google.com/file/d/16iV8W70S49P0TCoAy6nZZ9oPbDXM26II/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1kBOADGgrJaIkaH78rTgoKDW95KUBb4Sj/view?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN II", "Ginecologia: Módulo II", "Ginecologia", { aulas: 6, apostilas: 2, aulasBonus: 2 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/1O0b_m20Kh27KJA3_RLbE-i-l8Ty2Z7T0/preview?usp=drive_link", "https://drive.google.com/file/d/1d3FdbFQpQNdxzpSp6F2USyCwnhnTfnyg/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1Usgjut3CUXxZVlXaaRFZ104ojFvFKVTF/preview?usp=drive_link", "https://drive.google.com/file/d/1kD_j_x98xxsXwf-5dUIFVLdGyaBdflH-/preview?usp=drive_link", "https://drive.google.com/file/d/1WSJTqTTzVcAZOc9K1xpOjjDFwUd-iVbD/preview?usp=drive_link", "https://drive.google.com/file/d/1Is6BwOc36aqryfMQ39p-JWAgvh08ot8O/preview?usp=drive_link", "https://drive.google.com/file/d/1ovE4jNG9YLcyZcbuAF6cV4UCmcBxqBjB/preview?usp=drive_link", "https://drive.google.com/file/d/1S5z9kxcGCxW5NvHceUz2XxYX6JQfQ0RJ/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1kLjvyQ4RsqV8WSM4m2xcUUhKiliAiaVN/preview?usp=drive_link", "https://drive.google.com/file/d/1kLkWFY4gwg4icbS0Nw4zPwftuvOGsZNZ/preview?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN III", "Ginecologia: Módulo III", "Ginecologia", { aulas: 4, apostilas: 1, aulasBonus: 2 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/1lQIcEYlaGbUyK6anjI8TYLo9YAoCdMA5/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1lPXfbEqsKw-rQL-6h3fhkk8Mu4QJpCDb/preview?usp=drive_link", "https://drive.google.com/file/d/1lPeS4SIF7lywUAgbP58icPDIWTgS05G6/preview?usp=drive_link", "https://drive.google.com/file/d/1lPtfJOdDWxh1tWNbdERIUD1VBEwTXveg/preview?usp=drive_link", "https://drive.google.com/file/d/1lPWdHxpjXBZc5Ab3dJLTjYoEfrZf_GVi/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1lQMYDheTFan8Dr9t7rI9YsqbN6a-ibGC/preview?usp=drive_link", "https://drive.google.com/file/d/1lQVS92MZJKjzO4uVIvcdF6rQ64H9bnWE/preview?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN IV", "Ginecologia: Módulo IV", "Ginecologia", { aulas: 3, apostilas: 1, aulasBonus: 1 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/1kWfEbgSQgmq2Kc9vOWnfVvwztghOx86Q/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1kWRoFOKKCIYrN2UMka2RghQgRNQNipNl/preview?usp=drive_link", "https://drive.google.com/file/d/1kWCaEHwK57eTLAfiiEzYs220LVONyUVg/preview?usp=drive_link", "https://drive.google.com/file/d/1kWEraTNzTVz4U8AB3VaoLLhdyFd_VSAT/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1kMVn2gxUZUpQY9kU3qAxU9B3F8ZQKq9i/preview?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN V", "Ginecologia: Módulo V", "Ginecologia", { aulas: 4, apostilas: 1, aulasBonus: 3 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/1kauriPqgZd_uQtyCkQRKqaplqbOKGslP/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1kaIyYJ9oRkEqky-L1-U7B1bKTz7GFfaZ/preview?usp=drive_link", "https://drive.google.com/file/d/1k_fsQToscGzeysRAx4mSR1zugrpLvfX0/preview?usp=drive_link", "https://drive.google.com/file/d/1k_hi3p0K0c-UJuYaRbadNAkarWEJTjjN/preview?usp=drive_link", "https://drive.google.com/file/d/1kafPvcOpz5p5o__8bu29QciuJCndLSZ4/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1kcQT2I0QtiI2XXqSra3CvNhj59Noe5pr/preview?usp=drive_link", "https://drive.google.com/file/d/1kbYwyg-v1VIYDM-yh_D0fxFwPENDxf2x/preview?usp=drive_link", "https://drive.google.com/file/d/1kcBGXi8vV8trAOaVm12eEjWWKp1aQ6Xm/preview?usp=drive_link"] }
+            ),
+            createModule("Ginecologia", "GIN VI", "Ginecologia: Módulo VI", "Ginecologia", { aulas: 5, apostilas: 1, aulasBonus: 1 }, 'gradient-pink-purple',
+                { apostilas: ["https://drive.google.com/file/d/1l95ikv46ABeNuGez9_4Qza_F8zEcGPoP/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1lBMTaf40QSAhXaDlHl4hCTlp0dmCB5Lg/preview?usp=drive_link", "https://drive.google.com/file/d/1l9p-dDFD1g4WENGsOviZiMFWhWc0_Z0X/preview?usp=drive_link", "https://drive.google.com/file/d/1lAqCNze6Tqf7GzD5YGjKP4zRReLrLl1l/preview?usp=drive_link", "https://drive.google.com/file/d/1l9oYfZ-6nSHFTW7tJjeSF_-ElJebnDk-/preview?usp=drive_link", "https://drive.google.com/file/d/1l9xN7X_jkrjXvZcIR8GPA5gsHDrYj1WJ/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1l8wxa2xItFU34RGoNZL4XWW4nGkKVhZU/preview?usp=drive_link"] }
+            ),
+            createModule("Obstetrícia", "OBS I", "Obstetrícia: Módulo I", "Obstetrícia", { aulas: 5, apostilas: 2, aulasBonus: 1 }, 'gradient-rose-fuchsia', 
+                { apostilas: ["https://drive.google.com/file/d/1qOHnnPEwppzc9bJfQP8BC0fHXhKj_HBt/preview?usp=drive_link", "https://drive.google.com/file/d/1zB7S9IMZS6FB8wrsrRThQNSGbDKW_fI_/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1o8KbhtrHbpc84pPNz41YUcbZiR2WXgtN/preview?usp=drive_link", "https://drive.google.com/file/d/1ZB9hV9JZmngc9pVLUM4lhE-qlMQ0aldb/preview?usp=drive_link", "https://drive.google.com/file/d/1D9pa6jbdgpnWcHTzO2wNB45X0Cm-fgRp/preview?usp=drive_link", "https://drive.google.com/file/d/1tEtteuBgh1flR7p5d0FtYer8t66i-iVk/preview?usp=drive_link", "https://drive.google.com/file/d/13Aibk7LUPz5SDLugbOeCMLJxPTked_SW/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1o1RTNpB16XhqR279EX7EmS-70dOSW6UK/view?usp=drive_link"] }
+            ),
+            createModule("Obstetrícia", "OBS II", "Obstetrícia: Módulo II", "Obstetrícia", { aulas: 5, apostilas: 2, aulasBonus: 3 }, 'gradient-rose-fuchsia',
+                { apostilas: ["https://drive.google.com/file/d/1DtYlq3DYLB2_2IxAPuUGyF5EWab7zRI9/preview?usp=drive_link", "https://drive.google.com/file/d/1sLqT7MfDXKrOLsM_IDT60occo-wW7Ozo/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1NZoSOQt3VcXQvT-_-tWiIaMdliXgfN_O/preview?usp=drive_link", "https://drive.google.com/file/d/1nxOB7gFcRuvX0qwLrc_Dy9TKgu1PBggU/preview?usp=drive_link", "https://drive.google.com/file/d/11ut7vR-sGSr52EHniNKvDZvXmyYIbre_/preview?usp=drive_link", "https://drive.google.com/file/d/1nyyV29SDOD3rmC29sY9iorpugniKfaCB/preview?usp=drive_link", "https://drive.google.com/file/d/14ohsH0EHY-MQI2vLCLww-urVLnWpunqH/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1mVuc0PD_mmcZi95FP9vbkbGvqPOJvQSg/preview?usp=drive_link", "https://drive.google.com/file/d/161vyOLX0HUa8gKwjeMyF22GhVH_nSpca/preview?usp=drive_link", "https://drive.google.com/file/d/1aulHlSA--1xqo3kHS5cjX9GVLd9C-eyV/preview?usp=drive_link"] }
+            ),
+            createModule("Obstetrícia", "OBS III", "Obstetrícia: Módulo III", "Obstetrícia", { aulas: 9, apostilas: 1, aulasBonus: 0 }, 'gradient-rose-fuchsia',
+                { apostilas: ["https://drive.google.com/file/d/1ncKoXS_CUQFf-fJ-roTeo9QFyiwrZYoe/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1neoYWkvZAXtu995kLTVOr6cNxOgdschk/preview?usp=drive_link", "https://drive.google.com/file/d/1nfRjuk-pg8VdewjQiy1cpxco4jA8EnYH/preview?usp=drive_link", "https://drive.google.com/file/d/1nfj4YcCZzgC-dftIJthK00rD3M1DHXLY/preview?usp=drive_link", "https://drive.google.com/file/d/1nfvDr92nA--x7Cp5TT1gDsGPsR1sjgbL/preview?usp=drive_link", "https://drive.google.com/file/d/1nh4-K-T_MynnNtHG19HhrqHHjk_7VJMQ/preview?usp=drive_link", "https://drive.google.com/file/d/1neJ0Qb_6QN4Q20pJMxZIeE64kDmLv5Eg/preview?usp=drive_link", "https://drive.google.com/file/d/1ncfP3gNqV-plUVVeQJGizuc3uGBbD4Pa/preview?usp=drive_link", "https://drive.google.com/file/d/1nf6cRvkrkIF410PGq-slIK2mna9FFgba/preview?usp=drive_link", "https://drive.google.com/file/d/1nhMtOEKZfD8V6doLh8bI2ozwAiuueRqW/preview?usp=drive_link"], aulasBonus: [] }
+            ),
+            createModule("Obstetrícia", "OBS IV", "Obstetrícia: Módulo IV", "Obstetrícia", { aulas: 4, apostilas: 1, aulasBonus: 1 }, 'gradient-rose-fuchsia',
+                { apostilas: ["https://drive.google.com/file/d/1o4L2SeN62Sl4IrLKHTqB3TpYoWeJiMzf/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1o9c41D5KXak75hz4Mk-s37Ho3okhfk0c/preview?usp=drive_link", "https://drive.google.com/file/d/1o9cwxzkB5xHNbh_MSPt59zPjW3YBAKaW/preview?usp=drive_link", "https://drive.google.com/file/d/1o8sPrDShtRJWS8SUem-hKMtXM_Q5wvzg/preview?usp=drive_link", "https://drive.google.com/file/d/1o8s7k6PvSnf92Z-KfzQtNrvBB3v-aU1l/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1YigGpoU-icjeH6Kt2k1sRkFBlHJ8ig40/view?usp=drive_link"] }
+            ),
+            createModule("Obstetrícia", "OBS V", "Obstetrícia: Módulo V", "Obstetrícia", { aulas: 4, apostilas: 1, aulasBonus: 1 }, 'gradient-rose-fuchsia',
+                { apostilas: ["https://drive.google.com/file/d/1nXtqGWn7Up0eLu0MeiRGgRRpkuAn8-sj/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1nXr53lX9b_6H5NFTKqtTy-1mGgFHOEs8/preview?usp=drive_link", "https://drive.google.com/file/d/1nWauIZoq9Vao-v6ts3TBsHRDYJw2-YcC/preview?usp=drive_link", "https://drive.google.com/file/d/1nXREaA-c0AAoKQa2yn3v8JacCy1zeJfR/preview?usp=drive_link", "https://drive.google.com/file/d/1nWEbo1PaFBM7JA1gPBsEJZTv_rL3re6B/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1aWBLs6DXB7mCngspZmOXt6uTy6tHQt8r/view?usp=drive_link"] }
+            ),
+            createModule("Pediatria", "PED I", "Pediatria: Módulo I", "Pediatria", { aulas: 8, apostilas: 2, aulasBonus: 5 }, 'gradient-yellow-amber', 
+                { apostilas: ["https://drive.google.com/file/d/18RYLz-bQ7Ccm34Dc5UCtIuQ_0-_JGzAf/preview?usp=drive_link", "https://drive.google.com/file/d/19wC-iNEbxtj8acbHLjL9GSfUt6aUtuX4/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1HfGc-ScEG0IBMzXtqm178LuC3n1Q5Zbj/preview?usp=drive_link", "https://drive.google.com/file/d/12wM-Tp3qG1sBofwfDvLfJ95LvGTuF8ON/preview?usp=drive_link", "https://drive.google.com/file/d/1JHUCutFiCrxK6LiTKdyACIGdNA1rRKb8/preview?usp=drive_link", "https://drive.google.com/file/d/1y7LqQYvyG4C4ZP0q_uI2YXJ-xuG6FyyW/preview?usp=drive_link", "https://drive.google.com/file/d/1ZX-mVBQ3RIV0hEOsar7ukYtgvXn-ifNn/preview?usp=drive_link", "https://drive.google.com/file/d/1xPNVxkYmcFq3Z9KEM_NMkQroAgly_4-C/preview?usp=drive_link", "https://drive.google.com/file/d/1h8kUvDyNP802NW5MA4p482mVSTzgRk-N/preview?usp=drive_link", "https://drive.google.com/file/d/1ISXozIAEYwde3WYasI-2PiB704xnTDZC/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1isLpEB1wpPzn3Gy7-bn2yjG3rjZ9yU-O/preview?usp=drive_link", "https://drive.google.com/file/d/1ipKHoSEcGyrRNcBNWHOGrOhzNUBdSE2d/preview?usp=drive_link", "https://drive.google.com/file/d/1ipakRK9KCLp4PRHfs9qXG6pv3oz6Wyt_/preview?usp=drive_link", "https://drive.google.com/file/d/1iq9MfKzUPYqG6N2Lu9tio2tmZjNkUaFh/preview?usp=drive_link", "https://drive.google.com/file/d/1ipKdDYJvXAJQ72S73heqeSq10xoVB03b/preview?usp=drive_link"] }
+            ),
+            createModule("Pediatria", "PED II", "Pediatria: Módulo II", "Pediatria", { aulas: 7, apostilas: 2, aulasBonus: 1 }, 'gradient-yellow-amber',
+                { apostilas: ["https://drive.google.com/file/d/1ubiGGdzoeE5piEX_t5R-DUn3kgwhJebk/preview?usp=drive_link", "https://drive.google.com/file/d/1iJTHg2XhmApdo-oKrV340k4R33xWyAHo/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1WtEYck_0_RvET18AWLKIHhYE9nGCTHgi/preview?usp=drive_link", "https://drive.google.com/file/d/1zQLrZQC7a_j8rHp6BEQetidwZcsQnM2V/preview?usp=drive_link", "https://drive.google.com/file/d/1yOUsOYVRuxbWJXrHYCjnPDyE0hqh46bo/preview?usp=drive_link", "https://drive.google.com/file/d/15cf0d-Owd2oSDQfDSMRFSW9A1To7KG8U/preview?usp=drive_link", "https://drive.google.com/file/d/1qQrGVuZkQYMPGjW4eYA4K-Eta4hc9gfG/preview?usp=drive_link", "https://drive.google.com/file/d/1t05xJ80mz01x4CR23IdX1951jUST75kX/preview?usp=drive_link", "https://drive.google.com/file/d/1q-XQtqPBtj2cqYLXKURCUCXnb-Zx6H11/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1q5C4C8EccWWpsOG2zCKyYmnb5Q4Alq9o/preview?usp=drive_link"] }
+            ),
+            createModule("Pediatria", "PED III", "Pediatria: Módulo III", "Pediatria", { aulas: 7, apostilas: 1, aulasBonus: 4 }, 'gradient-yellow-amber',
+                { apostilas: ["https://drive.google.com/file/d/1w7eGlX6f7MH7W3N-VfbY9M-zq3plrnoD/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1iPt9UShXeqD3vtVJJb0Z4dgIPJVu5lBg/preview?usp=drive_link", "https://drive.google.com/file/d/1iQMr_E_TPkLCPj-7G1DkxZaeVoTU5K9U/preview?usp=drive_link", "https://drive.google.com/file/d/1iPh77LOm0CjgEqFJEzcdQo3wwpB03wK7/preview?usp=drive_link", "https://drive.google.com/file/d/1iPzz61ElFKucAOLM2wOvNYgkXGBVMe1C/preview?usp=drive_link", "https://drive.google.com/file/d/1iQJW9gohFHNV6Wy_o85fQR7FqNGK7Zv5/preview?usp=drive_link", "https://drive.google.com/file/d/1iS3U11Tro-OB_Fnqsc2MdS1o96bJt938/preview?usp=drive_link", "https://drive.google.com/file/d/1iQ8bJLSokgJySDgixxl_kHAsDveOFJNy/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1dLvmLLlrBGgthQWhWIOUD8gI_iTn6u0O/preview?usp=drive_link", "https://drive.google.com/file/d/1afREIXlDgGyWOoMm0tNNIl7SKTWsk6jN/preview?usp=drive_link", "https://drive.google.com/file/d/1rS_17Z7nhEpxJTAhME7cZazOGJm4T9OS/preview?usp=drive_link", "https://drive.google.com/file/d/1QTdxeXqR6fZmo6_iSm_vmy5w9L614FHI/preview?usp=drive_link"] }
+            ),
+            createModule("Pediatria", "PED IV", "Pediatria: Módulo IV", "Pediatria", { aulas: 8, apostilas: 1, aulasBonus: 1 }, 'gradient-yellow-amber',
+                { apostilas: ["https://drive.google.com/file/d/1j5qgjhNlX_Km13NgJo8syZes6zk_vtzp/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1jZR3u7IYly2EnFv-mA8ybxfxqV3Jcj0A/preview?usp=drive_link", "https://drive.google.com/file/d/1jc6SIdY7bzqhF11FAak45eDRDTEAfFjU/preview?usp=drive_link", "https://drive.google.com/file/d/1jaNDw3J8WIopNzlHdKGKG2urZClfd8Jf/preview?usp=drive_link", "https://drive.google.com/file/d/1j_8aRlJPJZPDAozQ2nsgHnfQ3Ahs-C5X/preview?usp=drive_link", "https://drive.google.com/file/d/1jYNr-MpnrrdJAOBt-J6B_E1eQ_76jJrS/preview?usp=drive_link", "https://drive.google.com/file/d/1jbqHl1j-rqVW-mtHxn1owOHjjlWMW0LM/preview?usp=drive_link", "https://drive.google.com/file/d/1jYl5os5YNI0Dp6T3T7MI8huTkp7V2-hG/preview?usp=drive_link", "https://drive.google.com/file/d/1jYRYVtZVcVvxVY8nIwwn6cDkEOzTeO25/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1GjG7SFKlLYqKviv14ExFTnmT_9V52ToQ/view?usp=drive_link"] }
+            ),
+            createModule("Pediatria", "PED V", "Pediatria: Módulo V", "Pediatria", { aulas: 6, apostilas: 1, aulasBonus: 4 }, 'gradient-yellow-amber',
+                { apostilas: ["https://drive.google.com/file/d/1iTR9dA2ev_5zML6Djv0NRZy5SMox7qWl/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1iUY3uwZ_m8qj2crq-l-esO3ZFOwTlFHZ/preview?usp=drive_link", "https://drive.google.com/file/d/1iVXif9z0p3U0kQMzJXbMWFAgZKk2XAtg/preview?usp=drive_link", "https://drive.google.com/file/d/1iW61ACeZUBDSnhhgqiEy0RRCqspPuY5I/preview?usp=drive_link", "https://drive.google.com/file/d/1iVkvN_fZzkNZgoXpmSGUjbyIciHXegus/preview?usp=drive_link", "https://drive.google.com/file/d/1iUQ9tmwTVxTxzcxlNqIzq5u8-5nPUIOZ/preview?usp=drive_link", "https://drive.google.com/file/d/1iU2fqrFqVvKE-pYW34z0Pk3GU2v3tmKP/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1Tz647ztse8bUU8SlqfBTTSgS_XGKypqC/preview?usp=drive_link", "https://drive.google.com/file/d/1tXP6PGSSOhuBE-Cf5Bzpj6UJ_zTLWxV2/preview?usp=drive_link", "https://drive.google.com/file/d/1LObtRDLO1m6gZKZkOWF62oC_buwMnt0j/preview?usp=drive_link", "https://drive.google.com/file/d/1ZuzIQV4DY30sxdnYULSAeAGkH0wS-Meo/preview?usp=drive_link"] }
+            ),
+            createModule("Medicina Preventiva", "PREV I", "Medicina Preventiva: Módulo I", "Medicina Preventiva", { aulas: 4, apostilas: 1, aulasBonus: 2 }, 'gradient-teal-cyan', 
+                { apostilas: ["https://drive.google.com/file/d/1pBBg9n_BLOASI72C1FQSocq1E2Ab7sv6/view?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1uuX_3LGDBdLvETIKt9ZhT_H56-jfQVKF/preview?usp=drive_link", "https://drive.google.com/file/d/1iG7EWpUK8pWwXiLCjqC4G3bDD2rNuoiJ/preview?usp=drive_link", "https://drive.google.com/file/d/10tA5DkuEvoRG6quek_zxnQ5Pjt951GZa/preview?usp=drive_link", "https://drive.google.com/file/d/12n5PHRNq8YbZ8D-ejwxbTtRYIxQ-yoni/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1UESM-efS9-P2RwnMGqfB4MucGjMISvOV/preview?usp=drive_link", "https://drive.google.com/file/d/1qYoJLEkmdUcmxE9JALaebS5uQV9Iq0d3/preview?usp=drive_link"] }
+            ),
+            createModule("Medicina Preventiva", "PREV II", "Medicina Preventiva: Módulo II", "Medicina Preventiva", { aulas: 3, apostilas: 2, aulasBonus: 7 }, 'gradient-teal-cyan',
+                { apostilas: ["https://drive.google.com/file/d/188IcoqNdJIPWBYnuUSr0Z5BDcnc16Vx1/preview?usp=drive_link", "https://drive.google.com/file/d/1ttpDZFffRVS6HabJASgBm2NAm6CTnaHi/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1yThsXZ6OMDieaaJz1G8f1YBL0Of_kbsX/preview?usp=drive_link", "https://drive.google.com/file/d/1s_0fkn5mdnUaznTQYQeaBowXbN8enKqz/preview?usp=drive_link", "https://drive.google.com/file/d/1V64_KoIE6yE3PklkmqmOtR4QTDM3PijH/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1YFH8KIz-J07jYrLifzHVvF3IsG-YeLqt/preview?usp=drive_link", "https://drive.google.com/file/d/1YEjazki9lXMluUehoDzH_BxRDdFzpNYc/preview?usp=drive_link", "https://drive.google.com/file/d/1YCdB5hVfQxZTy7i1HrX6wxj1w6JtDk8j/preview?usp=drive_link", "https://drive.google.com/file/d/1YCZvj21p9JBGz8hgbNZ881TSPEmJ4dOf/preview?usp=drive_link", "https://drive.google.com/file/d/1YCXAlK2t4hrUtywuh0QpJvY8axCvs3m4/preview?usp=drive_link", "https://drive.google.com/file/d/1YDE17bWXw3pC344Ggu4gIZDSqhrrTevQ/preview?usp=drive_link", "https://drive.google.com/file/d/1YEG_Elp3A3Bu5kWtGNpnjvzRRNapnVnx/preview?usp=drive_link"] }
+            ),
+            createModule("Medicina Preventiva", "PREV III", "Medicina Preventiva: Módulo III", "Medicina Preventiva", { aulas: 3, apostilas: 2, aulasBonus: 7 }, 'gradient-teal-cyan',
+                { apostilas: ["https://drive.google.com/file/d/1xdDaFr9vQ6aXhgQbNyj-M_ccsY8nAGyL/preview?usp=drive_link", "https://drive.google.com/file/d/1OvBZrwkekzY8KhmYXp4MrVvk1K8aPg6e/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/18hUbEH-70-Uwe0ywy9yNQYTxaWcRmMR6/preview?usp=drive_link", "https://drive.google.com/file/d/16G8Ykn8b4nt7UGwC1kY7rTSxXQbK7sUo/preview?usp=drive_link", "https://drive.google.com/file/d/1hbQEWkUxkpQh6jIzD11hkeYTVw1RvDDB/preview?usp=drive_link"], aulasBonus: ["https://drive.google.com/file/d/1Y-NhqQVBFEISFYN_pQoRQAp9d82y5yTk/preview?usp=drive_link", "https://drive.google.com/file/d/1XyjYdmdfSnSrBSllTGy3RoJCgTLA9LW7/preview?usp=drive_link", "https://drive.google.com/file/d/1XyU-T60oT9nbEm5let0HKk8JKSy22RZS/preview?usp=drive_link", "https://drive.google.com/file/d/1XyoYN8a5PbawUCYnQdFJoxIv8AUE-lJn/preview?usp=drive_link", "https://drive.google.com/file/d/1Y-53TWXvnDu3I6Z04-DeRX5JHPeSa6Oh/preview?usp=drive_link", "https://drive.google.com/file/d/1Xzd2StmH3X60uMUM6E_Osa3-icqfEz8Q/preview?usp=drive_link", "https://drive.google.com/file/d/1XzX2Ck7FIrHpFymibRnjV8cEeHpIbtJf/preview?usp=drive_link"] }
+            ),
+            createModule("Medicina Preventiva", "PREV IV", "Medicina Preventiva: Módulo IV", "Medicina Preventiva", { aulas: 3, apostilas: 1, aulasBonus: 0 }, 'gradient-teal-cyan', 
+                { apostilas: ["https://drive.google.com/file/d/1WFeHtO_QfD572b6mEXgIYQMD8kXz0DBe/preview?usp=drive_link"], aulas: ["https://drive.google.com/file/d/1XfmZRX-XMLuWMAPH1ud50iYTk9ttQfwY/preview?usp=drive_link", "https://drive.google.com/file/d/1XgKNPDvxybYs50z8xNUj51HvLiC9BaFS/preview?usp=drive_link", "https://drive.google.com/file/d/1XidPUmR8BH5X4_h8hdQNNQuCDDGu-ki2/preview?usp=drive_link"], aulasBonus: [] }
+            )
+        ];
+        
+        modulesData.forEach((module, index) => { 
+            module.id = index + 1;
+        });
+
+        const specialtyOrder = ["Introdução", "Cardiologia", "Dermatologia", "Endocrinologia", "Gastrologia", "Hematologia", "Hepatologia", "Infectologia", "Nefrologia", "Neurologia", "Oftalmologia", "Ortopedia", "Pneumologia", "Psiquiatria", "Reumatologia", "Cirurgia", "Ginecologia", "Obstetrícia", "Pediatria", "Medicina Preventiva"];
+
+        const modulesListContainer = document.getElementById('modules-list-container');
+        const moduleListItemTemplate = document.getElementById('module-list-item-template');
+        const moduleContentViewer = document.getElementById('module-content-viewer');
+        const detailsContentList = document.getElementById('details-content-list');
+        const contentItemTemplate = document.getElementById('content-item-template');
+        const searchInput = document.getElementById('search-input');
+        const materialsHeader = document.getElementById('materials-header'); 
+        let activeModuleCard = null;
+        let activeContentItem = null;
+
+        const contentIcons = {
+            aulas: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400 mr-2 flex-shrink-0"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>',
+            apostilas: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400 mr-2 flex-shrink-0"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
+            aulasbonus: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-yellow-400 mr-2 flex-shrink-0"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"></path></svg>', 
+        };
+        const subItemOrder = ['aulas', 'apostilas', 'aulasBonus']; 
+
+        function displayModuleDetails(module) {
+            materialsHeader.textContent = `MATERIAIS: ${module.title}`; 
+            detailsContentList.innerHTML = '';
+            moduleContentViewer.src = 'about:blank';
+
+            const initialMessage = detailsContentList.querySelector('.initial-details-message');
+            if(initialMessage) initialMessage.remove();
+
+            if (!module.content || Object.keys(module.content).length === 0) {
+                detailsContentList.innerHTML = '<p class="text-gray-400">Nenhum material disponível para este módulo.</p>';
+                return;
+            }
+
+            let hasContentToList = false;
+            let firstPlayableItem = null; 
+
+            subItemOrder.forEach(contentTypeKey => { 
+                const items = module.content[contentTypeKey];
+                const displayContentType = contentTypeKey === 'aulasBonus' ? 'Aulas Bônus' : contentTypeKey.charAt(0).toUpperCase() + contentTypeKey.slice(1);
+
+                if (items && items.length > 0) {
+                    hasContentToList = true;
+                    const sectionTitle = document.createElement('h4');
+                    sectionTitle.className = 'text-xs font-semibold text-gray-400 mt-3 mb-1 uppercase tracking-wider';
+                    sectionTitle.textContent = displayContentType;
+                    detailsContentList.appendChild(sectionTitle);
+
+                    items.forEach(item => {
+                        const itemNode = contentItemTemplate.content.cloneNode(true);
+                        const itemDiv = itemNode.querySelector('.content-item');
+                        const titleSpan = itemNode.querySelector('.content-title');
+                        titleSpan.textContent = item.title;
+
+                        const iconSvgContainer = document.createElement('span');
+                        if (contentIcons[contentTypeKey.toLowerCase()]) {
+                            iconSvgContainer.innerHTML = contentIcons[contentTypeKey.toLowerCase()];
+                            titleSpan.parentNode.insertBefore(iconSvgContainer.firstChild, titleSpan);
+                        }
+
+                        itemNode.querySelector('.content-status').textContent = item.status || '';
+                        itemDiv.setAttribute('data-url', item.url || '#');
+                        
+                        if (!firstPlayableItem && item.url && item.url !== '#') {
+                             if (contentTypeKey === 'aulas') { 
+                                firstPlayableItem = itemDiv;
+                            } else if (contentTypeKey === 'apostilas' && (!module.content.aulas || !module.content.aulas.some(a => a.url && a.url !== '#'))) { 
+                                firstPlayableItem = itemDiv;
+                            } else if (contentTypeKey === 'aulasBonus' && (!module.content.aulas || !module.content.aulas.some(a => a.url && a.url !== '#')) && (!module.content.apostilas || !module.content.apostilas.some(ap => ap.url && ap.url !== '#'))) { 
+                                firstPlayableItem = itemDiv;
+                            }
+                        }
+
+                        itemDiv.addEventListener('click', () => {
+                            const contentUrl = itemDiv.getAttribute('data-url');
+                            if (contentUrl && contentUrl !== '#') {
+                                moduleContentViewer.src = contentUrl;
+                                if(activeContentItem) activeContentItem.classList.remove('active-content');
+                                itemDiv.classList.add('active-content');
+                                activeContentItem = itemDiv;
+                            } else {
+                                moduleContentViewer.srcdoc = `<div style='color: #a0aec0; display:flex; justify-content:center; align-items:center; height:100%; font-family: Inter, sans-serif;'>Preview não disponível.</div>`;
+                            }
+                        });
+                        detailsContentList.appendChild(itemNode);
+                    });
+                }
+            });
+            if (!hasContentToList) {
+                 detailsContentList.innerHTML = '<p class="text-gray-400">Nenhum material listado para este módulo.</p>';
+            }
+            
+            if (firstPlayableItem) {
+                 setTimeout(() => { 
+                    firstPlayableItem.click();
+                }, 0);
+            }
+        }
+
+        function renderModules(modulesToRender) {
+            modulesListContainer.innerHTML = '';
+            let currentSpecialty = null;
+            let isFirstModuleOfList = true;
+            let firstEverClickableModule = null; 
+
+            specialtyOrder.forEach(specialtyName => {
+                const modulesInSpecialty = modulesToRender.filter(m => m.specialty === specialtyName);
+                if (modulesInSpecialty.length > 0) {
+                    currentSpecialty = specialtyName; 
+                    const specialtyHeaderDiv = document.createElement('div');
+                    specialtyHeaderDiv.className = 'specialty-header pt-3';
+                    specialtyHeaderDiv.innerHTML = `<span>${specialtyName}</span>`;
+                    modulesListContainer.appendChild(specialtyHeaderDiv);
+
+                    modulesInSpecialty.forEach(module => {
+                        const cardNode = moduleListItemTemplate.content.cloneNode(true);
+                        const cardDiv = cardNode.querySelector('.module-list-item');
+                        cardDiv.dataset.moduleId = module.id;
+
+                        cardNode.querySelector('.module-title').textContent = module.title;
+
+                        const iconPlaceholder = cardNode.querySelector('.module-icon-box');
+                        iconPlaceholder.innerHTML = `<span class="text-sm">${module.shortcode || 'M'}</span>`;
+                        
+                        iconPlaceholder.className = 'module-icon-box flex-shrink-0'; 
+                        if (module.iconType === 'gradient-gray') iconPlaceholder.classList.add('gradient-gray');
+                        else if (module.iconType === 'gradient-red-pink') iconPlaceholder.classList.add('gradient-red-pink');
+                        else if (module.iconType === 'gradient-sky-blue') iconPlaceholder.classList.add('gradient-sky-blue');
+                        else if (module.iconType === 'gradient-amber-orange') iconPlaceholder.classList.add('gradient-amber-orange');
+                        else if (module.iconType === 'gradient-lime-emerald') iconPlaceholder.classList.add('gradient-lime-emerald');
+                        else if (module.iconType === 'gradient-fuchsia-pink-alt') iconPlaceholder.classList.add('gradient-fuchsia-pink-alt');
+                        else if (module.iconType === 'gradient-yellow-orange-dark') iconPlaceholder.classList.add('gradient-yellow-orange-dark');
+                        else if (module.iconType === 'gradient-violet-grape') iconPlaceholder.classList.add('gradient-violet-grape');
+                        else if (module.iconType === 'gradient-cyan-sky') iconPlaceholder.classList.add('gradient-cyan-sky');
+                        else if (module.iconType === 'gradient-indigo-deepPurple') iconPlaceholder.classList.add('gradient-indigo-deepPurple');
+                        else if (module.iconType === 'gradient-lightGreen-green') iconPlaceholder.classList.add('gradient-lightGreen-green');
+                        else if (module.iconType === 'gradient-blueGray-slate') iconPlaceholder.classList.add('gradient-blueGray-slate');
+                        else if (module.iconType === 'gradient-cyan-lightBlue') iconPlaceholder.classList.add('gradient-cyan-lightBlue');
+                        else if (module.iconType === 'gradient-indigo-violet') iconPlaceholder.classList.add('gradient-indigo-violet'); 
+                        else if (module.iconType === 'gradient-magenta-purple') iconPlaceholder.classList.add('gradient-magenta-purple');
+                        else if (module.iconType === 'gradient-green-teal') iconPlaceholder.classList.add('gradient-green-teal');
+                        else if (module.iconType === 'gradient-pink-purple') iconPlaceholder.classList.add('gradient-pink-purple'); 
+                        else if (module.iconType === 'gradient-rose-fuchsia') iconPlaceholder.classList.add('gradient-rose-fuchsia'); 
+                        else if (module.iconType === 'gradient-yellow-amber') iconPlaceholder.classList.add('gradient-yellow-amber'); 
+                        else if (module.iconType === 'gradient-teal-cyan') iconPlaceholder.classList.add('gradient-teal-cyan'); 
+                        else iconPlaceholder.classList.add('bg-gray-700', 'text-gray-300');
+
+                        cardNode.querySelector('.aulas-count').textContent = module.contentCounts.aulas;
+                        cardNode.querySelector('.apostilas-count').textContent = module.contentCounts.apostilas;
+                        cardNode.querySelector('.aulasBonus-count').textContent = module.contentCounts.aulasBonus;
+
+                        cardDiv.addEventListener('click', () => {
+                            if (activeModuleCard) {
+                                activeModuleCard.classList.remove('active');
+                            }
+                            cardDiv.classList.add('active');
+                            activeModuleCard = cardDiv;
+                            if(activeContentItem) activeContentItem.classList.remove('active-content');
+                            activeContentItem = null;
+                            displayModuleDetails(module);
+                        });
+
+                        if (isFirstModuleOfList && modulesToRender.length > 0) { 
+                            firstEverClickableModule = cardDiv;
+                            isFirstModuleOfList = false;
+                        }
+                        modulesListContainer.appendChild(cardNode);
+                    });
+                }
+            });
+            
+            if (firstEverClickableModule) {
+                firstEverClickableModule.click(); 
+            } else if (modulesToRender.length === 0 && modulesData.length > 0) { 
+                 materialsHeader.textContent = 'Nenhum módulo encontrado';
+                 detailsContentList.innerHTML = '<p class="text-gray-400">Tente um termo de pesquisa diferente.</p>';
+                 moduleContentViewer.src = 'about:blank';
+                 if (activeModuleCard) activeModuleCard.classList.remove('active');
+                 activeModuleCard = null;
+                 if(activeContentItem) activeContentItem.classList.remove('active-content');
+                 activeContentItem = null;
+            }
+        }
+
+        renderModules(modulesData);
+
+        if (modulesData.length === 0) {
+            materialsHeader.textContent = 'Nenhum módulo disponível';
+            detailsContentList.innerHTML = '<p class="text-gray-400">Adicione módulos para começar.</p>';
+            moduleContentViewer.src = 'about:blank';
+        }
+
+
+        const likeButton = document.getElementById('like-button'); 
+        if(likeButton) { 
+            likeButton.addEventListener('click', () => {
+                likeButton.classList.toggle('is-liked');
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = modulesData.filter(module =>
+                module.title.toLowerCase().includes(searchTerm) ||
+                (module.subtitle && module.subtitle.toLowerCase().includes(searchTerm)) ||
+                (module.shortcode && module.shortcode.toLowerCase().includes(searchTerm)) ||
+                (module.specialty && module.specialty.toLowerCase().includes(searchTerm)) 
+            );
+            renderModules(filtered); 
+
+            if (filtered.length > 0) {
+                let currentActiveStillVisible = false;
+                if (activeModuleCard) {
+                    const activeModuleId = parseInt(activeModuleCard.dataset.moduleId);
+                    if (filtered.some(m => m.id === activeModuleId)) {
+                        currentActiveStillVisible = true;
+                         const currentActiveCard = modulesListContainer.querySelector(`.module-list-item[data-module-id="${activeModuleId}"]`);
+                        if (currentActiveCard && !currentActiveCard.classList.contains('active')) {
+                            currentActiveCard.classList.add('active'); 
+                        }
+                    }
+                }
+            } else { 
+                materialsHeader.textContent = 'Nenhum módulo encontrado';
+                detailsContentList.innerHTML = '<p class="text-gray-400">Tente um termo de pesquisa diferente.</p>';
+                moduleContentViewer.src = 'about:blank';
+                if (activeModuleCard) {
+                    activeModuleCard.classList.remove('active');
+                    activeModuleCard = null;
+                }
+                if(activeContentItem) activeContentItem.classList.remove('active-content');
+                activeContentItem = null;
+            }
+        });
+
+    </script>
+</body>
+</html>
