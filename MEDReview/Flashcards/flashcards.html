@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)https://www.medmembers.com.br/flashcards/study?new=true -->
+<html class="dark" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <style type="text/css" data-primevue-style-id="layer-order">
+    @layer tailwind-base, primevue, tailwind-utilities
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&display=swap">
+
+  <title>Estudar Flashcards · Med Members</title>
+  <style>
+    body {
+      font-family: 'Exo 2', sans-serif;
+      background-color: #111213;
+      color: white;
+    }
+
+    .card-background {
+      background-color: #191C1F;
+      transition: all 0.5s ease-in-out;
+    }
+
+    .reveal-button,
+    .rating-button {
+      background-color: #C48462;
+      transition: all 0.2s ease;
+    }
+
+    .reveal-button:hover,
+    .rating-button:hover {
+      background-color: #d49a7a;
+      transform: scale(1.05);
+    }
+    
+    .rating-button.active {
+        background-color: #e6a88a;
+        transform: scale(1.1);
+        box-shadow: 0 0 15px #C48462;
+    }
+
+
+    .nav-button .button-circle {
+      background-color: white;
+    }
+
+    .nav-button .arrow-icon svg {
+      color: #1f2937;
+    }
+
+    .progress-bar {
+      background-color: #3E454D;
+    }
+
+    .progress-fill {
+      background-color: #C48462;
+      box-shadow: 0 0 10px #C4846280;
+    }
+
+    .header-bar {
+      background-color: #212529;
+    }
+
+    .header-button {
+      background-color: #191C1F;
+      color: #727980;
+    }
+
+    .header-button:hover {
+      background-color: #2a2f35;
+    }
+    
+    .custom-card-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .flashcard-container {
+        transition: all 0.5s ease-in-out;
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+     
+    .hidden {
+        display: none;
+    }
+
+    #flashcard-pair-container {
+        display: flex;
+        gap: 1rem;
+        width: 100%;
+        height: 100%;
+        transition: all 0.5s ease-in-out;
+    }
+  </style>
+</head>
+
+<body class="dark">
+  <div id="__nuxt">
+    <div class="area-treinamento" style="display: grid; height: 100vh; width: 100vw; font-family: sans-serif; overflow: hidden;">
+      <div id="app-scroller" style="overflow-x: hidden; overflow-y: auto; position: relative; height: 100vh;">
+        <div class="bg-[#111213] min-h-screen text-white font-exo2">
+          <div class="flashcard-study-view min-h-screen bg-gray-900 text-white">
+            <div class="header-bar py-2 px-4 fixed left-0 top-0 right-0 z-50">
+              <div class="flex items-center gap-2 justify-between w-full relative">
+                <div class="flex items-center justify-start gap-2 min-w-0 flex-1 overflow-hidden">
+                  <button class="bt-voltar header-button flex gap-2 items-center px-4 py-2 me-4 rounded-lg font-semibold text-sm transition flex-shrink-0">
+                    <svg class="rotate-180 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                    <span class="hidden md:inline">Voltar</span>
+                  </button>
+                  <div class="flex flex-col md:flex-row md:items-center md:gap-2">
+                    <h2 class="font-exo2 text-lg font-semibold whitespace-nowrap text-ellipsis overflow-hidden max-w-full">Revisão Espaçada</h2>
+                  </div>
+                </div>
+                <div class="flex gap-4 items-center justify-end whitespace-nowrap min-w-0 flex-shrink-0">
+                  <button class="header-button flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="hidden md:inline">Instruções de Uso</span>
+                  </button>
+                  <button class="header-button flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m-6 3l6-3"></path>
+                    </svg>
+                    <span class="hidden md:inline">Mapa de flashcards</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="cards-container flex items-center justify-center gap-4 px-4 relative pt-20 h-screen">
+              <button id="prev-card-btn" class="nav-button group relative nav-left">
+                <div class="button-circle w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-110 group-hover:shadow-xl">
+                  <div class="arrow-icon">
+                    <svg class="w-6 h-6 text-gray-800 transition-transform duration-200 group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </button>
+              <div class="flashcard-display flex flex-col items-center">
+                <div class="progress-section mb-6 w-full max-w-5xl">
+                  <div class="flex flex-col items-left justify-start">
+                    <h1 class="font-exo2 text-lg font-semibold text-white mb-1">Cards</h1>
+                    <div class="flex flex-row items-center justify-start">
+                      <div id="progress-text" class="text-white text-sm font-medium pr-4">1/40</div>
+                      <div class="progress-bar rounded-full h-2 w-full overflow-hidden">
+                        <div id="progress-fill" class="progress-fill h-2 rounded-full transition-all duration-500 ease-out" style="width: 2.5%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div id="card-area" class="card-background w-[500px] h-[672px] rounded-lg flex items-center justify-center p-2">
+                    <div id="flashcard-pair-container">
+                        <div id="flashcard-front-container" class="flashcard-container">
+                            <img id="flashcard-front-bg-img" src="" alt="Fundo do Flashcard" class="custom-card-image" onerror="this.onerror=null; this.src='https://placehold.co/1080x1450/191C1F/3E454D?text=Fundo+Nao+Encontrado';">
+                            <img id="flashcard-front-fg-img" src="" alt="Frente do Flashcard" class="custom-card-image" onerror="this.onerror=null; this.src='';">
+                        </div>
+                        <div id="flashcard-back-container" class="flashcard-container hidden">
+                            <img id="flashcard-back-bg-img" src="" alt="Fundo da Resposta" class="custom-card-image" onerror="this.onerror=null; this.src='https://placehold.co/1080x1450/191C1F/3E454D?text=Fundo+Nao+Encontrado';">
+                            <img id="flashcard-back-fg-img" src="" alt="Verso do Flashcard" class="custom-card-image" onerror="this.onerror=null; this.src='';">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-container mt-6">
+                  <div id="reveal-section" class="flex items-center justify-center relative w-full">
+                    <button id="reveal-button" class="reveal-button text-white font-semibold py-4 px-8 rounded-lg transform shadow-lg"> Revelar resposta </button>
+                  </div>
+                  <div id="rating-section" class="hidden text-center">
+                      <p class="mb-4 font-semibold">O quanto você sabia deste card?</p>
+                      <div class="flex items-center justify-center gap-4">
+                          <button data-rating="1" class="rating-button text-black font-bold py-3 px-6 rounded-lg">1<br>Errei</button>
+                          <button data-rating="2" class="rating-button text-black font-bold py-3 px-6 rounded-lg">2<br>Difícil</button>
+                          <button data-rating="3" class="rating-button text-black font-bold py-3 px-6 rounded-lg">3<br>Médio</button>
+                          <button data-rating="4" class="rating-button text-black font-bold py-3 px-6 rounded-lg">4<br>Fácil</button>
+                      </div>
+                  </div>
+                </div>
+              </div>
+              <button id="next-card-btn" class="nav-button group relative nav-right">
+                <div class="button-circle w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-110 group-hover:shadow-xl">
+                  <div class="arrow-icon">
+                    <svg class="w-6 h-6 text-gray-800 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- ÁREA DE CONFIGURAÇÃO DOS CARDS ---
+
+        // 1. Defina as 3 imagens principais/fixas aqui.
+        const IMAGEM_FUNDO_FRENTE = "./cards/fundo_frente.jpg"; 
+        const IMAGEM_FUNDO_RESPOSTA = "./cards/fundo_resposta.jpg";
+        const IMAGEM_FRENTE_CARD_1 = "./cards/frente_comp.png"; // Imagem especial SÓ para a frente do 1º card.
+
+        // 2. O código abaixo cria a lista dos 40 cards para você.
+        //    Ele vai assumir que suas imagens de PERGUNTA (do card 2 ao 40) estão nomeadas como:
+        //    card_2_perg_comp.png, ..., card_40_perg_comp.png
+        //
+        //    E que suas imagens de RESPOSTA (do card 1 ao 40) estão nomeadas como:
+        //    card_1_resp_comp.png, ..., card_40_resp_comp.png
+        const flashcards = [];
+        for (let i = 1; i <= 40; i++) {
+            flashcards.push({
+                front: { 
+                    bg: IMAGEM_FUNDO_FRENTE,
+                    // Se for o card 1, usa a imagem especial. Senão, usa o padrão.
+                    fg: (i === 1) ? IMAGEM_FRENTE_CARD_1 : `./cards/card_${i}_perg_comp.png`
+                },
+                back: { 
+                    bg: IMAGEM_FUNDO_RESPOSTA,
+                    fg: `./cards/card_${i}_resp_comp.png`
+                }
+            });
+        }
+        // --- FIM DA ÁREA DE CONFIGURAÇÃO ---
+
+
+        let currentCardIndex = 0;
+        let isRevealed = false;
+
+        const cardArea = document.getElementById('card-area');
+        const frontContainer = document.getElementById('flashcard-front-container');
+        const backContainer = document.getElementById('flashcard-back-container');
+        const frontBgImg = document.getElementById('flashcard-front-bg-img');
+        const frontFgImg = document.getElementById('flashcard-front-fg-img');
+        const backBgImg = document.getElementById('flashcard-back-bg-img');
+        const backFgImg = document.getElementById('flashcard-back-fg-img');
+
+        const revealButton = document.getElementById('reveal-button');
+        const ratingSection = document.getElementById('rating-section');
+        const revealSection = document.getElementById('reveal-section');
+
+        const prevBtn = document.getElementById('prev-card-btn');
+        const nextBtn = document.getElementById('next-card-btn');
+
+        const progressText = document.getElementById('progress-text');
+        const progressFill = document.getElementById('progress-fill');
+
+        function updateProgress() {
+            const currentNumber = currentCardIndex + 1;
+            const total = flashcards.length;
+            progressText.textContent = `${currentNumber}/${total}`;
+            progressFill.style.width = `${(currentNumber / total) * 100}%`;
+        }
+
+        function showCard() {
+            isRevealed = false;
+            const card = flashcards[currentCardIndex];
+            
+            frontBgImg.src = card.front.bg;
+            frontFgImg.src = card.front.fg;
+            
+            backBgImg.src = card.back.bg;
+            backFgImg.src = card.back.fg;
+
+            frontContainer.classList.remove('hidden');
+            backContainer.classList.add('hidden');
+            
+            cardArea.classList.remove('w-[1016px]');
+            cardArea.classList.add('w-[500px]');
+            
+            ratingSection.classList.add('hidden');
+            revealSection.classList.remove('hidden');
+            
+            updateProgress();
+            
+            prevBtn.disabled = currentCardIndex === 0;
+            nextBtn.disabled = currentCardIndex === flashcards.length - 1;
+        }
+
+        function revealAnswer() {
+            if (isRevealed) return;
+            isRevealed = true;
+            
+            cardArea.classList.remove('w-[500px]');
+            cardArea.classList.add('w-[1016px]');
+            
+            backContainer.classList.remove('hidden');
+
+            revealSection.classList.add('hidden');
+            ratingSection.classList.remove('hidden');
+        }
+        
+        function navigate(direction) {
+            currentCardIndex += direction;
+
+            if (currentCardIndex < 0) {
+                currentCardIndex = 0;
+            }
+            if (currentCardIndex >= flashcards.length) {
+                currentCardIndex = flashcards.length - 1;
+            }
+            showCard();
+        }
+
+        revealButton.addEventListener('click', revealAnswer);
+        
+        prevBtn.addEventListener('click', () => navigate(-1));
+        nextBtn.addEventListener('click', () => navigate(1));
+
+        document.querySelectorAll('.rating-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const rating = e.currentTarget.dataset.rating;
+                console.log(`Card ${currentCardIndex + 1} rated as: ${rating}`);
+                
+                if (currentCardIndex < flashcards.length - 1) {
+                    navigate(1);
+                } else {
+                    alert('Fim dos flashcards!');
+                }
+            });
+        });
+        
+        showCard();
+    });
+  </script>
+
+</body>
+
+</html>
+
