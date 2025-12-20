@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Neuro & Psiquiatria</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Jornada Completa</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 29 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+            {
+                title: "Módulo 01 - AIT e AVC Isquêmico",
+                description: "Diagnóstico, tratamento agudo e prevenção secundária do AVCI.",
+                lessons: [
+                    { t: "Aula 01 - Quadro Clínico", u: "https://drive.google.com/file/d/1xfk5rjVid4dAmhRu-2MBLgMjSdZaleJW/view?usp=sharing" },
+                    { t: "Aula 02 - Diagnóstico", u: "https://drive.google.com/file/d/1hbJA7KviEwayNfBOB5XX8P4zZswfUkw7/view?usp=sharing" },
+                    { t: "Aula 03 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 04 - Reabilitação", u: "https://drive.google.com/file/d/1E_oZQFq3Lulg5205_igssoweOUiNWKyk/view?usp=sharing" },
+                    { t: "Aula 05 - Quais Exames Solicitar", u: "https://drive.google.com/file/d/1XaEpPJQd4HFMBFF0cJCjsP0gXVCsMGwh/view?usp=sharing" },
+                    { t: "Aula 06 - Prevenção Secundária Visão Geral", u: "https://drive.google.com/file/d/1sf8C0uDZXDauoBMi1WiVtgAipmarIl1u/view?usp=sharing" },
+                    { t: "Aula 07 - Antiagregação Plaquetária", u: "https://drive.google.com/file/d/1PdFgIbQ_zqgmR8N5pPt-nB-uzbIi3s-5/view?usp=sharing" },
+                    { t: "Aula 08 - Terapia Antilipemiante", u: "https://drive.google.com/file/d/1FysHHsau5fXZ1Rk-qCPzT7HXTc3FeMqL/view?usp=sharing" },
+                    { t: "Aula 09 - Terapia Antihipertensiva", u: "https://drive.google.com/file/d/1IavdxwWfiDsBWRTK_xKSuwGvc4-CMaC0/view?usp=sharing" },
+                    { t: "Aula 10 - Controle Glicêmico", u: "https://drive.google.com/file/d/1NeKdJt7UwQm5kfi_cTkaqcBL4vwzjSVB/view?usp=sharing" },
+                    { t: "Aula 11 - Modificação do Estilo de Vida", u: "https://drive.google.com/file/d/1xbRGTWVZGFn3K3-1AHIbLYKx_pZZYFaS/view?usp=sharing" },
+                    { t: "Aula 12 - Algoritmo Geral da Prevenção Secundária", u: "https://drive.google.com/file/d/1s0-aS9AO8N4G-MGYOpX9_qzaqp11L-Ke/view?usp=sharing" },
+                    { t: "Aula 13 - Etiologia Cardioembólica", u: "https://drive.google.com/file/d/1OVfKqj0J6p6RLivhIz8cgSmMTiStQ6Gb/view?usp=sharing" },
+                    { t: "Aula 14 - Fibrilação Atrial", u: "https://drive.google.com/file/d/1FlKLywcvMT1ViOh5_81DvMg303gBQOtK/view?usp=sharing" },
+                    { t: "Aula 15 - Forame Oval Patente", u: "https://drive.google.com/file/d/1UDJ0vPWluJnIBqKl2AZ3swinmELrBDT1/view?usp=sharing" },
+                    { t: "Aula 16 - Outras Cardiopatias", u: "https://drive.google.com/file/d/1AW4SSZvSVkO5JrFiH2NqTVvAClcYUeoi/view?usp=sharing" },
+                    { t: "Aula 17 - Cardioembólico de Baixo Risco", u: "https://drive.google.com/file/d/1IXEsOpbP3KKOWfCBRDHdXSavdk9LR4wd/view?usp=sharing" },
+                    { t: "Aula 18 - Estenose Carotídea", u: "https://drive.google.com/file/d/1sUcj7zE3CRc3eETweCyRD_6oWTBNkEku/view?usp=sharing" },
+                    { t: "Aula 19 - Estenose Vertebral", u: "https://drive.google.com/file/d/1jn6rzdseetRLUKd3XgGnJ9Em8hqXEQj8/view?usp=sharing" },
+                    { t: "Aula 20 - Estenose Intracraniana", u: "https://drive.google.com/file/d/1GA0XLkaPryxIT08VLl9pebz4jHQH4VYM/view?usp=sharing" },
+                    { t: "Aula 21 - Dissecção Arterial", u: "https://drive.google.com/file/d/1-VEDUWHc7M1W48d36UF-scU8C0qidVo4/view?usp=sharing" },
+                    { t: "Aula 22 - Outras Causas Vasculares", u: "https://drive.google.com/file/d/1tMCbDX65Jg55g11cyPKBk0TQaS5wq2F9/view?usp=sharing" },
+                    { t: "Aula 23 - Causas Raras", u: "https://drive.google.com/file/d/1eM_y1mUukeCqZ9_3e_ZTuCZgeGUbVzhe/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 02 - Depressão",
+                description: "Diagnóstico e manejo farmacológico e não-farmacológico da depressão.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia e Fisiopatologia", u: "https://drive.google.com/file/d/1v0a8evxlz-w-uDfC2aKE6GTWx0JR72M0/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Diagnóstico", u: "https://drive.google.com/file/d/1oFF7bVEX-tsqbRM38i7Hs5IsupXlZCpO/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1lpbg4DGYTFEWkFULJiSMNfYvvnhB2wCu/view?usp=sharing" },
+                    { t: "Aula 05 - Tratamento Visão Geral", u: "https://drive.google.com/file/d/1wMjnQfnlrWY8it1oYlev1PPoD3CBXmPh/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamentos Não-Farmacológicos", u: "https://drive.google.com/file/d/1wVgkpViQFzqYOOfghpTVFTO_Qzc3lWhc/view?usp=sharing" },
+                    { t: "Aula 07 - Psicoterapia", u: "https://drive.google.com/file/d/18Q7_J-WxOCkqNEFoF5A6WRtTu5MxwoGM/view?usp=sharing" },
+                    { t: "Aula 08 - Tratamento Farmacológico", u: "https://drive.google.com/file/d/1fUgGeDScwCn_GC_hhjlBdcAhnBz2lxFK/view?usp=sharing" },
+                    { t: "Aula 09 - Fármacos Antidepressivos", u: "https://drive.google.com/file/d/17UG1V4NpMdxvT9ZxgTMv_-CWY6j430bk/view?usp=sharing" },
+                    { t: "Aula 10 - Risco de Suicídio e Sintomas Psicóticos", u: "https://drive.google.com/file/d/1Uut0wRsvRh-RExDb-ZX7OiuwxuctLMJp/view?usp=sharing" },
+                    { t: "Aula 11 - Mania ou Hipomania", u: "https://drive.google.com/file/d/1fdgJ_hoxhUicwIMy_pIa3D5-7ZLXJTWU/view?usp=sharing" },
+                    { t: "Aula 12 - Depressão Resistente", u: "https://drive.google.com/file/d/1X598P60tfw1LXYDo7ZnWTDOOc5sguovC/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 03 - Doença de Alzheimer",
+                description: "Fisiopatologia, diagnóstico, biomarcadores e tratamento completo.",
+                lessons: [
+                    { t: "Aula 01 - Introdução", u: "https://drive.google.com/file/d/1ISBg3Xa9KiXJNtuODcKda7peZdrMfX9F/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiopatologia", u: "https://drive.google.com/file/d/1JZ-jw-VGZtnYuK22ZKO3arZiCNY9H6NE/view?usp=sharing" },
+                    { t: "Aula 03 - Epidemiologia", u: "https://drive.google.com/file/d/1ghm2S0JPyJlauniEOmLA-VS9Ost9hx3V/view?usp=sharing" },
+                    { t: "Aula 04 - Genética", u: "https://drive.google.com/file/d/1c7x0bSzY_2dUgHJugc3JVoJL1ACWU0C3/view?usp=sharing" },
+                    { t: "Aula 05 - Quadro Clínico", u: "https://drive.google.com/file/d/1W_FRjs7IAODb5Nzq1olYKuuYgPFtYmuW/view?usp=sharing" },
+                    { t: "Aula 06 - Exame Neurológico", u: "https://drive.google.com/file/d/1GSVMrdOpMpkkoNHEHFy1NApdnvqC2PIU/view?usp=sharing" },
+                    { t: "Aula 07 - Avaliação Neuropsicológica", u: "https://drive.google.com/file/d/1vkwJK1ENktyJcWeVgr7GDQmybSjYzRJI/view?usp=sharing" },
+                    { t: "Aula 08 - Formas Atípicas", u: "https://drive.google.com/file/d/1qbjkMhvXSqVG3RV244KG5qCXbb1s8KJK/view?usp=sharing" },
+                    { t: "Aula 09 - Diagnóstico", u: "https://drive.google.com/file/d/13Phx_6WFhFQi1tIUsQsX0kzx2zbS18y7/view?usp=sharing" },
+                    { t: "Aula 10 - Neuroimagem", u: "https://drive.google.com/file/d/1_4gODTT58VfwUMAusolZpEKuvr4Z5C1s/view?usp=sharing" },
+                    { t: "Aula 11 - Exames Laboratoriais", u: "https://drive.google.com/file/d/1y8sn2cpa9nUWmQsG-jNBUz8dmAEKGRgz/view?usp=sharing" },
+                    { t: "Aula 12 - Líquor", u: "https://drive.google.com/file/d/1_iwKKTR3Y2WszvMeL5c3EgPPGcq6B6xl/view?usp=sharing" },
+                    { t: "Aula 13 - Medicina Nuclear", u: "https://drive.google.com/file/d/1-VtvEPqhYd9zR2HLyCo875yecZgUVJKV/view?usp=sharing" },
+                    { t: "Aula 14 - Teste Genético", u: "https://drive.google.com/file/d/1QA0FTEvCq5R8aIBov2J1eFGvQDqUmdM1/view?usp=sharing" },
+                    { t: "Aula 15 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1QF-wmogxbzphERhxAzeB6IijHjmW3AgI/view?usp=sharing" },
+                    { t: "Aula 16 - Terapia Não-Farmacológica", u: "https://drive.google.com/file/d/1HzEf9u4PJiKSlqmNUp3CqUxwCMBxMcPv/view?usp=sharing" },
+                    { t: "Aula 17 - Terapia com Anticolinesterásicos", u: "https://drive.google.com/file/d/1S1cSdVcYZ4CYnQbgOJYx4_o0AQ_XPWvn/view?usp=sharing" },
+                    { t: "Aula 18 - Terapia com Memantina", u: "https://drive.google.com/file/d/1hLyMvXRW0oDk4h7EmNIidGIF1VuQuOru/view?usp=sharing" },
+                    { t: "Aula 19 - Terapia Anti-Amiloide", u: "https://drive.google.com/file/d/1UxZwb0cAe6FgTwT3k6mLKC5sODg3AGff/view?usp=sharing" },
+                    { t: "Aula 20 - Terapia da Depressão", u: "https://drive.google.com/file/d/12zUx33Lm_6FIm14ov40Hl_aff2eyJkVH/view?usp=sharing" },
+                    { t: "Aula 21 - Terapia de Sintomas Comportamentais", u: "https://drive.google.com/file/d/1T5jVf3ocoU56-XASmZQPitoePXqH679x/view?usp=sharing" },
+                    { t: "Aula 22 - Uso de Antipsicóticos", u: "https://drive.google.com/file/d/1dR5Seqbly4F7qbvtADHhgJctN77tBo_V/view?usp=sharing" },
+                    { t: "Aula 23 - Terapia da Insônia", u: "https://drive.google.com/file/d/1Mz8uqHVcQljEW-OfnbyHZZ1C5nPZfpy2/view?usp=sharing" },
+                    { t: "Aula 24 - Terapia da Apatia", u: "https://drive.google.com/file/d/1PA4TwHpqZEX37UAE3NxAHFK0hciho3T9/view?usp=sharing" },
+                    { t: "Aula 25 - Manejo da Fase Avançada", u: "https://drive.google.com/file/d/1OrWmENl_VZggtJvMPkR_Znk2RtaLQh7d/view?usp=sharing" },
+                    { t: "Aula 26 - Curatela e Interdição", u: "https://drive.google.com/file/d/1O7flwC4mNg8CLsjQEBG210jSalIR_g7I/view?usp=sharing" },
+                    { t: "Aula 27 - Cuidados com o(a) Cuidador(a)", u: "https://drive.google.com/file/d/1Jfvl_33wFgGE5TKlTt7h_J2GnLV_w9hm/view?usp=sharing" },
+                    { t: "Aula 28 - Manejo da Disfagia", u: "https://drive.google.com/file/d/1gP_HBCZQky-iZ9il83K5dqdRq_hCRfLr/view?usp=sharing" },
+                    { t: "Aula 29 - Terminalidade e Paliativo", u: "https://drive.google.com/file/d/1egh3TlbzJVYveNlzRC2ndZliTcByD_N7/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 04 - Doença de Parkinson",
+                description: "Clínica, diagnóstico diferencial e tratamento medicamentoso e cirúrgico.",
+                lessons: [
+                    { t: "Aula 01 - Introdução e Epidemiologia", u: "https://drive.google.com/file/d/1-V10lN2vPLyUBda8nlkCEiWxWhgGkd82/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico Motor", u: "https://drive.google.com/file/d/1oQ04LDGDi0vU4nYAhlphGFwu3OH8Gcwj/view?usp=sharing" },
+                    { t: "Aula 03 - Quadro Clínico Não-Motor", u: "https://drive.google.com/file/d/1EffAEsJBgvX_IKlQ24g0SDJdeXKRy48O/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico", u: "https://drive.google.com/file/d/1o_-rHql0MHWSOEJLRYymt72dG3eV1S20/view?usp=sharing" },
+                    { t: "Aula 05 - Exames Complementares", u: "https://drive.google.com/file/d/16DwSDd0foH5eKjG8etI-TFoPdiks7xcT/view?usp=sharing" },
+                    { t: "Aula 06 - Diagnósticos Diferenciais", u: "https://drive.google.com/file/d/1CBNqBUEa8Dc_w0ieZIGUyBpqfjdMIeKQ/view?usp=sharing" },
+                    { t: "Aula 07 - Princípios do Tratamento", u: "https://drive.google.com/file/d/1Tq2WMg9rPAeV2w9YbvOAx8gWDmHnLAHe/view?usp=sharing" },
+                    { t: "Aula 08 - Levodopa", u: "https://drive.google.com/file/d/1irwA9L4HhH2PmijmzzwU9aKsxJaVfc-j/view?usp=sharing" },
+                    { t: "Aula 09 - Agonistas Dopaminérgicos", u: "https://drive.google.com/file/d/1Q2g2pGJyWtoqMak4dWn-ef1nQIBuLdf5/view?usp=sharing" },
+                    { t: "Aula 10 - Inibidores da MAO", u: "https://drive.google.com/file/d/1Q9UuwNlGftIqWRHKYzWo1qOOgWBxDw1E/view?usp=sharing" },
+                    { t: "Aula 11 - Amantadina e Inibidores da COMT", u: "https://drive.google.com/file/d/13nOQRSJtGkAInCJE1jy2AKW6Xf0xlx96/view?usp=sharing" },
+                    { t: "Aula 12 - Algoritmo Terapêutico", u: "https://drive.google.com/file/d/10OqRHyjfd8EkD-S7i2OtzKFSfQDghA8c/view?usp=sharing" },
+                    { t: "Aula 13 - Visão Geral das Complicações", u: "https://drive.google.com/file/d/1Bly2Yy2eEWfFCZXtKoLKYUqyvaYjkwUA/view?usp=sharing" },
+                    { t: "Aula 14 - Discinesias", u: "https://drive.google.com/file/d/15Hgt8npc7YL2l1FNl87Xa7laYABKZuVb/view?usp=sharing" },
+                    { t: "Aula 15 - Wearing-Off", u: "https://drive.google.com/file/d/1BJy-7CeaJPUiJ2tavxzNj8FgMScWXCmI/view?usp=sharing" },
+                    { t: "Aula 16 - Complicações de Marcha", u: "https://drive.google.com/file/d/172U5A2t33_OlhKEkWRt3k3tix-llqBoj/view?usp=sharing" },
+                    { t: "Aula 17 - Tratamento Cirúrgico e DBS", u: "https://drive.google.com/file/d/1xneuyUZwyBbny4fCivdc2SzZ9_VXLI1N/view?usp=sharing" },
+                    { t: "Aula 18 - Complicações Não-Motoras", u: "https://drive.google.com/file/d/1i0u4IlMZ09sgrv62PxbwdGvdIc79GR4X/view?usp=sharing" },
+                    { t: "Aula 19 - Parkinson na Prática", u: "https://drive.google.com/file/d/1ZuujcVpASxh7ZY_7uYxLfEdWxoNUqP7I/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 05 - Dor Crônica",
+                description: "Mecanismos da dor, avaliação e estratégias de tratamento.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia", u: "https://drive.google.com/file/d/1rStceccHyiFbKq4PlWs3TwZwoW7KFjYm/view?usp=sharing" },
+                    { t: "Aula 02 - Conceitos e Fisiopatologia Básica", u: "https://drive.google.com/file/d/128QyBKBFd6MWFSATDBgAy1Xh6ogqvnpe/view?usp=sharing" },
+                    { t: "Aula 03 - Mecanismo de Sensibilização", u: "https://drive.google.com/file/d/1B-6NdIuqLXTwgUoFd5seSRv400xYYrZT/view?usp=sharing" },
+                    { t: "Aula 04 - Quantificação da Dor", u: "https://drive.google.com/file/d/19sAE-UbuKE-qTWt5Q1N_SgkKIyZ_JU3U/view?usp=sharing" },
+                    { t: "Aula 05 - Dor Aguda e Crônica", u: "https://drive.google.com/file/d/1FUOtRySratRCnQ5N8HWmgoAeAeBDbQpQ/view?usp=sharing" },
+                    { t: "Aula 06 - Objetivos do Tratamento", u: "https://drive.google.com/file/d/1W8z-Z5C4_I32JuJHD7NXjHUT28CWCxWA/view?usp=sharing" },
+                    { t: "Aula 07 - Crenças Disfuncionais", u: "https://drive.google.com/file/d/1V6NhQOjC8L68ubqbEjoySS4P9Mr78fBT/view?usp=sharing" },
+                    { t: "Aula 08 - Comorbidades", u: "https://drive.google.com/file/d/1rYmD-BbAyTJUqlJo4cisKV7dL8OkupRR/view?usp=sharing" },
+                    { t: "Aula 09 - Multidisciplinariedade", u: "https://drive.google.com/file/d/1wHA04I8YzVStvwwQKJSDfqEnaOSUJ3fi/view?usp=sharing" },
+                    { t: "Aula 10 - Estratégia Geral de Tratamento", u: "https://drive.google.com/file/d/1VxwI_EkV_BuRKKSTLbX-2q9ERVMPZqko/view?usp=sharing" },
+                    { t: "Aula 11 - Dor Nociceptiva Conceitos", u: "https://drive.google.com/file/d/17wpWpDAs8UX0KRibMRA-hq7HLx2Z4SmX/view?usp=sharing" },
+                    { t: "Aula 12 - Dor Nociceptiva Tratamento Inicial", u: "https://drive.google.com/file/d/1oDuOFjK2ZpcT2ce1KtsYCBrMhx4pZkOr/view?usp=sharing" },
+                    { t: "Aula 13 - Dor Nociceptiva Tratamento com Opioides", u: "https://drive.google.com/file/d/1JqoHS-nEhpoJ2p1YJ5eYdtM9R744gr_B/view?usp=sharing" },
+                    { t: "Aula 14 - Dor Miofascial", u: "https://drive.google.com/file/d/1H4hV0GrJzQ_w-tHhR9P8DHYhjLlEq4Bn/view?usp=sharing" },
+                    { t: "Aula 15 - Dor Neuropática Conceitos", u: "https://drive.google.com/file/d/1gRNKtKg1sIPBT-kQGKQueysvxkJvY6T0/view?usp=sharing" },
+                    { t: "Aula 16 - Dor Neuropática Tratamento", u: "https://drive.google.com/file/d/1rvncgFCk8E6rkBfiwwnojStQDRqkjKvO/view?usp=sharing" },
+                    { t: "Aula 17 - Dor Nociplástica", u: "https://drive.google.com/file/d/1YfdeY5v5_VkXT0kKYC7T6Dxxo20ZSxAC/view?usp=sharing" },
+                    { t: "Aula 18 - Fibromialgia", u: "https://drive.google.com/file/d/1u8Nc8vp4WeDerNlYkMVvMuVEsYlon61_/view?usp=sharing" },
+                    { t: "Aula 19 - Dor Lombar", u: "https://drive.google.com/file/d/1O09ih264Ng96g4qhqOf3Bu2vqTPmvfcd/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 06 - Enxaqueca",
+                description: "Fisiopatologia, diagnóstico e tratamento profilático e agudo.",
+                lessons: [
+                    { t: "Aula 01 - Introdução", u: "https://drive.google.com/file/d/1R7EYQTW8rtrdDrhhJ8VOANvGKFfdDhJKT/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiopatologia", u: "https://drive.google.com/file/d/11YRR_ThsnbbRG7o01XlvasRNPK_b7gLq/view?usp=sharing" },
+                    { t: "Aula 03 - Anamnese e Exame Físico", u: "https://drive.google.com/file/d/1rX6mOstNAVG-KWQFI9kOu67KuDRVfuGD/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico", u: "https://drive.google.com/file/d/1_PJS3PUqnlcPLJqdFMTnMR07trT4zc1g/view?usp=sharing" },
+                    { t: "Aula 05 - Neuroimagem", u: "https://drive.google.com/file/d/1qear0Lk-GMDR-rxaL537R5CISaLvPZgf/view?usp=sharing" },
+                    { t: "Aula 06 - Risco de Cronificação", u: "https://drive.google.com/file/d/16CXIZXFdX4xGK2ylEXcXwDfV11ybhQ8W/view?usp=sharing" },
+                    { t: "Aula 07 - Princípios do Tratamento", u: "https://drive.google.com/file/d/1Tq2WMg9rPAeV2w9YbvOAx8gWDmHnLAHe/view?usp=sharing" },
+                    { t: "Aula 08 - Terapia Não-Farmacológica", u: "https://drive.google.com/file/d/1ZgI_wzRMvWFisFsjC011r-Yrxf5IrwE_/view?usp=sharing" },
+                    { t: "Aula 09 - Tratamento da Crise", u: "https://drive.google.com/file/d/1et6D-xbWDi5xJZttnFXkg_WJqlyTtZAh/view?usp=sharing" },
+                    { t: "Aula 10 - Profilaxia Farmacológica", u: "https://drive.google.com/file/d/19Rx6-fH1RecjsLYdLE_KQKwjiAiJYNBM/view?usp=sharing" },
+                    { t: "Aula 11 - Anticorpos Monoclonais", u: "https://drive.google.com/file/d/1L3r6qNWl3BGb3hgOw1M62NHXpG00i9fT/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 07 - Esclerose Múltipla",
+                description: "Diagnóstico, tratamento de surtos e terapias modificadoras.",
+                lessons: [
+                    { t: "Aula 01 - Quadro Clínico", u: "https://drive.google.com/file/d/1aLUAAHas7o0BYCvNkNYtpQb1idA2CgZK/view?usp=sharing" },
+                    { t: "Aula 02 - Diagnóstico", u: "https://drive.google.com/file/d/1N4BHNuyUpmcwngQzcueU_kkzRngYbt2Z/view?usp=sharing" },
+                    { t: "Aula 03 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 04 - Tratamento do Surto", u: "https://drive.google.com/file/d/1wmLlmIu6cfjRRgc1jX4_CgH_6mvt8pVY/view?usp=sharing" },
+                    { t: "Aula 05 - Tratamento Modificador da Doença", u: "https://drive.google.com/file/d/18yfJN-749r9dtmOeUyC4DWbyuJIVbkYV/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamento de Formas Progressivas", u: "https://drive.google.com/file/d/1a3cTX-FilTYqx8IgmDfqSUdUwrgRcSnc/view?usp=sharing" },
+                    { t: "Aula 07 - Tratamento Sintomático", u: "https://drive.google.com/file/d/13rgLra_DqdXr6KDY788mZgosYfL0PaX_/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 08 - Epilepsia",
+                description: "Classificação de crises, EEG e manejo farmacológico.",
+                lessons: [
+                    { t: "Aula 01 - Definição", u: "https://drive.google.com/file/d/1iJf6p1kd7KfU4NRLzX0w9c1HzCq9ZoQW/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/13wZMsGQjgg1MyRm_lDU5gtgdh-_46ni4/view?usp=sharing" },
+                    { t: "Aula 03 - Crises Focais", u: "https://drive.google.com/file/d/1Mm5bRFnbK6oGo5ryu-02zLPo4P34mag_/view?usp=sharing" },
+                    { t: "Aula 04 - Crises Generalizadas", u: "https://drive.google.com/file/d/1w-c7pgjCDNrKuqYyALMVtoXNA9fE4c0p/view?usp=sharing" },
+                    { t: "Aula 05 - Diagnóstico", u: "https://drive.google.com/file/d/1N9xjWxBwjYHYTcDi_Ucg1HqpciMfYLsw/view?usp=sharing" },
+                    { t: "Aula 06 - Conceitos Diagnósticos", u: "https://drive.google.com/file/d/1zvKk8IS4od00ZHDW8WnaeA-n7HFwb0lK/view?usp=sharing" },
+                    { t: "Aula 07 - Exame Físico e Cognitivo", u: "https://drive.google.com/file/d/1jIFY505JNGinE_A8hB1nzfJyxb4JLkVG/view?usp=sharing" },
+                    { t: "Aula 08 - Eletroencefalograma", u: "https://drive.google.com/file/d/150fQ-6pJi8DdTlqMHiau-O4Fj8f6m-8-/view?usp=sharing" },
+                    { t: "Aula 09 - Neuroimagem", u: "https://drive.google.com/file/d/1hTqfZP-Mevzab5tD6IzqXMqXuCeGJFoW/view?usp=sharing" },
+                    { t: "Aula 10 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1asZ7y3pAIcsgx978mOc9hoZ1TSXeVZ6G/view?usp=sharing" },
+                    { t: "Aula 11 - Dicas Práticas", u: "https://drive.google.com/file/d/1xT2gS6V-8oIPGJC4r-S2mjSHJleDfz_d/view?usp=sharing" },
+                    { t: "Aula 12 - Quando Tratar", u: "https://drive.google.com/file/d/1CFw94PIKgwo-me72nnZBAvXtwHeyfifE/view?usp=sharing" },
+                    { t: "Aula 13 - Como Escolher a Medicação", u: "https://drive.google.com/file/d/1t-FIMIX5ws-X398B4ZXvEhjUflprp7qs/view?usp=sharing" },
+                    { t: "Aula 14 - Fármacos Anticrise", u: "https://drive.google.com/file/d/1SrxX77_Cis2gEGTOdPpVjejrAchd8k-Z/view?usp=sharing" },
+                    { t: "Aula 15 - Epilepsia Refratária", u: "https://drive.google.com/file/d/1PYgwJAgKnBu3wPpYsMXlpBm6cdgLuyqQ/view?usp=sharing" },
+                    { t: "Aula 16 - Retirada de Medicações", u: "https://drive.google.com/file/d/1u8bFoTdswuoYAlSMfjwSv0pnLIF4NQjz/view?usp=sharing" },
+                    { t: "Aula 17 - Direção Veicular", u: "https://drive.google.com/file/d/1w96Y00KQSe8cZu_KtimwM0yyhlp-m6j6/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 09 - Hidrocefalia (HPN)",
+                description: "Hidrocefalia de Pressão Normal: diagnóstico, 'tap test' e tratamento.",
+                lessons: [
+                    { t: "Aula 01 - Introdução", u: "https://drive.google.com/file/d/1ZfpDwiiomnM1SsZdpxWzfk8isDNn28Gn/view?usp=sharing" },
+                    { t: "Aula 02 - Definições", u: "https://drive.google.com/file/d/1qd5FwUcDte2Pqol2uhehMII7faPOxdbd/view?usp=sharing" },
+                    { t: "Aula 03 - Epidemiologia", u: "https://drive.google.com/file/d/17xZ1a85IaKxLULUkCDtCAIMZ8GA7rQYK/view?usp=sharing" },
+                    { t: "Aula 04 - Fisiopatologia", u: "https://drive.google.com/file/d/1c7x0bSzY_2dUgHJugc3JVoJL1ACWU0C3/view?usp=sharing" },
+                    { t: "Aula 05 - Quadro Clínico", u: "https://drive.google.com/file/d/1uuFGFFG69VgwYUoeq3bUmAdjkgVbWA4L/view?usp=sharing" },
+                    { t: "Aula 06 - Neuroimagem", u: "https://drive.google.com/file/d/1spW4SVtcywslbx5FBumC6gwisoplI5Ul/view?usp=sharing" },
+                    { t: "Aula 07 - Tap Test", u: "https://drive.google.com/file/d/1Jli7pMEFJMEVXvLnwWvWCxCmizefB5Cy/view?usp=sharing" },
+                    { t: "Aula 08 - Diagnóstico", u: "https://drive.google.com/file/d/1X-5PDNBEOcBMmjze_GII5HRecMhLYBsI/view?usp=sharing" },
+                    { t: "Aula 09 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1Y_ZkQw9QvWU3aX96tnnXLlwegMNbuy1M/view?usp=sharing" },
+                    { t: "Aula 10 - Tratamento", u: "https://drive.google.com/file/d/1duePsWVQEg5YouNU5x6yVXoWu9ZxoGsL/view?usp=sharing" },
+                    { t: "Aula 11 - Seguimento", u: "https://drive.google.com/file/d/1zThKmLFZ031GL4HPhvVZej51a4Y_3AWe/view?usp=sharing" },
+                    { t: "Aula 12 - Conclusão", u: "https://drive.google.com/file/d/1jiE31gUwa2F8EiZGcf011dgUoPSBSZF6/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 10 - Insônia",
+                description: "Abordagem da insônia crônica, TCC e farmacologia.",
+                lessons: [
+                    { t: "Aula 01 - Fisiopatologia", u: "https://drive.google.com/file/d/1nnHEd-92yayE1FzcN9FHLyCD_nR_JYVM/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1PKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Classificação", u: "https://drive.google.com/file/d/1gNvLJMq2O8R9FkoiuWZKSsF5qrzO_riI/view?usp=sharing" },
+                    { t: "Aula 04 - Comorbidades e Outros Sintomas", u: "https://drive.google.com/file/d/13mTpmYvZ__D4D75AngXBqyTuNguL1TPN/view?usp=sharing" },
+                    { t: "Aula 05 - Diagnóstico", u: "https://drive.google.com/file/d/1zQXSk6s1OX6KgVX4DzWrXZI4jabAMDRl/view?usp=sharing" },
+                    { t: "Aula 06 - Exames Complementares", u: "https://drive.google.com/file/d/1MLo1DMkAGW4ItgG1tMQNxEJ1CDUPs-Xn/view?usp=sharing" },
+                    { t: "Aula 07 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1I4mokiG4EFi1vP-k3CxyMBMiB6o4npXL/view?usp=sharing" },
+                    { t: "Aula 08 - Terapia Cognitivo-Comportamental", u: "https://drive.google.com/file/d/1CfAdwljrfKTLIf_zOSPfnDyYn7DBUncR/view?usp=sharing" },
+                    { t: "Aula 09 - Tratamento Farmacológico", u: "https://drive.google.com/file/d/1fUgGeDScwCn_GC_hhjlBdcAhnBz2lxFK/view?usp=sharing" },
+                    { t: "Aula 10 - Desmame de Benzodiazepínico", u: "https://drive.google.com/file/d/1P8LIxHqMBJZz_KrZv91D0jsbDdNv9JfU/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 11 - Lombalgia",
+                description: "Diagnóstico diferencial, exame físico e tratamento da dor lombar.",
+                lessons: [
+                    { t: "Aula 01 - Introdução", u: "https://drive.google.com/file/d/1zvRd9A1eFuaUu4j2WFbi_MGLqFCrqNY6/view?usp=sharing" },
+                    { t: "Aula 02 - Anamnese", u: "https://drive.google.com/file/d/1T160ixWJymVlrBf3qQsT0ZAJ1n9FuNYG/view?usp=sharing" },
+                    { t: "Aula 03 - Exame Físico", u: "https://drive.google.com/file/d/1S97DQGQm0ts_RXx8a_use_hbK0LKFOuG/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1M584RMeZDEue0C_Ajfq7KbRLcLufkKV1/view?usp=sharing" },
+                    { t: "Aula 05 - Neuroimagem", u: "https://drive.google.com/file/d/1J8SNOcDTvleBcekXnMK3eZOsK7UZNfi1/view?usp=sharing" },
+                    { t: "Aula 06 - Radiculopatia", u: "https://drive.google.com/file/d/1fvGYtfwnt6yWJltXL2V4llWNm7gK6vRe/view?usp=sharing" },
+                    { t: "Aula 07 - Terapia Não-Farmacológica", u: "https://drive.google.com/file/d/1GsiVrIs4YVrB3DACb5bCTfrMP5Au0YSZ/view?usp=sharing" },
+                    { t: "Aula 08 - Terapia Analgésica", u: "https://drive.google.com/file/d/1mm0Nl9hE3xJVlsXEsJaGsA5cacLlabXp/view?usp=sharing" },
+                    { t: "Aula 09 - Tratamento Cirúrgico", u: "https://drive.google.com/file/d/1DzN_2F2RGdCcW257kXh5t3nfxOjSY2Vv/view?usp=sharing" },
+                    { t: "Aula 10 - Terapia da Dor Crônica", u: "https://drive.google.com/file/d/1kSdoQQPIz_UphMWZziE7FPGP16Yjwh7S/view?usp=sharing" },
+                    { t: "Aula 11 - Conclusão", u: "https://drive.google.com/file/d/1xEzs19qN9nQ90NmTKu1Mcl7GVnYOgwGS/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 12 - Neuralgia do Trigêmeo",
+                description: "Tratamento clínico e cirúrgico da dor facial paroxística.",
+                lessons: [
+                    { t: "Aula 01 - Quadro Clínico", u: "https://drive.google.com/file/d/1xfk5rjVid4dAmhRu-2MBLgMjSdZaleJW/view?usp=sharing" },
+                    { t: "Aula 02 - Diagnóstico", u: "https://drive.google.com/file/d/1hbJA7KviEwayNfBOB5XX8P4zZswfUkw7/view?usp=sharing" },
+                    { t: "Aula 03 - Exames Complementares", u: "https://drive.google.com/file/d/16DwSDd0foH5eKjG8etI-TFoPdiks7xcT/view?usp=sharing" },
+                    { t: "Aula 04 - Tratamento da Crise", u: "https://drive.google.com/file/d/1ad9JY_q6U7iZa1ZkXIymbcJy7z0F_GVo/view?usp=sharing" },
+                    { t: "Aula 05 - Terapia de Primeira Linha", u: "https://drive.google.com/file/d/1ugGfqS1uEZh2i9HuLfYQE6mErN6uCK8R/view?usp=sharing" },
+                    { t: "Aula 06 - Terapia Causas Secundárias", u: "https://drive.google.com/file/d/1NSrWH-UC7XL8NvosaIq3gs-NtzlhE6lf/view?usp=sharing" },
+                    { t: "Aula 07 - Terapia de Segunda Linha", u: "https://drive.google.com/file/d/1wA60-0QK_oPwBCvFKF_KxWbHOSdu2w7u/view?usp=sharing" },
+                    { t: "Aula 08 - Tratamento Cirúrgico", u: "https://drive.google.com/file/d/1buBmuWu-FGe3tmFTT4FJqE5pYyy9rR1p/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 13 - Neuralgia Pós-Herpética",
+                description: "Manejo da dor neuropática após Herpes Zoster.",
+                lessons: [
+                    { t: "Aula 01 - Analgesia Aguda", u: "https://drive.google.com/file/d/1YBnrXNk5sjPu1080cqfeyAGfZ-uCjgLo/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Definição", u: "https://drive.google.com/file/d/1vhkBJ3uFmPc6cQ0ppDwIXU3h8U4q7jyM/view?usp=sharing" },
+                    { t: "Aula 04 - Terapia Multidisciplinar", u: "https://drive.google.com/file/d/1hZCTSO3P8cTszMUYfbvGOsX06W-l1Vj0/view?usp=sharing" },
+                    { t: "Aula 05 - Tratamento Tópico", u: "https://drive.google.com/file/d/1eokPOU2h0YFbVWK0RNqhdfREubDCINkJ/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamento Medicamentoso", u: "https://drive.google.com/file/d/1flh211iCGP91u4Bl-HAdZ4J8ApWLGKGD/view?usp=sharing" },
+                    { t: "Aula 07 - Toxina Botulínica", u: "https://drive.google.com/file/d/1Ws4dg60cBCJdmD6O-BYQrKiIlgYyuxjl/view?usp=sharing" },
+                    { t: "Aula 08 - Casos Refratários", u: "https://drive.google.com/file/d/1-BBTvFQi8-irdCbrDZAnX0QOyQkMtY2L/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 14 - Neuropatias Periféricas",
+                description: "Raciocínio clínico, mononeuropatias, polineuropatias e diagnósticos diferenciais.",
+                lessons: [
+                    { t: "Aula 01 - Abordagem Inicial", u: "https://drive.google.com/file/d/1wQSp-FqB52viCefvWD31EMIUxG1Pi4WH/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Distribuição Anatômica", u: "https://drive.google.com/file/d/1s5f4wbp9L5Tl8miXihAw24Kli_El5N09/view?usp=sharing" },
+                    { t: "Aula 04 - Instalação e Antecedentes", u: "https://drive.google.com/file/d/1Eg6ND4rlq7cvT0mh46SrrZybK8tE1Oje/view?usp=sharing" },
+                    { t: "Aula 05 - Mecanismo Lesional", u: "https://drive.google.com/file/d/1Abu74kpLfuOQE9GKD7_MYFQFYwRrsj9T/view?usp=sharing" },
+                    { t: "Aula 06 - Organizando Raciocínio Inicial", u: "https://drive.google.com/file/d/1cXoXwsm30mYU3Z0OxsU3A1cCWDlZktkq/view?usp=sharing" },
+                    { t: "Aula 07 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/18oq_cBdCogCOoqMv23uwhllmmd_NKSM2/view?usp=sharing" },
+                    { t: "Aula 08 - Raciocínio Diagnóstico", u: "https://drive.google.com/file/d/1hrDh5C2RhyxpaTFpdgkDidnUU_tUJnDN/view?usp=sharing" },
+                    { t: "Aula 09 - Mononeuropatias", u: "https://drive.google.com/file/d/1fPh-8K2h_hdHQr2JHVyZ9cPzQ8Z5e3S2/view?usp=sharing" },
+                    { t: "Aula 10 - Neuropatia do Nervo Mediano no Punho (Túnel do Carpo)", u: "https://drive.google.com/file/d/11R8-E6JoY25Ce_X8D_jOB-YFg1acE9Xo/view?usp=sharing" },
+                    { t: "Aula 11 - Neuropatia do Nervo Ulnar no Cotovelo", u: "https://drive.google.com/file/d/1ezgdCSM-IHNlKDl-bXulMzfMI3IoGfVd/view?usp=sharing" },
+                    { t: "Aula 12 - Neuropatia do Nervo Radial no Sulco Espiral (Sábado a Noite)", u: "https://drive.google.com/file/d/1CyYVezMS5D-TdGcIh3bHZ_dpPyVtVTAb/view?usp=sharing" },
+                    { t: "Aula 13 - Neuropatia do Nervo Fibular na Cabeça da Fíbula", u: "https://drive.google.com/file/d/1b524SeeYC3FmpFejTheux7CiuqHsyeyc/view?usp=sharing" },
+                    { t: "Aula 14 - Mononeuropatia Múltipla", u: "https://drive.google.com/file/d/1RC84kjlyATYtxOYfnyyRAajF4sFQ-RxR/view?usp=sharing" },
+                    { t: "Aula 15 - Hanseníase", u: "https://drive.google.com/file/d/1N7MPytOpUcrBFaSDdBDuM9J5i9UaQ12K/view?usp=sharing" },
+                    { t: "Aula 16 - Vasculite", u: "https://drive.google.com/file/d/1jVulCxKsqKA9zN3X6pCPD6OwZX_L0WLE/view?usp=sharing" },
+                    { t: "Aula 17 - Neuropatia Motora Multifocal", u: "https://drive.google.com/file/d/1vFGLzgizSzpf30nyX7-Zho_wp-5DPS2a/view?usp=sharing" },
+                    { t: "Aula 18 - Outras Mononeuropatias Múltiplas", u: "https://drive.google.com/file/d/1kvksYSxZEPI4McJrV5A4vH3G1rVHEU64/view?usp=sharing" },
+                    { t: "Aula 19 - Algoritmo em Mononeuropatia Múltipla", u: "https://drive.google.com/file/d/1zmeVe4R8cvkfarYrTwQO6Oe76V6m2N1E/view?usp=sharing" },
+                    { t: "Aula 20 - Polineuropatias Agudas", u: "https://drive.google.com/file/d/1TdQQYegCKiBP8G3aFSQ0Xl0NZZl8BeSQ/view?usp=sharing" },
+                    { t: "Aula 21 - Síndrome de Guillain-Barré", u: "https://drive.google.com/file/d/1DNxghgBMxZ1IqQu8m2oSM5080bxuNj8g/view?usp=sharing" },
+                    { t: "Aula 22 - Porfiria e Outras Neuropatias Agudas", u: "https://drive.google.com/file/d/1U5wGat-zvM-wTOUQVxzcExdS9-1iZHib/view?usp=sharing" },
+                    { t: "Aula 23 - Diferencial de Polineuropatias Agudas", u: "https://drive.google.com/file/d/1y-CaLFDoN_Wqir36NZ82RxN31ZXOc4_t/view?usp=sharing" },
+                    { t: "Aula 24 - Polineuropatias Crônicas", u: "https://drive.google.com/file/d/1q__t64pQKrrnIl9Q9nZSu6GXMhz9297q/view?usp=sharing" },
+                    { t: "Aula 25 - Polineuropatias Crônicas Axonais", u: "https://drive.google.com/file/d/16iEqMGA2Wl19NdKLCAj-MCzccwn5eQJY/view?usp=sharing" },
+                    { t: "Aula 26 - Algoritmo em Polineuropatias Crônicas Axonais", u: "https://drive.google.com/file/d/125iMtd0yrn_HNbLLnPW_MR0S-ZabjPVY/view?usp=sharing" },
+                    { t: "Aula 27 - Polineuropatias Crônicas Desmielinizantes", u: "https://drive.google.com/file/d/1iUYnqq_LWMuwZH1BCFtviE2OXrxgpt4q/view?usp=sharing" },
+                    { t: "Aula 28 - Polineuropatias Crônicas Imunomediadas", u: "https://drive.google.com/file/d/1-X1asVUdx3QnoeTbBWUr_RFuMg2Vq95m/view?usp=sharing" },
+                    { t: "Aula 29 - Polineuropatias Hereditárias", u: "https://drive.google.com/file/d/1SqTOU1pX8-TYC4VaYWS1_5qy-P9fAeOu/view?usp=sharing" },
+                    { t: "Aula 30 - Doenças Sistêmicas e POEMS", u: "https://drive.google.com/file/d/19Wevk-IxDTRKxmzU58yJfLgYssiGC5gL/view?usp=sharing" },
+                    { t: "Aula 31 - Algoritmo em Polineuropatias Desmielinizantes", u: "https://drive.google.com/file/d/1s8ZrO7y7P7rfLBuKgF8NS96yBTNpZu46/view?usp=sharing" },
+                    { t: "Aula 32 - Neuropatia de Fibras Finas", u: "https://drive.google.com/file/d/1pey8wMhXNEUY0USQj1824Uux_7C7EiB1/view?usp=sharing" },
+                    { t: "Aula 33 - Causas de Neuropatias de Fibras Finas", u: "https://drive.google.com/file/d/1ReufBiuxNhOf1FYlcwg1pmbRsvGMsRia/view?usp=sharing" },
+                    { t: "Aula 34 - Algoritmo em Neuropatia de Fibras Finas", u: "https://drive.google.com/file/d/1xQi1GNsR7m3q1lNK2X5wbNv6d0TK5gOt/view?usp=sharing" },
+                    { t: "Aula 35 - Tratamento Sintomático de Polineuropatias", u: "https://drive.google.com/file/d/1vctKFIkymx6PdYFnNma7k_u3Qe_cUFpX/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 15 - Prolactinoma",
+                description: "Abordagem clínica e terapêutica dos prolactinomas.",
+                lessons: [
+                    { t: "Aula 01 - Caso Clínico", u: "https://drive.google.com/file/d/1ql5xg-lDJ8DvsoVERQcAfKTiggg418A4/view?usp=sharing" },
+                    { t: "Aula 02 - Abordagem Inicial", u: "https://drive.google.com/file/d/1JkTGgrwAOe7PNX3d1rO4cBHnJCiSnXMh/view?usp=sharing" },
+                    { t: "Aula 03 - Quadro Clínico", u: "https://drive.google.com/file/d/1Pccq3tbxchpayDwULMqh9txfo4zvlCul/view?usp=sharing" },
+                    { t: "Aula 04 - Exames Complementares", u: "https://drive.google.com/file/d/1iEeerJjj5jEz_VRn6IOHtDmGcKLJxnit/view?usp=sharing" },
+                    { t: "Aula 05 - Escolha de Tratamento", u: "https://drive.google.com/file/d/1JaYOiBsGpVrgVpPtuPU7NsO3YdQ9fZHC/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamento Clínico", u: "https://drive.google.com/file/d/14xBN3kBLx5gJ9gYaZE9bsNwE0gcRdi4f/view?usp=sharing" },
+                    { t: "Aula 07 - Seguimento Clínico", u: "https://drive.google.com/file/d/1bq3USZ9Xej3DqgtzSMV2S6mnQ6qOZf3K/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 16 - TDAH no Adulto",
+                description: "Diagnóstico e tratamento do TDAH em adultos.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia e Fisiopatologia", u: "https://drive.google.com/file/d/19TXhJow-8TkAUQtMucUl4peqP0rNKlby/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Comorbidades e Consequências", u: "https://drive.google.com/file/d/1PoSdk2u-EfXBvzhxykmeHQgxrb1RWjue/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico", u: "https://drive.google.com/file/d/1mcO-3sjbshKdzJT4Y4X9BpVjr0HaSn20/view?usp=sharing" },
+                    { t: "Aula 05 - Diagnósticos Diferenciais", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamento Princípios", u: "https://drive.google.com/file/d/1FeGcjSZy2JFxidLe2SZEvg9B-sb2vrCf/view?usp=sharing" },
+                    { t: "Aula 07 - Tratamento Farmacológico", u: "https://drive.google.com/file/d/1fUgGeDScwCn_GC_hhjlBdcAhnBz2lxFK/view?usp=sharing" },
+                    { t: "Aula 08 - Tratamento Medicações", u: "https://drive.google.com/file/d/1vbsgQJmqd3jXOno0WXv6cMj_A4NUwKLr/view?usp=sharing" },
+                    { t: "Aula 09 - Tratamento de Comorbidades", u: "https://drive.google.com/file/d/1jDiJSNxkWI_ZmPL-eBJrCnAeizLTBWYK/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 17 - Tremor Essencial",
+                description: "Diagnóstico e opções terapêuticas para tremor essencial.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia", u: "https://drive.google.com/file/d/1rStceccHyiFbKq4PlWs3TwZwoW7KFjYm/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiopatologia", u: "https://drive.google.com/file/d/11YRR_ThsnbbRG7o01XlvasRNPK_b7gLq/view?usp=sharing" },
+                    { t: "Aula 03 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 05 - Diagnóstico", u: "https://drive.google.com/file/d/1hbJA7KviEwayNfBOB5XX8P4zZswfUkw7/view?usp=sharing" },
+                    { t: "Aula 06 - Terapias de Primeira Linha", u: "https://drive.google.com/file/d/1MrlxrCy_4NesL71VGIPUpaDKi1fiC9PA/view?usp=sharing" },
+                    { t: "Aula 07 - Terapias de Segunda Linha", u: "https://drive.google.com/file/d/1wA60-0QK_oPwBCvFKF_KxWbHOSdu2w7u/view?usp=sharing" },
+                    { t: "Aula 08 - Tratamento Cirúrgico", u: "https://drive.google.com/file/d/1buBmuWu-FGe3tmFTT4FJqE5pYyy9rR1p/view?usp=sharing" },
+                    { t: "Aula 09 - Algoritmo", u: "https://drive.google.com/file/d/1iiDwm1eFnhPqCJaf5vJ6a_9ajM_M9EZf/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 18 - Tumores Cerebrais",
+                description: "Classificação, quadro clínico e tratamento de tumores cerebrais.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia e Classificação", u: "https://drive.google.com/file/d/1fuQRUzkAMlfG-6wuoAP58IiluLLSW4xA/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Neuroimagem", u: "https://drive.google.com/file/d/1hTqfZP-Mevzab5tD6IzqXMqXuCeGJFoW/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 05 - Diagnóstico", u: "https://drive.google.com/file/d/1hbJA7KviEwayNfBOB5XX8P4zZswfUkw7/view?usp=sharing" },
+                    { t: "Aula 06 - Crise Epiléptica", u: "https://drive.google.com/file/d/1eX-bYy7nP8uNcphdvScO_WbhEhhPqURf/view?usp=sharing" },
+                    { t: "Aula 07 - Corticoide", u: "https://drive.google.com/file/d/1he4pZ71Fer93Tj6jsRKsnSPG1lp4oqre/view?usp=sharing" },
+                    { t: "Aula 08 - Seguimento e Dicas", u: "https://drive.google.com/file/d/1bFg385G2PbtOMo7hkcNF-Myk3ymuii8T/view?usp=sharing" },
+                    { t: "Aula 09 - Meningeoma", u: "https://drive.google.com/file/d/1p8b6t4aR5LkMWDLmtYc-6ZzbwfSRZSDe/view?usp=sharing" },
+                    { t: "Aula 10 - Schwannoma Vestibular", u: "https://drive.google.com/file/d/1tH9soEaWdqNLYOmTaOlMKHGKr6WCXdle/view?usp=sharing" },
+                    { t: "Aula 11 - Neuropatia por Quimioterápicos", u: "https://drive.google.com/file/d/1rZOAWpRv_zI6T8myWc99PR4FkPZ1Bb7m/view?usp=sharing" },
+                    { t: "Aula 12 - Metástase Cerebral Diagnóstico", u: "https://drive.google.com/file/d/1Eu_rMqJh7WqFAUw-H-XSojFt2xX6T1eV/view?usp=sharing" },
+                    { t: "Aula 13 - Metástase Cerebral Tratamento", u: "https://drive.google.com/file/d/1l0ev5XMgxSDs3tAnxfphdCRE5W7OvSpa/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 19 - Vertigem",
+                description: "Diagnóstico e manobras para vertigens periféricas e centrais.",
+                lessons: [
+                    { t: "Aula 01 - Introdução", u: "https://drive.google.com/file/d/1R7EYQTW8rtrdDrhhJ8VOANvGKFfdDhJKT/view?usp=sharing" },
+                    { t: "Aula 02 - Abordagem a Tontura", u: "https://drive.google.com/file/d/1NOqxooFkmq4Fx2DiuoGhKNLsZ3PqDX8H/view?usp=sharing" },
+                    { t: "Aula 03 - Tontura Cardiovascular", u: "https://drive.google.com/file/d/1OoNzztCTYLrJZRxz3SkwjCA8dkMNmr7Y/view?usp=sharing" },
+                    { t: "Aula 04 - Abordagem a Vertigem", u: "https://drive.google.com/file/d/1w9n0eM0Prw52kUkmpXsJJBnhto7CHFb_/view?usp=sharing" },
+                    { t: "Aula 05 - Neurite Vestibular", u: "https://drive.google.com/file/d/14KNrRAI8sNaoXF69uIjEyP4yCuMX9c8m/view?usp=sharing" },
+                    { t: "Aula 06 - Vertigem Posicional Paroxística do Canal Posterior", u: "https://drive.google.com/file/d/1FqwKATLLLl3VyJj0RYWcYuXlXhlOO62c/view?usp=sharing" },
+                    { t: "Aula 07 - Vertigem Posicional Paroxística do Canal Horizontal", u: "https://drive.google.com/file/d/1KqI05Obw3f9wDBxokEAuLzRhknfYB2ht/view?usp=sharing" },
+                    { t: "Aula 08 - Migrânea Vestibular", u: "https://drive.google.com/file/d/1LseYWdiO0OZrxZwrdq7Q0lVaKy8eOPjX/view?usp=sharing" },
+                    { t: "Aula 09 - Doença de Meniere", u: "https://drive.google.com/file/d/1xehLUhdmP0zxPqT9DoVGhYEttSjPxL_c/view?usp=sharing" },
+                    { t: "Aula 10 - Tontura Perceptual Postural Persistente", u: "https://drive.google.com/file/d/1vhtwfcLV6qqHGbLjQIztDBLtq5VxR_WC/view?usp=sharing" },
+                    { t: "Aula 11 - Vertigem Central", u: "https://drive.google.com/file/d/1fCHX7j-pYrjm9i-GleLLzoRinaSh00Iy/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 20 - Zumbido",
+                description: "Avaliação e manejo do zumbido.",
+                lessons: [
+                    { t: "Aula 01 - Epidemiologia e Fisiopatologia", u: "https://drive.google.com/file/d/19TXhJow-8TkAUQtMucUl4peqP0rNKlby/view?usp=sharing" },
+                    { t: "Aula 02 - Quadro Clínico", u: "https://drive.google.com/file/d/1pKkT0I2FMQvm2eq3ZR20bc8p-q2TfaUv/view?usp=sharing" },
+                    { t: "Aula 03 - Diagnóstico Diferencial", u: "https://drive.google.com/file/d/1ajad9POgmSYXwuBTqYwCCah3OAwA0JWU/view?usp=sharing" },
+                    { t: "Aula 04 - Exames Complementares", u: "https://drive.google.com/file/d/16DwSDd0foH5eKjG8etI-TFoPdiks7xcT/view?usp=sharing" },
+                    { t: "Aula 05 - Tratamento Farmacológico", u: "https://drive.google.com/file/d/1fUgGeDScwCn_GC_hhjlBdcAhnBz2lxFK/view?usp=sharing" },
+                    { t: "Aula 06 - Tratamento Visão Geral", u: "https://drive.google.com/file/d/1YEc6u9HHynLP9m7FlHVaMyncm6wc2wzA/view?usp=sharing" },
+                    { t: "Aula 07 - Tratamento Não-Farmacológico", u: "https://drive.google.com/file/d/1GsiVrIs4YVrB3DACb5bCTfrMP5Au0YSZ/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 21 - Temas em Cefaleia",
+                description: "Tópicos especiais em cefaleia.",
+                lessons: [
+                    { t: "Aula 01 - Cefaleias Secundárias", u: "https://drive.google.com/file/d/1Gcr7_ZkG6wqIoCkJD55UnEwZqzawNG5M/view?usp=sharing" },
+                    { t: "Aula 02 - Cefaleia na Mulher", u: "https://drive.google.com/file/d/1qjA9EoNeCrns5md_mDnVOOjRAvqX8S9w/view?usp=sharing" },
+                    { t: "Aula 03 - Cefaleia na Gestação", u: "https://drive.google.com/file/d/1WyfozQSTbij32HvG5b4RSpHoTVQEXJRs/view?usp=sharing" },
+                    { t: "Aula 04 - Cefaleia no Idoso", u: "https://drive.google.com/file/d/11bbwUddrduGBxZiVZU6UfMwLPvyZoV0n/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 22 - Temas em Cognição",
+                description: "Aulas especiais sobre demências e cognição.",
+                lessons: [
+                    { t: "Aula 01 - Alzheimer com Dr. Ricardo Nitrini I", u: "https://drive.google.com/file/d/13TRo-60boz19ttt8nFlrmElsy43-UI0R/view?usp=sharing" },
+                    { t: "Aula 02 - Alzheimer com Dr. Ricardo Nitrini II", u: "https://drive.google.com/file/d/1ws6L3sH39ESOFpRYhyrt9kBLoJxgjeaZ/view?usp=sharing" },
+                    { t: "Aula 03 - Demência Vascular", u: "https://drive.google.com/file/d/15owUD5wQzUcVu5S_5jBHr-T3VcqIXGyl/view?usp=sharing" },
+                    { t: "Aula 04 - Exame Cognitivo Beira-Leito", u: "https://drive.google.com/file/d/1EXbhqF5gu_5qLreGK8M5veQoegg0W5QR/view?usp=sharing" },
+                    { t: "Aula 05 - Genética nas Demências", u: "https://drive.google.com/file/d/1wQYvCwONXbeZyHi92hlEI_6z_is_1K6U/view?usp=sharing" },
+                    { t: "Aula 06 - Queixa Cognitiva Pós-COVID", u: "https://drive.google.com/file/d/1h8jI4vD2Tl1HnRTzcgC3tupEWmhhPNgT/view?usp=sharing" },
+                    { t: "Aula 07 - Primeiro Surto Psicótico", u: "https://drive.google.com/file/d/1d2fMXdQXWZcTP5D-N4zeYSzjBQ9zIPgf/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 23 - Temas em Dor",
+                description: "Aulas focadas em manejo da dor.",
+                lessons: [
+                    { t: "Aula 01 - Neuralgia Pós-Herpética", u: "https://drive.google.com/file/d/1tLCzfULZkZ09E67OGWQpCeO6eM_OXKpJ/view?usp=sharing" },
+                    { t: "Aula 02 - Uso de Opióides", u: "https://drive.google.com/file/d/1Z5SlCj8xX2jzkpLyp8p9b_ugCJdHR3Ce/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 24 - Temas em Epilepsia",
+                description: "Tópicos avançados em epilepsia.",
+                lessons: [
+                    { t: "Aula 01 - Emergências em Epilepsia", u: "https://drive.google.com/file/d/1rnsMudp0RfokFOBMhdvR-uwfU3RYWULE/view?usp=sharing" },
+                    { t: "Aula 02 - Epilepsia Autoimune", u: "https://drive.google.com/file/d/17ISfU5D4pDV58PRfR_SPb_mbM9U09j-c/view?usp=sharing" },
+                    { t: "Aula 03 - Epilepsia Mioclônica Juvenil", u: "https://drive.google.com/file/d/1vaY3QOWc8zzmejH7EA6qMbw3KiLK4Lft/view?usp=sharing" },
+                    { t: "Aula 04 - Erros em Eletroencefalograma", u: "https://drive.google.com/file/d/1Mj06YdHnyJ-erMpb5CPgSoaUlwvSRrHy/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 25 - Temas em Extrapiramidal",
+                description: "Tópicos em distúrbios do movimento e cirurgia.",
+                lessons: [
+                    { t: "Aula 01 - Cirurgia para Parkinson", u: "https://drive.google.com/file/d/1056_t3IeG2V2AN8tLQCHBQbV4MKQZCeN/view?usp=sharing" },
+                    { t: "Aula 02 - DBS em Neurologia", u: "https://drive.google.com/file/d/1hUGgNfCdqsg3_m0ub3fwrBTAagp_JmJf/view?usp=sharing" },
+                    { t: "Aula 03 - Doença de Huntington", u: "https://drive.google.com/file/d/1gUMRarvN93EtwPfU9mNRFdjOJU6rgJJA/view?usp=sharing" },
+                    { t: "Aula 04 - Neuromodulação", u: "https://drive.google.com/file/d/1ek88sjOh1tMRV_9TrkhmgcqyTlUbQiKs/view?usp=sharing" },
+                    { t: "Aula 05 - Semiologia do Tremor", u: "https://drive.google.com/file/d/16YyMk9MVnxxsUQtgomjq8_GkxgxqUg0d/view?usp=sharing" },
+                    { t: "Aula 06 - Parkinsonismos Atípicos", u: "https://drive.google.com/file/d/1twu1s5MXJ3JsqBqDYER_wtunXNT6WsdO/view?usp=sharing" },
+                    { t: "Aula 07 - Tiques", u: "https://drive.google.com/file/d/1-t970yXL0Nr-pkYU5Qxl8XcrqDBjCR8E/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 26 - Temas em Neuroimuno",
+                description: "Doenças desmielinizantes e autoimunes.",
+                lessons: [
+                    { t: "Aula 01 - Anti-MOG e GFAP", u: "https://drive.google.com/file/d/1eIszk-cKIJkbuqWFXjahK986uEauI91L/view?usp=sharing" },
+                    { t: "Aula 02 - Diferenciais da Esclerose Múltipla", u: "https://drive.google.com/file/d/1WN0Iz0-JXdtwPhtDepXzTjeHj7sV_Rjf/view?usp=sharing" },
+                    { t: "Aula 03 - Doenças Desmielinizantes na Infância", u: "https://drive.google.com/file/d/1D7mcjQ5dvHxdSvdHH83Xr0EFiYGAUS5m/view?usp=sharing" },
+                    { t: "Aula 04 - Surto de Doença Desmielinizante", u: "https://drive.google.com/file/d/1J3pMr3Z1z0CKzwwc3ni2t4T8DzZrT7kr/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 27 - Temas em Neuromuscular",
+                description: "Doenças do neurônio motor, junção e músculo.",
+                lessons: [
+                    { t: "Aula 01 - CPK Elevada", u: "https://drive.google.com/file/d/1TrsjqL1knQd1HdvnthKHu47PTLM6WQmu/view?usp=sharing" },
+                    { t: "Aula 02 - Eletroneuromiografia", u: "https://drive.google.com/file/d/1Rs1p0yykso7mJ574LZZOU6MRpPRVM3A-/view?usp=sharing" },
+                    { t: "Aula 03 - Investigação em Polineuropatias", u: "https://drive.google.com/file/d/1vHMEmir5FEzjz-qZiIEOsvVYay4HICKp/view?usp=sharing" },
+                    { t: "Aula 04 - Diagnóstico Miastenia Gravis", u: "https://drive.google.com/file/d/10fZRtf-JbY2J1FOIsxTh4mPqdfhCNyUU/view?usp=sharing" },
+                    { t: "Aula 05 - Tratamento Miastenia", u: "https://drive.google.com/file/d/1SBrXlchlmj4Ru_5zBZEObYGyNlCCsPFO/view?usp=sharing" },
+                    { t: "Aula 06 - Miastenia na Prática", u: "https://drive.google.com/file/d/12Ski-298Q_TLW0XpYYogAWsENdjmeqah/view?usp=sharing" },
+                    { t: "Aula 07 - Síndrome do Túnel do Carpo", u: "https://drive.google.com/file/d/1lWo5_osVLudjKHzZ46BVaOyQRkGiaAVH/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 28 - Temas em Neurovascular",
+                description: "Tópicos em AVC e doenças vasculares.",
+                lessons: [
+                    { t: "Aula 01 - Anticoagulação no AVC", u: "https://drive.google.com/file/d/1p6Ku8uRZurOSxs0_m2DruF_5k298q_Bk/view?usp=sharing" },
+                    { t: "Aula 02 - AVC de Origem Indeterminada", u: "https://drive.google.com/file/d/1tQvizgHzyzHlqR6UhwbM6lkauBcfRvDQ/view?usp=sharing" },
+                    { t: "Aula 03 - Exame Neurológico no AVC", u: "https://drive.google.com/file/d/1cKQWgcZuGpgJEGhBbc6moa93MEYRBH8Z/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 29 - Temas Variados",
+                description: "Aulas diversas sobre genética, vertigens e outros temas.",
+                lessons: [
+                    { t: "Aula 01 - Ataxia Cerebelar Genética", u: "https://drive.google.com/file/d/10s7S_NKDLHGlw0-Ccs9Fh4L4P_wpbS8j/view?usp=sharing" },
+                    { t: "Aula 02 - Ataxia Cerebelar Paraneoplásica", u: "https://drive.google.com/file/d/18s4l_XC3Dlpv0h6SdJLdsv8K2gHGEmyD/view?usp=sharing" },
+                    { t: "Aula 03 - Cabeça Caída", u: "https://drive.google.com/file/d/1aAfr4fIXycXVnIWgel33hn0aTGpbVaKr/view?usp=sharing" },
+                    { t: "Aula 04 - Ciladas em Neuroinfectologia", u: "https://drive.google.com/file/d/1KeyeubwQI_XQbWox7yt4wurL2B8oB1-J/view?usp=sharing" },
+                    { t: "Aula 05 - Encefalite Anti-LgI1", u: "https://drive.google.com/file/d/1mRjlPac8LcdbgQIXIZzTXzVb8EjXCP7l/view?usp=sharing" },
+                    { t: "Aula 06 - Genética para Não-Especialistas", u: "https://drive.google.com/file/d/1LAR02UomweKoQ45Tx9C4C8jjfK5I1fQU/view?usp=sharing" },
+                    { t: "Aula 07 - Perda de Consciência", u: "https://drive.google.com/file/d/1BbZdeEqxPus75Ed5ckuej2CizFc51wQf/view?usp=sharing" },
+                    { t: "Aula 08 - Prolactinoma", u: "https://drive.google.com/file/d/17uR21VplXwFlszarq00uGdLtH1ILsPly/view?usp=sharing" },
+                    { t: "Aula 09 - Semiologia da Vertigem", u: "https://drive.google.com/file/d/1TXNxtbBhiZvVXEsBAldu1NT6YFx96Jgt/view?usp=sharing" },
+                    { t: "Aula 10 - Uso de Antidepressivos", u: "https://drive.google.com/file/d/1yLOry3JBf4bLPqwDCDYl4qCfiwZMhc4y/view?usp=sharing" },
+                    { t: "Aula 11 - Vertigens Marcantes", u: "https://drive.google.com/file/d/105ikb10wLL074ySpyrrufNQgMWIAOzTM/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>

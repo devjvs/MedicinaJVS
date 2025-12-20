@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Medicina do Sono - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; } /* Slate-900 base */
+        
+        /* Estilos do Player */
+        /* Cor Indigo para Sono */
+        .selected-lesson { background-color: #4338ca; border-left: 4px solid #818cf8; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #6366f1; /* Indigo-500 */
+        }
+        .module-icon {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-moon text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Medicina do Sono</h1>
+                <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Curso Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-slate-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-slate-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-slate-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-slate-800 text-white text-sm py-2 px-3 rounded-lg border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-slate-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Dormir bem, Viver melhor</h2>
+                <p class="text-slate-400 text-lg max-w-2xl mx-auto">Explore os fundamentos, diagnósticos e terapias dos distúrbios do sono.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mb-6 border border-slate-800">
+                        <i class="fas fa-play text-3xl text-slate-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-slate-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-slate-900 p-4 border-t border-slate-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-slate-850 border-b border-slate-800 shadow-sm shrink-0 bg-slate-800">
+                <h3 class="font-bold text-slate-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO DE MEDICINA DO SONO
+        // ==================================================================================
+        
+        const courseData = [
+            {
+                title: "Módulo 01 — Abordagem Inicial",
+                description: "Fisiologia básica e métodos de avaliação do sono.",
+                lessons: [
+                    { t: "Aula 01 — Fisiologia do Sono", u: "https://drive.google.com/file/d/1lTPP0CAFv5CpnM680jMizwiIY6QcBk3j/view?usp=sharing" },
+                    { t: "Aula 02 — Avaliação do Sono I", u: "https://drive.google.com/file/d/11X2NNyHxXWFGXwOMmxMNcOtT_OHruatl/view?usp=sharing" },
+                    { t: "Aula 03 — Avaliação do Sono II", u: "https://drive.google.com/file/d/1EOQs_-9ueoRRi_MqpsmON8Z_6xNN6Iza/view?usp=sharing" },
+                    { t: "Aula 04 — Avaliação do Sono III", u: "https://drive.google.com/file/d/1TBcwsJeinEp2NMzSmtViY-0HWeogocF9/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 02 — Insônia Avaliação",
+                description: "Diagnóstico e características clínicas da insônia.",
+                lessons: [
+                    { t: "Aula 01 — Insônia Diagnóstico I", u: "https://drive.google.com/file/d/1Cldnm2U9FBuaMVcHEpkTtNGFe09FdkZC/view?usp=sharing" },
+                    { t: "Aula 02 — Insônia Diagnóstico II", u: "https://drive.google.com/file/d/1xeNJvRsh6_v5f0gwjDSWlNlfWv-ZppMf/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 03 — Insônia Visão da Terapia",
+                description: "Visão geral e estratégias de tratamento para insônia.",
+                lessons: [
+                    { t: "Aula 01 — Insônia Tratamento Geral I", u: "https://drive.google.com/file/d/1DFemGvrfdL6jzD8yF-O8mB34pD_Idd7x/view?usp=sharing" },
+                    { t: "Aula 02 — Insônia Tratamento Geral II", u: "https://drive.google.com/file/d/1juUSsG1408kiO1qDlyoUvXWPWpHMucGW/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 04 — Insônia TCC",
+                description: "Terapia Cognitivo-Comportamental aplicada à insônia.",
+                lessons: [
+                    { t: "Aula 01 — TCC para Insônia I", u: "https://drive.google.com/file/d/181_5kyo2IZKLgdxUUySmp_kUTC0LFalz/view?usp=sharing" },
+                    { t: "Aula 02 — TCC para Insônia II", u: "https://drive.google.com/file/d/1NgSy99aefyaKACuJN1Xt8S_Dc7LYI7kN/view?usp=sharing" },
+                    { t: "Aula 03 — TCC para Insônia III", u: "https://drive.google.com/file/d/1AjQJO7QGrscuLBlGZSlr1u8ek3fOcPd8/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 05 — Insônia Medicações",
+                description: "Farmacoterapia para o tratamento da insônia.",
+                lessons: [
+                    { t: "Aula 01 — Medicação para Insônia I", u: "https://drive.google.com/file/d/1AS0NeGaZPKEyV2uQ_0hRx0bEGEKfufEq/view?usp=sharing" },
+                    { t: "Aula 02 — Medicação para Insônia II", u: "https://drive.google.com/file/d/1yltqwMZ3md2NwDfcNUWeeiDraJzus_wh/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 06 — Insônia Terapia Prática",
+                description: "Casos práticos e aplicação do tratamento.",
+                lessons: [
+                    { t: "Aula 01 — Tratando Insônia na Prática I", u: "https://drive.google.com/file/d/1go2EJSyJyHEtZi7E3MV_L_G5mBzhr2u6/view?usp=sharing" },
+                    { t: "Aula 02 — Tratando Insônia na Prática II", u: "https://drive.google.com/file/d/1_p32s1i6hBkQcd4B_PfG9zqRawEAIpRT/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 07 — Apneia do Sono Clínica",
+                description: "Diagnóstico e quadro clínico da SAOS.",
+                lessons: [
+                    { t: "Aula 01 — Diagnóstico de SAOS I", u: "https://drive.google.com/file/d/14Dlr8FvF0rQl8zzVK_OgnBa5kVxjp9VD/view?usp=sharing" },
+                    { t: "Aula 02 — Diagnóstico de SAOS II", u: "https://drive.google.com/file/d/159KjTrCRVzdL_DDlGUyAZj5wnCE1tUlj/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 08 — Apneia do Sono Terapia",
+                description: "Tratamento e manejo da Apneia Obstrutiva do Sono.",
+                lessons: [
+                    { t: "Aula 01 — Tratando Apneia do Sono I", u: "https://drive.google.com/file/d/1sJOO88WCgHTmZXUhQX_pzCYyZoHf-ILq/view?usp=sharing" },
+                    { t: "Aula 02 — Tratando Apneia do Sono II", u: "https://drive.google.com/file/d/1b2xpFxaFMBni4Mzq_2RFFZuPOSBbu9DZ/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 09 — Sonolência Excessiva",
+                description: "Abordagem diagnóstica da hipersonolência.",
+                lessons: [
+                    { t: "Aula 01 — Abordagem a Sonolência I", u: "https://drive.google.com/file/d/1FiwksI7AFCmZa2qdldOLy5EsYE51PxMa/view?usp=sharing" },
+                    { t: "Aula 02 — Abordagem a Sonolência II", u: "https://drive.google.com/file/d/1gzYQ04EGbRNcRbYDG3z6-Jz0_ral0xCt/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 10 — Narcolepsia",
+                description: "Fisiopatologia, clínica, diagnóstico e tratamento.",
+                lessons: [
+                    { t: "Aula 01 — Introdução à Narcolepsia", u: "https://drive.google.com/file/d/1pjf07AyvSEKMgiw2UAlLhLwdcxCIOD3Q/view?usp=sharing" },
+                    { t: "Aula 02 — Clínica da Narcolepsia", u: "https://drive.google.com/file/d/1USWwn2nLvhW0Gfo1GS4zKDf85awVmt3g/view?usp=sharing" },
+                    { t: "Aula 03 — Diagnóstico da Narcolepsia", u: "https://drive.google.com/file/d/1crc2UHto_8ERoj_v8eCMeJFTAagGqfgt/view?usp=sharing" },
+                    { t: "Aula 04 — Tratamento da Narcolepsia", u: "https://drive.google.com/file/d/1HZCfY4voVkjB28bd3c2u32lLkpGkPvNI/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 11 — Ritmo Circadiano",
+                description: "Distúrbios do ritmo circadiano e cronobiologia.",
+                lessons: [
+                    { t: "Aula 01 — Ritmo Circadiano I", u: "https://drive.google.com/file/d/1wh60stuax_e_aWWac88EQhrOfdC2yAng/view?usp=sharing" },
+                    { t: "Aula 02 — Ritmo Circadiano II", u: "https://drive.google.com/file/d/1q12otgTOqSLsBxHmP0efOLKmYEoaw897/view?usp=sharing" },
+                    { t: "Aula 03 — Ritmo Circadiano III", u: "https://drive.google.com/file/d/1ArAfk8lgEsMdmFGzwCSS8wDhzQcSkIqO/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 12 — Pernas Inquietas",
+                description: "Síndrome das Pernas Inquietas (SPI) e Movimentos Periódicos.",
+                lessons: [
+                    { t: "Aula 01 — Introdução a Pernas Inquietas", u: "https://drive.google.com/file/d/1kLA0MXeQRrnHJBrdJBOqFdGY0OPYqDgb/view?usp=sharing" },
+                    { t: "Aula 02 — Tratamento Básico SPI", u: "https://drive.google.com/file/d/1sfWHgyT_gPYE31NAEI11SpUqHYKUBkZi/view?usp=sharing" },
+                    { t: "Aula 03 — Terapia Avançada SPI", u: "https://drive.google.com/file/d/15JCB0aEa8UMHI2tWiJqR-sJULEkzTh4i/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 13 — Exames Complementares",
+                description: "Polissonografia, actigrafia e outros exames.",
+                lessons: [
+                    { t: "Aula 01 — Exames Diagnósticos em Sono", u: "https://drive.google.com/file/d/115L7ae8xO3NN7pJPufMoPpof5-H5I4KT/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 14 — Movimentos Involuntários",
+                description: "Parassonias e comportamentos anormais durante o sono.",
+                lessons: [
+                    { t: "Aula 01 — Parassonias", u: "https://drive.google.com/file/d/12SrKoMvLphbg3LI-6Q2Y7bzYlkNq_bZJ/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 15 — Entrevistas Ao Vivo",
+                description: "Discussões práticas e tira-dúvidas.",
+                lessons: [
+                    { t: "Aula 01 — 7 Erros em Insônia", u: "https://drive.google.com/file/d/1skaoem65LYb9soa-2_ooRyMuhdiSgw_K/view?usp=sharing" },
+                    { t: "Aula 02 — Benzodiazepínicos na Prática", u: "https://drive.google.com/file/d/1e_wVUduK6Zf-rMm_mloClKOoFiTeYUcZ/view?usp=sharing" },
+                    { t: "Aula 03 — Polissonografia na Prática", u: "https://drive.google.com/file/d/14io7mqk7TyEqmCggvJCDUBry7WeVOLp2/view?usp=sharing" },
+                    { t: "Aula 04 — Respondendo Perguntas", u: "https://drive.google.com/file/d/1N07m795VtpUvkGCVN9drWUHuyc_i8_rm/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Ícone baseado no título
+                let icon = 'fa-moon';
+                if(mod.title.includes('Insônia')) icon = 'fa-bed';
+                if(mod.title.includes('Apneia')) icon = 'fa-lungs';
+                if(mod.title.includes('Sonolência') || mod.title.includes('Narcolepsia')) icon = 'fa-battery-quarter';
+                if(mod.title.includes('Ritmo')) icon = 'fa-clock';
+                if(mod.title.includes('Medicações') || mod.title.includes('Terapia')) icon = 'fa-pills';
+                if(mod.title.includes('Exames')) icon = 'fa-file-medical-alt';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-slate-800 text-slate-400 text-xs font-bold px-2 py-1 rounded border border-slate-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">${mod.title}</h3>
+                    <p class="text-slate-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between text-sm">
+                        <span class="text-indigo-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-indigo-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-indigo-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-indigo-600/20 group-hover:text-indigo-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-slate-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>

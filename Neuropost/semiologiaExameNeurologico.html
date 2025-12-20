@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Semiologia Neurológica - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e2e8f0; }
+        
+        /* Estilos do Player */
+        /* Cor Teal/Emerald para Semiologia */
+        .selected-lesson { background-color: #059669; border-left: 4px solid #34d399; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1f2937; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #374151;
+        }
+        .lesson-item:hover { background-color: #374151; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1f2937, #111827);
+            border: 1px solid #374151;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #10b981; /* Emerald */
+        }
+        .module-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #111827; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-600 to-teal-800 flex items-center justify-center shadow-lg">
+                <i class="fas fa-user-md text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Semiologia Neurológica</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Exame Físico & Clínica</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Arte do Exame Neurológico</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do raciocínio clínico à prática do exame físico. Selecione um módulo para começar.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO DE SEMIOLOGIA NEUROLÓGICA
+        // ==================================================================================
+        
+        const courseData = [
+            // --- PARTE TEÓRICA ---
+            {
+                title: "Teórico | Módulo 01 - Introdução",
+                description: "Boas vindas, raciocínio clínico e princípios fundamentais do exame.",
+                lessons: [
+                    { t: "Aula 01 — Boas Vindas", u: "https://drive.google.com/file/d/1EmK3ydn_LCbN7nwTmhrZ5p1I_QIJmDBR/view?usp=sharing" },
+                    { t: "Aula 02 — Ferramenta Poderosa", u: "https://drive.google.com/file/d/1BOgVszWWvIZ7ppw9VUystVs00-eA1qhC/view?usp=sharing" },
+                    { t: "Aula 03 — Raciocínio em Neurologia", u: "https://drive.google.com/file/d/1rqP8GdsFkSV_HJesakKnoN3VsEFnrUFo/view?usp=sharing" },
+                    { t: "Aula 04 — Princípios Fundamentais", u: "https://drive.google.com/file/d/1SzScyk-PHXSwVPOdxx_lETJx3pjMfdiS/view?usp=sharing" },
+                    { t: "Aula 05 — Organização do Exame", u: "https://drive.google.com/file/d/159CNlFvs_0ooYqkPNyab_9dr1XiNTTS8/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 02 - Cognitivo",
+                description: "Avaliação da atenção, memória, linguagem e funções executivas.",
+                lessons: [
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1pz45qMW98DxgOg0T2feXr2MxeTso8dJn/view?usp=sharing" },
+                    { t: "Aula 02 — Atenção Básica", u: "https://drive.google.com/file/d/1bMDm8zLk_NmTrolW6jwAQibAuON-n6aK/view?usp=sharing" },
+                    { t: "Aula 03 — Funções Executivas", u: "https://drive.google.com/file/d/1R93hX6iZKuygHLdZRqicZnQUqQQqfMLY/view?usp=sharing" },
+                    { t: "Aula 04 — Memória", u: "https://drive.google.com/file/d/1x-kuoinVyPA8eEttqyppqKIW1558RlKL/view?usp=sharing" },
+                    { t: "Aula 05 — Linguagem", u: "https://drive.google.com/file/d/1lwEsfJwvcaedCdaDpY3D7YEAyMa2pFA4/view?usp=sharing" },
+                    { t: "Aula 06 — Apraxia, Visuoespaciais e Visuoperceptivas", u: "https://drive.google.com/file/d/1stKA4quMVkx0o2BCdWiXpyrDG_xpiOag/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 03 - Motricidade",
+                description: "Exame de força, tônus, reflexos e síndromes motoras.",
+                lessons: [
+                    { t: "Aula 01 — Anatomia e Fisiologia", u: "https://drive.google.com/file/d/11K_H_Q417wF2-5MLMsHOAlUgSFSmF94E/view?usp=sharing" },
+                    { t: "Aula 02 — Força Muscular", u: "https://drive.google.com/file/d/1tHSCZ1z9OCCtbYLxZQIoq65-ZdrOTSYA/view?usp=sharing" },
+                    { t: "Aula 03 — Reflexos", u: "https://drive.google.com/file/d/1bDMV5LXCTb3NViHmWSC1S5BOq3BwKMB0/view?usp=sharing" },
+                    { t: "Aula 04 — Tônus", u: "https://drive.google.com/file/d/1dEEf2kqt4UKEjzcsBbmXi4nQLS_q8WE4/view?usp=sharing" },
+                    { t: "Aula 05 — Trofismo", u: "https://drive.google.com/file/d/1mHxyD7rD9-yiGCiD5wdMsVY3n2pvpjL6/view?usp=sharing" },
+                    { t: "Aula 06 — Fasciculações", u: "https://drive.google.com/file/d/1Am2pqs4cIyz_Tn97_rzYd853KggrTxyb/view?usp=sharing" },
+                    { t: "Aula 07 — Fraqueza Muscular", u: "https://drive.google.com/file/d/14VC1ZdZXn2kfH_sNoLdkri2_OvlQMw1D/view?usp=sharing" },
+                    { t: "Aula 08 — Síndromes Centrais-Piramidais", u: "https://drive.google.com/file/d/1rF41Bta20Pl5I5wLlkV8k4tuwJc376l_/view?usp=sharing" },
+                    { t: "Aula 09 — Síndromes da Unidade Motora", u: "https://drive.google.com/file/d/1E0uhteyldjXjvlnK5tHGYnL9gCeQttuI/view?usp=sharing" },
+                    { t: "Aula 10 — Síndromes dos Membros", u: "https://drive.google.com/file/d/10sj603wD7A6qmd-2Yc2HsKvKE442cqiY/view?usp=sharing" },
+                    { t: "Aula 11 — Síndromes dos Membros Superiores (Proximais)", u: "https://drive.google.com/file/d/1L7X4nvkkwIArY1mLaR6hmbzq4Mo5Ws5V/view?usp=sharing" },
+                    { t: "Aula 12 — Síndromes dos Membros Superiores (Distais)", u: "https://drive.google.com/file/d/18seSdmiG2WbASYJb8hU0rc4FS2cPqE5a/view?usp=sharing" },
+                    { t: "Aula 13 — Síndromes dos Membros Inferiores", u: "https://drive.google.com/file/d/1UQR1DA0UOikJM9yidii21dk9TXUOwOb_/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 04 - Sensibilidade",
+                description: "Anatomia e exame das vias sensitivas e suas síndromes.",
+                lessons: [
+                    { t: "Aula 01 — Anatomia e Fisiologia", u: "https://drive.google.com/file/d/1_ZqbYPpVyjewxl44wWBce4OaPXA6ehY1/view?usp=sharing" },
+                    { t: "Aula 02 — Exame Clínico", u: "https://drive.google.com/file/d/1mt3YORVXIaEg6JPZsgE1VkohVVghOTs5/view?usp=sharing" },
+                    { t: "Aula 03 — Síndromes Sensitivas", u: "https://drive.google.com/file/d/1xRrlMHAbseb1TXSci8HOJ5u9FSuCFyjm/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 05 - Coordenação",
+                description: "Avaliação da coordenação apendicular e axial (marcha e postura).",
+                lessons: [
+                    { t: "Aula 01 — Apendicular Membros", u: "https://drive.google.com/file/d/1ABmXlu3YidktHwKrI68sjmeVrt3cMkb-/view?usp=sharing" },
+                    { t: "Aula 02 — Axial Postura e Marcha", u: "https://drive.google.com/file/d/1ZCUTj5luuAySlxe3y35nKrvjOMiNCk_e/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 06 - Movimentos Involuntários",
+                description: "Semiologia de parkinsonismo, tremores, coreia e outros distúrbios.",
+                lessons: [
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1clJ05PIR9y8KONw6qmKUcxPJeERK2IC9/view?usp=sharing" },
+                    { t: "Aula 02 — Parkinsonismo", u: "https://drive.google.com/file/d/1nzcyQnBbt11V4FFz3cT5Rtty3yzGDzI9/view?usp=sharing" },
+                    { t: "Aula 03 — Tremor", u: "https://drive.google.com/file/d/1r6YZfXvC2M5g2lrz_bU5vzqxUAu2SMVq/view?usp=sharing" },
+                    { t: "Aula 04 — Distonia", u: "https://drive.google.com/file/d/1cjjmuqw1AGCNxiXpfEoBukaWw5tgj9md/view?usp=sharing" },
+                    { t: "Aula 05 — Mioclonia", u: "https://drive.google.com/file/d/1Yu8kC332vTf2bRb6RlNYGn6oUiN5tHOm/view?usp=sharing" },
+                    { t: "Aula 06 — Coreia", u: "https://drive.google.com/file/d/1b2dtQagkYJD3zdenHxsOmx6wlD3suxvL/view?usp=sharing" },
+                    { t: "Aula 07 — Tiques", u: "https://drive.google.com/file/d/1QXPZw7RjZK58KhQmgAhj_42zg3jUCxz2/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 07 - Nervo Óptico",
+                description: "Exame de fundo de olho, acuidade visual e neuropatias.",
+                lessons: [
+                    { t: "Aula 01 — Anatomia e Fisiologia", u: "https://drive.google.com/file/d/1ZxkbmG8WCoBI9KiHs4xnmv-nNRmD9bgA/view?usp=sharing" },
+                    { t: "Aula 02 — Exame Clínico", u: "https://drive.google.com/file/d/19qFjvI4L_vmRCUaPlBcGnbRuPDL6cN1-/view?usp=sharing" },
+                    { t: "Aula 03 — Neuropatias Ópticas", u: "https://drive.google.com/file/d/1TXK2sFSKX3D7l1YL8xUstC7YndjStFQu/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 08 - Motricidade Ocular",
+                description: "Avaliação dos movimentos oculares, pupilas e síndromes de tronco.",
+                lessons: [
+                    { t: "Aula 01 — Anatomia e Fisiologia", u: "https://drive.google.com/file/d/10YXoOG3QDHrGrVSWUTJ8zrK3s_542RIq/view?usp=sharing" },
+                    { t: "Aula 02 — Inspeção", u: "https://drive.google.com/file/d/1YiYStfiFweoH2YnG4Sre0cFtAXdoHphG/view?usp=sharing" },
+                    { t: "Aula 03 — 9 Posições e Cobertura", u: "https://drive.google.com/file/d/11QFhqobFugASY1aWiz5z5C1bQdsq4m6l/view?usp=sharing" },
+                    { t: "Aula 04 — Outros Testes", u: "https://drive.google.com/file/d/1GNFP0b4ATrWMAFOXNCa4UIv0KQsrk9eG/view?usp=sharing" },
+                    { t: "Aula 05 — Visão Dupla", u: "https://drive.google.com/file/d/1f_Jv6SM9UbC3r0L_CH_RjSXZILtQLBJq/view?usp=sharing" },
+                    { t: "Aula 06 — Síndromes de Tronco", u: "https://drive.google.com/file/d/1vZNr7V3vFnP-wqLDLsTifbGG9EC-ewKU/view?usp=sharing" },
+                    { t: "Aula 07 — Síndromes de Nervos", u: "https://drive.google.com/file/d/17K9rBlLQGuNgJIalFulKrc2IScw67OSk/view?usp=sharing" },
+                    { t: "Aula 08 — Outras Topografias", u: "https://drive.google.com/file/d/1dIl9cUhT9Bue7nVc6Pb-nXTHU7VvV4ud/view?usp=sharing" },
+                    { t: "Aula 09 — Fisiologia das Pupilas", u: "https://drive.google.com/file/d/1dAnCFccZgrrN1cpyPDsVwUEBOJP9IbAZ/view?usp=sharing" },
+                    { t: "Aula 10 — Transtornos Pupilares", u: "https://drive.google.com/file/d/1vwfokpuKq_iv3bkU25RnZsHtrHA1hZEh/view?usp=sharing" },
+                    { t: "Aula 11 — Transtornos Palpebrais", u: "https://drive.google.com/file/d/1mKJ-pdIIo0aT-USsv_yLMC9jTf1XwJ8I/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 09 - Nervo Trigêmeo",
+                description: "Anatomia e exame da sensibilidade da face e função mastigatória.",
+                lessons: [
+                    { t: "Aula 01 — Anatomia e Fisiologia", u: "https://drive.google.com/file/d/1NlhYQgoX7fl2w6SilCBqfa0UTL-m8az-/view?usp=sharing" },
+                    { t: "Aula 02 — Exame e Neuropatias", u: "https://drive.google.com/file/d/1sFuB1yYUPTsyHbqxTGWlnXp3I4drbV3H/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 10 - Nervo Facial",
+                description: "Semiologia da mímica facial e paralisias (central vs periférica).",
+                lessons: [
+                    { t: "Aula 01 — Anatomia", u: "https://drive.google.com/file/d/1F_Bo9ByYZajmyRSfQIgQavAMZ5-uxC8h/view?usp=sharing" },
+                    { t: "Aula 02 — Semiologia", u: "https://drive.google.com/file/d/1_Ng8P5fTouC_CcXFfoS1PcE5aVbW0SDH/view?usp=sharing" },
+                    { t: "Aula 03 — Paralisia Facial", u: "https://drive.google.com/file/d/1OokvV-fQS9vddxMELODMzvRv6Wvhgsz4/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 11 - Nervo Vestibular",
+                description: "Avaliação de tontura, nistagmo e manobras posicionais.",
+                lessons: [
+                    { t: "Aula 01 — Tontura", u: "https://drive.google.com/file/d/1rA55R0DckTIsBJgXcLNxehl8eIG_DZ62/view?usp=sharing" },
+                    { t: "Aula 02 — Semiologia", u: "https://drive.google.com/file/d/1H0rG4lpdKbaSFEhbSGuqV2rtEY_BXKim/view?usp=sharing" },
+                    { t: "Aula 03 — Movimentos Oculares Anormais", u: "https://drive.google.com/file/d/10G3WK8_hMxApc8_-X7gr3_ylIQHVMJ2p/view?usp=sharing" },
+                    { t: "Aula 04 — Manobras Posicionais", u: "https://drive.google.com/file/d/1P0-w9mT9t8llHsa3MqJa8ZmkZ4AOS0BE/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 12 - Nervos Bulbares",
+                description: "Avaliação da deglutição, fala e nervos glossofaríngeo, vago, acessório e hipoglosso.",
+                lessons: [
+                    { t: "Aula 01 — Vago e Glossofaríngeo", u: "https://drive.google.com/file/d/1sEzqlscgtdI3w4vEeYDsOA128dLe-HGJ/view?usp=sharing" },
+                    { t: "Aula 02 — Transtornos da Deglutição", u: "https://drive.google.com/file/d/1C1kpuRa6ltLXsPbLbpLsNV6Kk9m5uA2l/view?usp=sharing" },
+                    { t: "Aula 03 — Transtornos da Fala", u: "https://drive.google.com/file/d/1yQc3IFfFQDlv_5sREKiEX2EpMF7Dn0hT/view?usp=sharing" },
+                    { t: "Aula 04 — Nervo Acessório", u: "https://drive.google.com/file/d/1lSILAvW_4e6or8mVjo03_lQStlHXIkgR/view?usp=sharing" },
+                    { t: "Aula 05 — Nervo Hipoglosso", u: "https://drive.google.com/file/d/1izlXWzK-Q9kzVblpR6YdydB3Gea_aA1n/view?usp=sharing" },
+                    { t: "Aula 06 — Síndromes Bulbares", u: "https://drive.google.com/file/d/1mrB7ke96I7hOkEdt5zJB4lMhWgwp4Eo2/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Teórico | Módulo 13 - Outros Temas",
+                description: "Cefaleia, neurodesenvolvimento e exame em situações específicas.",
+                lessons: [
+                    { t: "Aula 01 — Semiologia em Cefaleia", u: "https://drive.google.com/file/d/1q-kWPt_O1UXJCxK_hkvZlcPPNRWFwqyp/view?usp=sharing" },
+                    { t: "Aula 02 — Semiologia de Crise I", u: "https://drive.google.com/file/d/1q88eIAuWz90UlBMuoSX1_4yM7ilIr5Ky/view?usp=sharing" },
+                    { t: "Aula 03 — Semiologia de Crise II", u: "https://drive.google.com/file/d/1DLEG_1UwcP2W4nBwDyn20VCX4VbNawqT/view?usp=sharing" },
+                    { t: "Aula 04 — Escala NIHSS", u: "https://drive.google.com/file/d/1ByCFj84BTDlZV5w3jXJ2si2P5gZNVyPs/view?usp=sharing" },
+                    { t: "Aula 05 — Neurodesenvolvimento", u: "https://drive.google.com/file/d/1JoJ1G_CwBZyLSXhSZ8lfSFFa9iPEvpAv/view?usp=sharing" },
+                    { t: "Aula 06 — Exame Infantil", u: "https://drive.google.com/file/d/19BgaagKPxkT0USj0bgqCieT_3dRRmt2S/view?usp=sharing" }
+                ]
+            },
+            // --- PARTE PRÁTICA ---
+            {
+                title: "Prático | Módulo Único",
+                description: "Demonstrações práticas de todas as etapas do exame neurológico.",
+                lessons: [
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1se4LG70QuMz_l2VJAyAsnj-qE2MI_DFz/view?usp=sharing" },
+                    { t: "Aula 02 — Exame Essencial", u: "https://drive.google.com/file/d/1lYPsNVZe4HTGfoSd1OQGyn8xkF38SCLI/view?usp=sharing" },
+                    { t: "Aula 03 — Exame em 10 Minutos", u: "https://drive.google.com/file/d/1oTQXAT2Tcpzi3Wb0ZC1ci4bFYz6GkhrN/view?usp=sharing" },
+                    { t: "Aula 04 — Força Muscular", u: "https://drive.google.com/file/d/1XDFlGV0Bnm_ZpuAeRe47fcp-2_MKtCb7/view?usp=sharing" },
+                    { t: "Aula 05 — Reflexos", u: "https://drive.google.com/file/d/1LXanjFAyHJX-EFsLFpIRH4nRA1a9Vtir/view?usp=sharing" },
+                    { t: "Aula 06 — Tônus", u: "https://drive.google.com/file/d/1zNHGZJBE-Fs9zw_NJ-XcpqM5VcOgF6DT/view?usp=sharing" },
+                    { t: "Aula 07 — Trofismo", u: "https://drive.google.com/file/d/1YAkf8863uMVLADXmJ5upt0Kiw55KQc14/view?usp=sharing" },
+                    { t: "Aula 08 — Sensibilidade", u: "https://drive.google.com/file/d/1OgdYOWNy1JVr-L6qeZIVllrXsMbV_1_G/view?usp=sharing" },
+                    { t: "Aula 09 — Coordenação", u: "https://drive.google.com/file/d/1uxwzpV_YMbrfZJRTIa8FZz1tZuOR6Kwd/view?usp=sharing" },
+                    { t: "Aula 10 — Postura e Marcha", u: "https://drive.google.com/file/d/1pi_aF4KhC-IMBsZaGCHzDHlUMNdj6Kqm/view?usp=sharing" },
+                    { t: "Aula 11 — Movimentos Involuntários", u: "https://drive.google.com/file/d/1_nBt3p9XK-aL4SA9L8UqRk1sx60RlBoT/view?usp=sharing" },
+                    { t: "Aula 12 — Sinais Meníngeos", u: "https://drive.google.com/file/d/1dFEpJdRdOsBytv9ZpJKtjzoJlFk5JjxP/view?usp=sharing" },
+                    { t: "Aula 13 — Nervo Olfatório", u: "https://drive.google.com/file/d/1oEq69jV3dOIKLZIdVBtIX4fgGIaMWiUT/view?usp=sharing" },
+                    { t: "Aula 14 — Nervo Óptico", u: "https://drive.google.com/file/d/1CZ_lwUS6ge4gK8hAMAP3ey6V6yDIvpu4/view?usp=sharing" },
+                    { t: "Aula 15 — Motricidade Ocular", u: "https://drive.google.com/file/d/1G8lEkuh5FYSpqqY0lVyMlqXy1tJ6yasT/view?usp=sharing" },
+                    { t: "Aula 16 — Nervo Trigêmeo", u: "https://drive.google.com/file/d/1bs97qDCGybAU-EFXI8skFDNKrej1WOEA/view?usp=sharing" },
+                    { t: "Aula 17 — Nervo Facial", u: "https://drive.google.com/file/d/1jP-vUup74ntCyhCKhpnf93pKhT4xGhIc/view?usp=sharing" },
+                    { t: "Aula 18 — Nervo Vestibular", u: "https://drive.google.com/file/d/1QLmJ6AC4T7QNl9hslet3-9dMeM-mYIGY/view?usp=sharing" },
+                    { t: "Aula 19 — Nervo Coclear", u: "https://drive.google.com/file/d/1VGNNUwXzjHl7BGUQz6IWhLbreRGclyf9/view?usp=sharing" },
+                    { t: "Aula 20 — Nervos Vago e Glossofaríngeo", u: "https://drive.google.com/file/d/1T4ddy-kH5UF7AeRzxXsuRGTHQSVjWVSE/view?usp=sharing" },
+                    { t: "Aula 21 — Nervo Acessório", u: "https://drive.google.com/file/d/1vrM2tFyzMaz5XX1mMy2b_dGsashrNtFL/view?usp=sharing" },
+                    { t: "Aula 22 — Nervo Hipoglosso", u: "https://drive.google.com/file/d/1uclJutEpjuQOQvpO4tc-tDGaXLi0Gp9z/view?usp=sharing" },
+                    { t: "Aula 23 — Exame no Coma", u: "https://drive.google.com/file/d/1XSbvzKuy2CnBZ4THfgeYtqsxhmIixRY5/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos para o formato interno
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('Prático')) icon = 'fa-user-md';
+                if(mod.title.includes('Cognitivo')) icon = 'fa-lightbulb';
+                if(mod.title.includes('Motricidade')) icon = 'fa-walking';
+                if(mod.title.includes('Sensibilidade')) icon = 'fa-hand-sparkles';
+                if(mod.title.includes('Ocular') || mod.title.includes('Óptico')) icon = 'fa-eye';
+                if(mod.title.includes('Vestibular')) icon = 'fa-balance-scale';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-emerald-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-emerald-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-emerald-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-emerald-600/20 group-hover:text-emerald-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
