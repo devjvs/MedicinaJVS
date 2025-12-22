@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Clínica Médica</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Clínica Médica</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 182 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+            // Módulo 1: Cardiologia
+  {
+    title: "Síndrome Coronariana Aguda sem Supra de ST (SCASSST)",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: SCASSST", u: "https://drive.google.com/file/d/19mN6PLL9ECs-6Ytz3yJ3HZbjLgAU0Cgl/view?usp=sharing" },
+      { t: "Aula CofExpress: SCASSST_COFEXPRESS", u: "https://drive.google.com/file/d/1c1r8YtexwnqqfvJ4uFt-mog7gPmOpZhr/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome Coronariana Aguda com Supra de ST (SCACSST)",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: SCACSST", u: "https://drive.google.com/file/d/1EKU8lTDXOxMIRsq4S86aitXFiHSksqCn/view?usp=sharing" },
+      { t: "Aula CofExpress: SCACSST_COFEXPRESS", u: "https://drive.google.com/file/d/1LIoOso-Jx45O-PwhqM1JetMV3-BkiydS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndromes Aórticas Agudas",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Síndromes Aórticas Agudas", u: "https://drive.google.com/file/d/12U-IER02MqXsB-In3Sa50qN87xe2rWCK/view?usp=sharing" },
+      { t: "Aula CofExpress: Síndromes Aórticas Agudas_COFEXPRESS", u: "https://drive.google.com/file/d/1lTfkO8fLAWtkPHhzkkYCRUQBy5_TKMD4/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Pericardite e Miocardite",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Pericardite e Miocardite", u: "https://drive.google.com/file/d/1ubVxuAh07JzFU1upNaRVQv_-wyH8lkSs/view?usp=sharing" },
+      { t: "Aula CofExpress: Pericardite e Miocardite_COFEXPRESS", u: "https://drive.google.com/file/d/1u8pFfNIphd66AlSWgExb_3cgXyG0F6uI/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipertensão Arterial Sistêmica (HAS)",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Hipertensão Arterial Sistêmica (HAS)", u: "https://drive.google.com/file/d/1MUQ5FUxV-8grRz4xfT2A1bVzvpWDQlaJ/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipertensão Arterial Sistêmica (HAS)_COFEXPRESS", u: "https://drive.google.com/file/d/12_CMrUQkd_WFUTzvaNehFgGQE01iKaFP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Emergências Hipertensivas",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: VISÃO DO ESPECIALISTA Emergências Hipertensivas", u: "https://drive.google.com/file/d/14KaSBrEdAoHvMyJ6IOHUZQBVZicehJpQ/view?usp=sharing" },
+      { t: "Aula CofExpress: COFEXPRESS Emergências Hipertensivas", u: "https://drive.google.com/file/d/14FCclIk0pdmQVRFiBM6pI1kDEI7Nv2im/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Cardíaca - Manejo Ambulatorial",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Insuficiência Cardíaca - Manejo Ambulatorial", u: "https://drive.google.com/file/d/1BEjaK5N7IpgOaLZlDA1NArbTBVSbUSFK/view?usp=sharing" },
+      { t: "Aula CofExpress: Insuficiência Cardíaca - Manejo Ambulatorial_COFEXPRESS", u: "https://drive.google.com/file/d/1kKI_ebiIJ6Q5rwPtCD8_FC8mNfLz8mOD/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Cardíaca - Descompensações Agudas",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Insuficiência Cardíaca - Descompensações Agudas", u: "https://drive.google.com/file/d/1Hk36GomLzaRUVp8Kj1pX0tW3nM8U-zs7/view?usp=sharing" },
+      { t: "Aula CofExpress: Insuficiência Cardíaca - Descompensações Agudas_COFEXPRESS", u: "https://drive.google.com/file/d/1tHour3Pr1giaYAX4VSW_j_enhK1R_NN4/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Taquiarritmias",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Taquiarritmias", u: "https://drive.google.com/file/d/1xs_pF8i4BwLNz_gGuhJCl3IXHDUyHeoh/view?usp=sharing" },
+      { t: "Aula CofExpress: Taquiarritmias - Cardiologia (COF)", u: "https://drive.google.com/file/d/1Z4uCIoXMqB-upTBuySXmRQYRuSymvFv1/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bradiarritimias",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Bradiarritimias", u: "https://drive.google.com/file/d/1yAMoOSmzNRbxxa-Co4MoI47HtImMTyBN/view?usp=sharing" },
+      { t: "Aula CofExpress: Bradiarritimias (COF)", u: "https://drive.google.com/file/d/10sBNxdIBISu_ictvPV3Sydc4PGUht_c7/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síncope",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Síncope", u: "https://drive.google.com/file/d/1jyd8aBOZJHHD4fzoOaxJDrDO4fyNVVB7/view?usp=sharing" },
+      { t: "Aula CofExpress: Síncope (COF)", u: "https://drive.google.com/file/d/1mBZIluoZerTSG_86FJvlvncV-bNiqUbu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Febre Reumática e Endocardite",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Febre Reumática e Endocardite", u: "https://drive.google.com/file/d/1lC_k38yDwnx0y6HScvQ1samR3g9StEt6/view?usp=sharing" },
+      { t: "Aula CofExpress: Febre Reumática e Endocardite (COF)", u: "https://drive.google.com/file/d/1QYykfcgdZ2_jl9x7kBuPPcFhZYA95vOo/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Valvopatias",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: Valvopatias", u: "https://drive.google.com/file/d/1jpRP64dPfmvCQqGhAb1SOCv6ZPgvGysU/view?usp=sharing" },
+      { t: "Aula CofExpress: Valvopatias (COF)", u: "https://drive.google.com/file/d/1FX_72LASXAQlGFtSXhKHwqpn2xBpNvb0/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "BLS e ACLS",
+    description: "Módulo 1: Cardiologia",
+    lessons: [
+      { t: "Aula: BLS e ACLS", u: "https://drive.google.com/file/d/1MjkGeaHUISnDuainGqR6S_1vHRk9Y5KM/view?usp=sharing" },
+      { t: "Aula CofExpress: BLS e ACLS (COF)", u: "https://drive.google.com/file/d/1SyWx-DiYX4JcWQNnflWgq3-FM-b_-Xvb/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 2: Pneumologia
+  {
+    title: "Pneumonia Adquirida na Comunidade",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Pneumonia Adquirida na Comunidade", u: "https://drive.google.com/file/d/18gOEuk65fuHIBGllx6m1-sdbRJX8gBzf/view?usp=sharing" },
+      { t: "Aula CofExpress: Pneumonia Adquirida na Comunidade_COFEXPRESS", u: "https://drive.google.com/file/d/1bAORXQIbZL_rH4GYbnLe87lGYqAWlTuB/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Derrame Pleural",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Derrame Pleural", u: "https://drive.google.com/file/d/1k5SYZu4CUTWfJ_k--KvBqEnijnrKN3vA/view?usp=sharing" },
+      { t: "Aula CofExpress: Derrame Pleural_COFEXPRESS", u: "https://drive.google.com/file/d/1EwoBT-jK3Q1IZuFM0B2gUxmKkviQzXsy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Asma",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: ASMA", u: "https://drive.google.com/file/d/1uYIhWVzhK5cbNCkB7njJbxbvix480dws/view?usp=sharing" },
+      { t: "Aula CofExpress: Asma_COFEXPRESS", u: "https://drive.google.com/file/d/1KiKz3R3wdJa95YN-tmnXzXs1cOlDDN8n/view?usp=sharing" },
+      { t: "PDF de Slides: Pneumo 1 Asma", u: "https://drive.google.com/file/d/19tlpuR0mtETgbLKYLfMQXmztBPc9dCmF/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Pulmonar Obstrutiva Crônica (DPOC)",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Doença Pulmonar Obstrutiva Crônica (DPOC)", u: "https://drive.google.com/file/d/1ex2BJ4myqRk6h7dqxLsLIVGuCJT6wf9Z/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença Pulmonar Obstrutiva Crônica (DPOC)_COFEXPRESS", u: "https://drive.google.com/file/d/1vwKzWfHQ02qqcOQDlQg8Ath5Awj_wmtt/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tabagismo",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Tabagismo", u: "https://drive.google.com/file/d/18hxCd_Wu6zGQxX7nvIp4adRf4ebUGUlp/view?usp=sharing" },
+      { t: "Aula CofExpress: Tabagismo_COFEXPRESS", u: "https://drive.google.com/file/d/1cJw2id3LdbN8LmMSwILmUHi2QfU9Sdjz/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Espirometria",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Espirometria", u: "https://drive.google.com/file/d/128Dc5FB-m9GKUVjMuyNkqR07iUKpdWIz/view?usp=sharing" },
+      { t: "Aula CofExpress: Espirometria_COFEXPRESS", u: "https://drive.google.com/file/d/1XUC59vReaktLdIF1qGP2FoEQNPlsAJ-b/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tromboembolismo Pulmonar (TEP)",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: TEP", u: "https://drive.google.com/file/d/1Ys4B80LotEb4cL_96M4d6m5uS-Tvko4O/view?usp=sharing" },
+      { t: "Aula CofExpress: TEP_COFEXPRESS", u: "https://drive.google.com/file/d/1dhx8s-CvMT77ZrkdXQxlTyblT3uLKV9w/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipertensão pulmonar",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Hipertensão pulmonar", u: "https://drive.google.com/file/d/1038RjGhSd20Id0b8dFrSUirw4I-KmobN/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipertensão pulmonar_COFEXPRESS", u: "https://drive.google.com/file/d/1KEyFC1Mv5pDXSCuX6Umtdm3FLtn-KTuS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios do Sono",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Distúrbios do Sono", u: "https://drive.google.com/file/d/1eXN0uto5FMAJBXgW4nXDk4Rk7Twi7ZsQ/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios do Sono_COFEXPRESS", u: "https://drive.google.com/file/d/1Zz0KmgtbjMBlykmXVKFaXaG15ar_2Qtq/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Pulmonar Intersticial (DPI)",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Doença Pulmonar Intersticial (DPI)", u: "https://drive.google.com/file/d/1Wq9ohz9GnO3_EQdyBl2EgduQWITgvckW/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença Pulmonar Intersticial (DPI)_COFEXPRESS", u: "https://drive.google.com/file/d/1s_y8D_B-G-0s0ate99EoX5nAyxvV4B6l/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Nódulo Pulmonar",
+    description: "Módulo 2: Pneumologia",
+    lessons: [
+      { t: "Aula: Nódulo Pulmonar", u: "https://drive.google.com/file/d/1fH45OyT_XBHCCAk4S0OvKPqSwIRxei7L/view?usp=sharing" },
+      { t: "Aula CofExpress: Nódulo Pulmonar_COFEXPRESS", u: "https://drive.google.com/file/d/1Dhm0pwMuqbGl_wsF8Y7I3Lyt9m81XiPS/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 3: Endocrinologia e Metabologia
+  {
+    title: "Diabetes: Classificação, Fisiopatologia e Diagnóstico",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Diabetes Classificação, Fisiopatologia e Diagnóstico", u: "https://drive.google.com/file/d/13XEAfJk9EagwPMCi01ocxjsL8qQyGCNi/view?usp=sharing" },
+      { t: "Aula CofExpress: Diabetes Classificação, Fisiopatologia e Diagnóstico_COFEXPRESS", u: "https://drive.google.com/file/d/1wDNp7EMlM-S0yvjYUX2x6znrAZTuGjcn/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Meta Terapêutica, Manejo do pré-DM e Tratamento Não Farmacológico",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Meta Terapêutica, Manejo do pré-DM e Tratamento Não Farmacológico do DM", u: "https://drive.google.com/file/d/17ffb-HPqmlj1aSZYb9Jdma5n5MutitM1/view?usp=sharing" },
+      { t: "Aula CofExpress: Meta Terapêutica, Manejo do pré-DM e Tratamento Não Farmacológico do DM_COFEXPRESS", u: "https://drive.google.com/file/d/13nnepLngEftLrgi8BwBshZgztZyOSnKI/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antidiabéticos Orais e Subcutâneos - Parte 1",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Antidiabéticos Orais e Subcutâneos - Parte 1", u: "https://drive.google.com/file/d/14hqA4YLrf7l9BC2aSwZ7RK4U-HC6glYr/view?usp=sharing" },
+      { t: "Aula CofExpress: Antidiabéticos Orais e Subcutâneos - Parte 1_COFEXPRESS", u: "https://drive.google.com/file/d/1d7rICmc4LDJcISrRg_qayt-Ss1BZYy0X/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antidiabéticos Orais e Subcutâneos - Parte 2",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Antidiabéticos Orais e Subcutâneos - Parte 2", u: "https://drive.google.com/file/d/1mqqpKTqDqeaKJeFAw62Aooz7Z6FIYsbC/view?usp=sharing" },
+      { t: "Aula CofExpress: Antidiabéticos Orais e Subcutâneos - Parte 2_COFEXPRESS", u: "https://drive.google.com/file/d/19HUkFXAi5RWLpvOzLUAkG_t5lRUz6q06/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insulinoterapia",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Insulinoterapia", u: "https://drive.google.com/file/d/1-LLZrBOts8gEPeUzFie142YjEbVMaW-D/view?usp=sharing" },
+      { t: "Aula CofExpress: Insulinoterapia_COFEXPRESS", u: "https://drive.google.com/file/d/1lmfIf9Kg1mwhCsPsMjFKgCw99mR9Kcp2/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Complicações Crônicas do Diabetes Mellitus (DM)",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Complicações Crônicas do Diabetes Mellitus (DM)", u: "https://drive.google.com/file/d/1wpRHQkJFxdc-SO15LFzX4PxU5iylYH4C/view?usp=sharing" },
+      { t: "Aula CofExpress: Complicações Crônicas do Diabetes Mellitus (DM)_COFEXPRESS", u: "https://drive.google.com/file/d/1XZwBVa32rDRoDNiKfgi6VHTkS0l2W59b/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hiperglicemia Hospitalar",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Hiperglicemia Hospitalar", u: "https://drive.google.com/file/d/1is5276-Qund026TvCbu6Ne6bKUE0walG/view?usp=sharing" },
+      { t: "Aula CofExpress: Hiperglicemia Hospitalar_COFEXPRESS", u: "https://drive.google.com/file/d/1VgHhAjzjXt11Pd8J4yYNRoHhNb_T9b6V/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Emergências Hiperglicêmicas (CAD e EHH)",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Emergências Hiperglicêmicas (CAD e EHH)", u: "https://drive.google.com/file/d/14wEKRjDDQRKDCm9HfrSaGSao1Quj-G3i/view?usp=sharing" },
+      { t: "Aula CofExpress: Emergências Hiperglicêmicas (CAD e EHH)_COFEXPRESS", u: "https://drive.google.com/file/d/1qi2qCwDpbGxISgfK_vSfW4CYGvN9Trqo/view?usp=sharing" },
+      { t: "PDF de Slides: Cetoacidose Diabética", u: "https://drive.google.com/file/d/1yeYRMyGTcu7VO497FbZGZwda78ZPdPhl/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Dislipidemia - Classificação e Diagnóstico",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Dislipidemia - Classificação e Diagnóstico", u: "https://drive.google.com/file/d/11VS7iEm68JtZqAagbNF_tL9AA8kIpVJ4/view?usp=sharing" },
+      { t: "Aula CofExpress: Dislipidemia - Classificação e Diagnóstico _COFEXPRESS", u: "https://drive.google.com/file/d/1Htg-PeQN_LydQwVrcAzrjaypP7SZ0Q6W/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tratamento das Dislipidemias",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Tratamento das Dislipidemias.mp4", u: "https://drive.google.com/file/d/15uEb68qS6GPFSmklCfpdyhZQcZX2KSOx/view?usp=sharing" },
+      { t: "Aula CofExpress: Tratamento das Dislipidemias _COFEXPRESS", u: "https://drive.google.com/file/d/1N8ofC2oPmqg0C3AGJmERmu97VJo_7WdP/view?usp=sharing" },
+      { t: "PDF de Slides: Atualização em DislipidemiaEDITADO", u: "https://drive.google.com/file/d/1VVKTs53308aM9zEBZczOHWE1gEbl2nNg/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome Metabólica",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Síndrome Metabólica_COFEXPRESS", u: "https://drive.google.com/file/d/1bsJ-KK_juM-lFe2_-E76UrMQVdJhdtqz/view?usp=sharing" },
+      { t: "Aula CofExpress: Obesidade e Síndrome Metabólica_COFEXPRESS", u: "https://drive.google.com/file/d/1kO-_4DtZYfqtLAWcLPOIkv5dWKZfzl0-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Obesidade: Introdução e Tratamento Não Farmacológico",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Obesidade Introdução e Tratamento Não Farmacológico", u: "https://drive.google.com/file/d/169TiWAu35bBY6PFqZJl4_i9QytPqMMwB/view?usp=sharing" },
+      { t: "Aula CofExpress: Obesidade Introdução e Tratamento Não Farmacológico_COFEXPRESS", u: "https://drive.google.com/file/d/1ADm9rRHFgvPDzByvOdKiNIWfGn4TrCkc/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Obesidade: Tratamento Farmacológico e Cirúrgico",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Obesidade Tratamento Farmacológico e Cirúrgico", u: "https://drive.google.com/file/d/1ei7tXkdZnBnItTbxWQ1bo3lq6h-XIhDx/view?usp=sharing" },
+      { t: "Aula CofExpress: Obesidade Tratamento Farmacológico e Cirúrgico _COFEXPRESS", u: "https://drive.google.com/file/d/1BB9zR-NnaPX6txMIIkzIcVveyq6UZzfT/view?usp=sharing" },
+      { t: "PDF de Slides: Obesidade Princípios Gerais e Cirurgia Bariátrica", u: "https://drive.google.com/file/d/1AKJqMgA9Ft7OooLWinz3mlRE8CKA8U_z/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fisiologia da Tireoide",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1KIWdxEcGXonTzT1MryTkbPjeelKS8V74/view?usp=sharing" },
+      { t: "Aula CofExpress: Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1LKu1tTxLv4hP-GpT2wv8569lsQME5S5S/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipotireoidismo",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Hipotireoidismo", u: "https://drive.google.com/file/d/1jKqkOBBx4d4A18eS98UtheE_LD5D_vMl/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipotireoidismo (COF)", u: "https://drive.google.com/file/d/1BYIk5bKsyvetYCmz1b83L44LQDpki83h/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipertireoidismo",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Hipertireoidismo", u: "https://drive.google.com/file/d/1lPRuv31CpTpj7K1ubjwsWnX4X7M9e9XW/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipertireoidismo (COF)", u: "https://drive.google.com/file/d/11Q_7ROtJZm7ymESCmCM95Djoi5CSLFKk/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tireoidites & Síndrome do Eutireoidiano Doente",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Tireoidites & Síndrome do Eutireoidiano Doente", u: "https://drive.google.com/file/d/1mEJzhfOJJT4-ERr9Nz7Szd2rYMe7DhAd/view?usp=sharing" },
+      { t: "Aula CofExpress: Tireoidites & Síndrome do Eutireoidiano Doente (COF)", u: "https://drive.google.com/file/d/14HHDqCxrwMGLIlgoP3zif_rhi-FI1HaQ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Nódulos e Câncer de Tireoide",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Nódulos e Câncer de Tireoide", u: "https://drive.google.com/file/d/1WjlgasiPDWLlVZEx1KzesX44_9I5bJP1/view?usp=sharing" },
+      { t: "Aula CofExpress: Nódulos e Câncer de Tireoide (COF)", u: "https://drive.google.com/file/d/1EjdxVb9K1CJrbji0Hk5UYgTNPsOlzvYY/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fisiologia e Anatomia da Adrenal",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Fisiologia e Anatomia da Adrenal", u: "https://drive.google.com/file/d/1mxBWA7o9VFDoaWTFVFnV94LmRuuGs3fK/view?usp=sharing" },
+      { t: "Aula CofExpress: Fisiologia e Anatomia da Adrenal_COFEXPRESS", u: "https://drive.google.com/file/d/1EO-uqwwnWuiJvbrX114XSEOzvfLjnB0U/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Incidentaloma Adrenal",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Incidentaloma Adrenal", u: "https://drive.google.com/file/d/1IK9ou3kSrv8A0m9i461JnI-JlvJrWLaA/view?usp=sharing" },
+      { t: "Aula CofExpress: Incidentaloma Adrenal_COFEXPRESS", u: "https://drive.google.com/file/d/18N582vyv2UWs3V0dO10Zmz11_UT2LOWZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome de Cushing",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Síndrome de Cushing", u: "https://drive.google.com/file/d/1QO0eeJTCy_gv78alHQK1POf580Y7URMN/view?usp=sharing" },
+      { t: "Aula CofExpress: Síndrome de Cushing_COFEXPRESS", u: "https://drive.google.com/file/d/1_TRvce6XkvMa4pf4-_IxzstA1OPQJp_G/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Adrenal",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Insuficiência Adrenal", u: "https://drive.google.com/file/d/1FH9l96SKn53gyxdLmPuYfRIIjevTFA0Y/view?usp=sharing" },
+      { t: "Aula CofExpress: Insuficiência Adrenal_COFEXPRESS", u: "https://drive.google.com/file/d/1UVl737ZK0KzNGl9c_Vs_egsM6iiiqa-h/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hiperaldosteronismo Primário",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Hiperaldosteronismo Primário", u: "https://drive.google.com/file/d/1jGLBaUcbGRTpa1sWAF7Gb50Dcl_uRKAd/view?usp=sharing" },
+      { t: "Aula CofExpress: Hiperaldosteronismo Primário_COFEXPRESS", u: "https://drive.google.com/file/d/1JIZdxz9Azyj9pJSKn68wehNyXXVLGJca/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Feocromocitoma",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Feocromocitoma", u: "https://drive.google.com/file/d/13qBrxIu47RU6tuYQxgYCKXV4ykqLNAKh/view?usp=sharing" },
+      { t: "Aula CofExpress: Feocromocitoma_COFEXPRESS", u: "https://drive.google.com/file/d/1x7cMmqgYgSPNV33FrIqnEuZwaPKWVoDT/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Prolactinomas",
+    description: "Módulo 3: Endocrinologia e Metabologia",
+    lessons: [
+      { t: "Aula: Prolactinomas", u: "https://drive.google.com/file/d/107IjXP2mejzBhFVtSPsQckSZe9jH4Hlr/view?usp=sharing" },
+      { t: "Aula CofExpress: Prolactinomas_COFEXPRESS", u: "https://drive.google.com/file/d/1flsqADw8hPANlV4SmmSIgpKmhKIZ_Qq2/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 4: Gastroenterologia e Hepatologia
+  {
+    title: "Dispepsia",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: VISÃO DO ESPECIALISTA Dispepsia", u: "https://drive.google.com/file/d/1gLD7OD-bLDpGkZl0-YdfpwfAOURczHnv/view?usp=sharing" },
+      { t: "Aula CofExpress: COFEXPRESS Dispepsia", u: "https://drive.google.com/file/d/1Uoi3cqFbRX_qsogrX8HrfO9OW_ywLUjj/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "DRGE",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Esôfago DRGE", u: "https://drive.google.com/file/d/1bF4GoVpTdaVQfRjOx5NrkT21TfMIHoVO/view?usp=sharing" },
+      { t: "Aula CofExpress: Esôfago DRGE_COFEXPRESS", u: "https://drive.google.com/file/d/1z440PRT_avePCoStKxEqVz6HBls7DQHM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Úlcera péptica, H. pylori, Gastrite Atrófica e Dispepsia Funcional",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Úlcera péptica, H. pylori, Gastrite Atrófica e Dispepsia Funcional", u: "https://drive.google.com/file/d/1XJmMA5Jrr_bT5MM1qnPSHX0HDYmXaBgD/view?usp=sharing" },
+      { t: "Aula CofExpress: Úlcera péptica, H. pylori, Gastrite Atrófica e Dispepsia Funcional_COFEXPRESS", u: "https://drive.google.com/file/d/1TBWc88yorYXNYouBRenp41nkzYM1r_EX/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Disfagia, Esofagite Eosinofílica e Acalasias",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Disfagia, Esofagite Eosinofílica e Acalasias.mp4", u: "https://drive.google.com/file/d/1igz_SA7e-lbNlLsvVigu2NXzbdgb6QJQ/view?usp=sharing" },
+      { t: "Aula CofExpress: Disfagia, Esofagite Eosinofílica e Acalasias_COFEXPRESS.mp4", u: "https://drive.google.com/file/d/1zW6GycKyaHeI-wZyuKqvDUxkzpSB0ges/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Diarreia Agudas e Colite Pseudomembranosa",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Diarreia Agudas e Colite Pseudomembranosa", u: "https://drive.google.com/file/d/1nUiHl8ZBRdCAtjC0d-_4-1eCyQHl70mp/view?usp=sharing" },
+      { t: "Aula CofExpress: Diarreia Agudas e Colite Pseudomembranosa (COF)", u: "https://drive.google.com/file/d/1TCtjVCSv4wko65000Vu7VsryDfOkz277/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Diarreias Crônicas",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Diarreias Crônicas", u: "https://drive.google.com/file/d/1MtCew3o4qKI7EFjs8ME5aRy89caGQEBO/view?usp=sharing" },
+      { t: "Aula CofExpress: Diarreias Crônicas (COF)", u: "https://drive.google.com/file/d/1RaIKlDlSaecCa9CtI4bM5417GgHIxhh_/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Inflamatória Intestinal (DII)",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Doença Inflamatória Intestinal (DII)", u: "https://drive.google.com/file/d/1DOsoNlS8kKZlX_eC0FsxeQzr8WF0w6et/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença Inflamatória Intestinal (DII) (COF)", u: "https://drive.google.com/file/d/1QHtcZHOj0I_iCoCn0O75103jfMyQtkaU/view?usp=sharing" },
+      { t: "PDF de Slides: Doença Inflamatória intestinal - Parte 1", u: "https://drive.google.com/file/d/1Gai0QWOzsON22LY5cR4wcRfB-PLP9mQc/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Avaliação de enzimas hepáticas",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Avaliação de Enzimas Hepáticas", u: "https://drive.google.com/file/d/11pxbwP5x0c3wexgJS4MiW3qV7Cbkm1R-/view?usp=sharing" },
+      { t: "Aula CofExpress: Avaliação de enzimas hepáticas_COFEXPRESS", u: "https://drive.google.com/file/d/1sDM5B4XLOAnD4Q5U4NW-e9adUoIPJOC-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças hepáticas: CBP, CEP, HAI e Doença de Wilson",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Doenças hepáticas CBP, CEP, HAI e Doença de Wilson", u: "https://drive.google.com/file/d/18xa3Q0nopPX7kGdIBs2t7uUCz33Y-P1b/view?usp=sharing" },
+      { t: "Aula CofExpress: Doenças hepáticas CBP, CEP, HAI e Doença de Wilson_COFEXPRESS", u: "https://drive.google.com/file/d/1TwqdaEStsqlRsJh4qh2E5xIJzJtxBEQs/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença hepática esteatótica Metabólica (DHEM)",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Doença hepática esteatótica Metabólica (DHEM)", u: "https://drive.google.com/file/d/1Q62wz9qH129313A58u7p7bO1vnx1Fogc/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença hepática esteatótica Metabólica (DHEM)_COFEXPRESS", u: "https://drive.google.com/file/d/1XePKGkk6-Sgjonq_TVoE-tZ3HWcn4TPy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cirrose hepática: Conceitos Gerais",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Cirrose hepática Conceitos Gerais.mp4", u: "https://drive.google.com/file/d/1aodsApKaCHpMLofgGEHqq3GyfBJ5E2AG/view?usp=sharing" },
+      { t: "Aula CofExpress: Cirrose hepática Conceitos Gerais_COFEXPRESS.mp4", u: "https://drive.google.com/file/d/1DUv0sbNXn8hU1IZiJ610pdaE2jgEaGUt/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cirrose hepática: Ascite + PBE",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Cirrose hepática Ascite + PBE", u: "https://drive.google.com/file/d/1I5bWGmsqIXnZWApR5vEOcSn_UmMtw8B3/view?usp=sharing" },
+      { t: "Aula CofExpress: Cirrose hepática Ascite + PBE_COFEXPRESS", u: "https://drive.google.com/file/d/18vr7EbI49zWVmdb9i8fdiwyVAqGof238/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cirrose hepática: Encefalopatia Hepática e Síndrome Hepatorrenal",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Cirrose hepática Encefalopatia Hepática e Síndrome Hepatorrenal", u: "https://drive.google.com/file/d/1froa8wot8tSSpuB4jHFCXXf6yPm-SE9w/view?usp=sharing" },
+      { t: "Aula CofExpress: Cirrose hepática Encefalopatía Hepática e Síndrome Hepatorrenal_COFEXPRESS", u: "https://drive.google.com/file/d/173TrJU409pcj3aOQoCuZJH5uJrQGW0-G/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cirrose hepática: Varizes esofágicas e Síndrome Hepatopulmonar",
+    description: "Módulo 4: Gastroenterologia e Hepatologia",
+    lessons: [
+      { t: "Aula: Cirrose hepática Varizes esofágicas e Síndrome Hepatopulmonar", u: "https://drive.google.com/file/d/1fbOqPlaTfdp9MKtLwNwzuOnynzmdvSRq/view?usp=sharing" },
+      { t: "Aula CofExpress: Cirrose hepática Varizes esofágicas e Síndrome Hepatopulmonar_COFEXPRESS", u: "https://drive.google.com/file/d/1Ys_W93B_MD4EsGeiQ1caIDd7MOwWHrio/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 5: Infectologia
+  {
+    title: "Doenças oportunistas HIV",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Doenças oportunistas HIV", u: "https://drive.google.com/file/d/1gwfXTfeAk1i124yyaCxEl8PGObyiJTIy/view?usp=sharing" },
+      { t: "Aula CofExpress: Doenças oportunistas HIV_COFEXPRESS", u: "https://drive.google.com/file/d/1igx-W_33lUmQuyohleHw-QqflyEWKi31/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "HIV",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: HIV-", u: "https://drive.google.com/file/d/1tqUBWGLFuyaR_US0Lj7PmQ5JEcqSPURl/view?usp=sharing" },
+      { t: "Aula CofExpress: HIV_COFEXPRESS", u: "https://drive.google.com/file/d/1zgyNm5EmY7cxxMnqBMzvsTDgSKppVy70/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antibióticos I",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Antibióticos I", u: "https://drive.google.com/file/d/1dLB0bCsX666jGMq_ltrP-L-bh92u7WfT/view?usp=sharing" },
+      { t: "Aula CofExpress: Antibióticos 1_cofexpress", u: "https://drive.google.com/file/d/1qW3wOa0zMsE6SviLtHeHr-NBF-Ei8Siy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antibióticos II",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Antibióticos II", u: "https://drive.google.com/file/d/1vDaPIDORvAPo7m3EkNR4qUfQKA47IFrq/view?usp=sharing" },
+      { t: "Aula CofExpress: Antibióticos II_cofexpress", u: "https://drive.google.com/file/d/1g1Bn_CmEfBMXX-kyeeWcs7NKUgQ-C2B5/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Sífilis e Uretrites Infecciosas",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Sífilis e Uretrites Infecciosas", u: "https://drive.google.com/file/d/1hCXaDWevHniw1GqYa1MRocj-DwyL7rBa/view?usp=sharing" },
+      { t: "Aula CofExpress: Sífilis e Uretrites Infecciosas_COFEXPRESS", u: "https://drive.google.com/file/d/1PjfSjE8YwFK3fybHNT1gPD1BPL3u70bj/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Neurossífilis",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: NEUROSSIFILIS _COFEXPRESS", u: "https://drive.google.com/file/d/1usD7Mrhpqfx5UK1DY9nhecCUGuTOA2Rn/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculose Pulmonar",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Tuberculose Pulmonar", u: "https://drive.google.com/file/d/1vtVOLuWBqZU1tF13B5oHtD6g3BubNSnd/view?usp=sharing" },
+      { t: "Aula CofExpress: Tuberculose Pulmonar (COF)", u: "https://drive.google.com/file/d/1lIKqrRHtyzrjnxLdYV7qL1utub41EueZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tratamento de Tuberculose e efeitos colaterais do RIPE",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Tratamento de Tuberculose e efeitos colaterais do RIPE", u: "https://drive.google.com/file/d/1cSRmxDBGydSMoZ-yVbDunxo__sKbpbzg/view?usp=sharing" },
+      { t: "Aula CofExpress: Tratamento de Tuberculose e efeitos colaterais do RIPE (COF)", u: "https://drive.google.com/file/d/1H1tBUdPjmVTjVqwAfwVfXhhN4dM8fcxE/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculose Extra Pulmonar",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Tuberculose Extra Pulmonar", u: "https://drive.google.com/file/d/1aTRcS2bRUb9st39gsjjSAGbVg_dMRIG0/view?usp=sharing" },
+      { t: "Aula CofExpress: Tuberculose Extra Pulmonar (COF)", u: "https://drive.google.com/file/d/1foVyiuN8-KIKSvHyOsAaIOlb0FmvsxGK/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças Negligenciadas",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Doenças Negligenciadas", u: "https://drive.google.com/file/d/1_VZkXJCIDtQFE-UPd7uUVcOGR3UOXUnj/view?usp=sharing" },
+      { t: "Aula CofExpress: Doenças Negligenciadas (COF)", u: "https://drive.google.com/file/d/1HRTSNmBBSktWzLkJq-I7IYrGHMYBnpSu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Acidentes com Animais Peçonhentos",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Acidentes com Animais Peçonhentos", u: "https://drive.google.com/file/d/1bPUhwpDgRJ5w-pJ38cgC0i2OTUflozEH/view?usp=sharing" },
+      { t: "Aula CofExpress: Acidentes com Animais Peçonhentos (COF)", u: "https://drive.google.com/file/d/1XKmG9u-UyCJRlhLfpAlfYqCf3Yvh2b7g/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vacinação - Situações Especiais",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Vacinação - Situações Especiais", u: "https://drive.google.com/file/d/1QvE_6NHgxm5nUTqWVDl3zhtyGJq9FSkn/view?usp=sharing" },
+      { t: "Aula CofExpress: Vacinação - Situações Especiais (COF)", u: "https://drive.google.com/file/d/1XXSo7eAXXP5T0uR_XY_dVNrg6k3zZml5/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças Virais e Pandêmicas",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Doenças Virais e Pandêmicas", u: "https://drive.google.com/file/d/1JwuMvt4A9A0Wl47Ma6UsiGSbqHxXgSDT/view?usp=sharing" },
+      { t: "Aula CofExpress: Doenças Virais e Pandêmicas _COFEXPRESS", u: "https://drive.google.com/file/d/1wn-2X7d82OZYKAaydkzdDfzrjtmzl-SM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Arboviroses",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Arboviroses - Clínica Médica", u: "https://drive.google.com/file/d/1OaOA_yX9e5oauDSaSOjSLrgdJYse8ijx/view?usp=sharing" },
+      { t: "Aula CofExpress: Arboviroses - Clínica Médica _COFEXPRESS", u: "https://drive.google.com/file/d/1Pd5pDqNuDGrhZKrSOrBg-UGK0PJrI88b/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Icterícias febris e Febre Maculosa",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Icterícias febris e Febre Maculosa", u: "https://drive.google.com/file/d/1cItX4WNCzCzKOifPsICF5MrtFg94af8-/view?usp=sharing" },
+      { t: "Aula CofExpress: Icterícias febris e Febre Maculosa_COFEXPRESS", u: "https://drive.google.com/file/d/1L3h8TQHVJFvWxaKf9BKgHqPtTvwuviuC/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hepatites Virais",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Hepatites Virais - Clínica Médica", u: "https://drive.google.com/file/d/1w6-3IHMp1SMbd7lFlG9nB_LSPObxmyfv/view?usp=sharing" },
+      { t: "Aula CofExpress: Hepatites Virais - Clínica Médica_COFEXPRESS", u: "https://drive.google.com/file/d/1Gfvbfyxg5U0X1JLuRBrrKOLBym4OeGbf/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Parasitoses Intestinais",
+    description: "Módulo 5: Infectologia",
+    lessons: [
+      { t: "Aula: Parasitoses Intestinais - Pediatria", u: "https://drive.google.com/file/d/1K4GM-SArkUP7aym2nhEGimdspb7zq8kL/view?usp=sharing" },
+      { t: "Aula CofExpress: Parasitoses Intestinais_COFEXPRESS", u: "https://drive.google.com/file/d/17r-Eg5J1GPGikRZPIOR6Xc5qFaDfQvn2/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 6: Neurologia
+  {
+    title: "Acidente Vascular Cerebral Isquêmico (AVCi)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Acidente Vascular Cerebral Isquêmico (AVCi) - Epidemio, etiologia e diagnóstico", u: "https://drive.google.com/file/d/1kvqUbhX9GplLPv9U5UkAXG5TYlGl2y7h/view?usp=sharing" },
+      { t: "Aula CofExpress: Acidente Vascular Cerebral Isquêmico (AVCi)_COFEXPRESS", u: "https://drive.google.com/file/d/1aXCPSg6PP473Eb0cwa1XVTR7d1feO6H3/view?usp=sharing" },
+      { t: "PDF de Slides: AVCi - Epidemio", u: "https://drive.google.com/file/d/1FQgcj19oisgt9OSJ64RkkINZBWvcK8qo/view?usp=sharing" },
+      { t: "Ficha Resumo: AVCi - Tratamento", u: "https://drive.google.com/file/d/1BHTFXLFttZWbWvLsbn0D2rfKoYc3t6YL/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "AVCi - Tratamento e complicações",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Acidente Vascular Cerebral Isquêmico (AVCi) - Tratamento", u: "https://drive.google.com/file/d/1fjU6I6hJe1KwWD6tX9b9OiqvZgPfHa1Y/view?usp=sharing" },
+      { t: "PDF de Slides: AVCi - Tratamento", u: "https://drive.google.com/file/d/1wZtjGB69jlIwi7asgZZrcnJsDsOuTbgy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Acidente Vascular Cerebral Hemorrágico (AVCh) Intraparenquimatoso",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: AVC Hemorragico intraparenquimatoso", u: "https://drive.google.com/file/d/1uw5BR6SWiTLH-hpmJTZVEMN2sYmuoYtj/view?usp=sharing" },
+      { t: "Aula CofExpress: AVC Hemorragico intraparenquimatoso_COFEXPRESS", u: "https://drive.google.com/file/d/1rjpWcuZTIvwGbqGOCTweVBMq8OcFUawG/view?usp=sharing" },
+      { t: "PDF de Slides: (AVCh) Intraparenquimatoso", u: "https://drive.google.com/file/d/1cCHucn3sjqHTWiIO4NGhyvlDuHAbAC22/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hemorragia subaracnóidea (HSA)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Hemorragia subaracnóidea (HSA)", u: "https://drive.google.com/file/d/12Fz87upMdwzsVNwEOPkCsVYxc2E35UfD/view?usp=sharing" },
+      { t: "Aula CofExpress: Hemorragia subaracnóidea (HSA)_COFEXPRESS", u: "https://drive.google.com/file/d/1IJPmd5Il2m7MV3vMBpzOvjBOP_ROp9fh/view?usp=sharing" },
+      { t: "PDF de Slides: Hemorragia subaracnóidea (HSA)", u: "https://drive.google.com/file/d/1oWgsBTELQBX_9n-sQFwhCtNKYGuygpTP/view?usp=sharing" },
+      { t: "Ficha Resumo: Hemorragia subaracnóidea (HSA)", u: "https://drive.google.com/file/d/1hZ7P0D0B9bkUxa-gVJ13ceJ5_EBbZ_uz/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Introdução às Cefaleias Primárias",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Introdução às Cefaleias Primárias", u: "https://drive.google.com/file/d/1Ckth1P_YcQ0zhl85MK1OSDY7h6P70tRD/view?usp=sharing" },
+      { t: "Aula CofExpress: Introdução às Cefaleias Primárias_COFEXPRESS", u: "https://drive.google.com/file/d/1Sz0WBoN4MKFr0TddgWXDYwLkch8MNz8n/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Enxaqueca (Migrânea)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Enxaqueca (Migrânea)-", u: "https://drive.google.com/file/d/1zxg-wkiXMzJIrC3NhEnBxa7JkRn_9COt/view?usp=sharing" },
+      { t: "Aula CofExpress: Enxaqueca (Migrânea)_COFEXPRESS", u: "https://drive.google.com/file/d/1vWsJXGVmhtquW7fUjtaRKneLsQ906uN0/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cefaleias Trigêmino-Autonômicas",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Cefaleias Trigêmino-Autonômicas", u: "https://drive.google.com/file/d/1C71q3WrV9Fz73LSSLxJI_IzipnHLaY8Z/view?usp=sharing" },
+      { t: "Aula CofExpress: Cefaleias Trigêmino-Autonômicas_COFEXPRESS", u: "https://drive.google.com/file/d/1GkgRAhluQ3fBKKXr0NLZ7dy8r1wukeZS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Meningites & Encefalites",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Meningites e Encefalites", u: "https://drive.google.com/file/d/1ScLyJhkifuPqvDP9LDX0UP9yqwfkfRk1/view?usp=sharing" },
+      { t: "Aula CofExpress: Meningites e Encefalites_COFEXPRESS", u: "https://drive.google.com/file/d/1--4UYx3BTXDFeJNpbEFp3jwzImb3b8GD/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome de Guillain-Barré (SGB)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Síndrome de Guillain-Barré (SGB)", u: "https://drive.google.com/file/d/1F4MIs8tURPOQSEc0_JaXO4hd7Ewk4VmX/view?usp=sharing" },
+      { t: "Aula CofExpress: Síndrome de Guillain-Barré (SGB)_COFEXPRESS", u: "https://drive.google.com/file/d/1-2rMPSvRND39Yj8jMP1vCbqwYgR0ZU5D/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Miastenia Gravis",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Miastenia Gravis", u: "https://drive.google.com/file/d/16PKtzV-9PG0btObeqtINCwTLkuNSj4Gm/view?usp=sharing" },
+      { t: "Aula CofExpress: Miastenia Gravis_COFEXPRESS", u: "https://drive.google.com/file/d/14EO1Z_727dbe5zuGR4LaGj4z84c5sjOA/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Epilepsia",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Epilepsia", u: "https://drive.google.com/file/d/1JioQYKWlcwLPRcbhKgogDHiMCQGmxKAI/view?usp=sharing" },
+      { t: "Aula CofExpress: Epilepsia", u: "https://drive.google.com/file/d/1yxwFuYI_oARqNtdfPAd3XxZ89GuqFIzy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença de Parkinson",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Doença de Parkinson", u: "https://drive.google.com/file/d/1Jq3ns3Q6d05VF2GI-UPD9yq2Yoji3dwy/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença de Parkinson", u: "https://drive.google.com/file/d/1d92n7-7DRz5Sg91PHSgZBOQ652zqz8ta/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Esclerose Múltipla (EM)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Esclerose Múltipla (EM)", u: "https://drive.google.com/file/d/1ZCiyLJ32dXM7cJXar2sLbjUPBBBHpf5D/view?usp=sharing" },
+      { t: "Aula CofExpress: Esclerose Múltipla (EM)", u: "https://drive.google.com/file/d/1ZRI4WGiy3ojBGh5t0Cwn8Ub9XYqtbCSk/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Neuromielite Óptica (NMO)",
+    description: "Módulo 6: Neurologia",
+    lessons: [
+      { t: "Aula: Neuromielite Óptica (NMO)", u: "https://drive.google.com/file/d/1FTeG-Apl1FmJg1l3n9SDjKG_XNAGjQrM/view?usp=sharing" },
+      { t: "Aula CofExpress: Neuromielite Óptica (NMO)", u: "https://drive.google.com/file/d/1qJrz35KTtvphvhG64CZ8Fh0qaEE7b2wh/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos
+  {
+    title: "Gasometria Arterial I",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Gasometria Arterial I", u: "https://drive.google.com/file/d/1oJjsAT26aXPPNired_PeVaCa6Qf0PtVr/view?usp=sharing" },
+      { t: "Aula CofExpress: Gasometria Arterial I_COFEXPRESS", u: "https://drive.google.com/file/d/1vdUQp137VrsVGsmwTKCQ1qVM7nT80aoI/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Gasometria Arterial II",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Gasometria Arterial II", u: "https://drive.google.com/file/d/1W__tkjPuV1d_7jdmKOqQI7NQ_BQvfBaM/view?usp=sharing" },
+      { t: "Aula CofExpress: Gasometria Arterial II_COFEXPRESS", u: "https://drive.google.com/file/d/10qGBNz2HUPqU3UwWczIsULkmp_UrcxhQ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios do Sódio",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Distúrbios do Sódio.mp4", u: "https://drive.google.com/file/d/1x4zzDtSfzIK2TIBqCalbdqskcVGHSS0y/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios do Sódio_COFEXPRESS-", u: "https://drive.google.com/file/d/1aV_mxhig8Dfrm_WXkngytonFdjf1IzQf/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios do Potássio",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Distúrbios do Potássio.mp4", u: "https://drive.google.com/file/d/1C4U1bXTOzq7U3fW4JSLOyTp3j6JO6RDD/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios do Potássio_COFEXPRESS-", u: "https://drive.google.com/file/d/1L9XAJ6XlGhjQl-BbXO_-3YLYHIZ1dhYS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios do Cálcio",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Distúrbios do Cálcio", u: "https://drive.google.com/file/d/19sjL9AYx6FuVlmdwTvsLqeFt8vST1fLD/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios do Cálcio_COFEXPRESS", u: "https://drive.google.com/file/d/16FkHHifF-3VKoV9lSlkDUrFhgh6S0mm0/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios Hidroeletrolíticos - Outros (Magnésio e Fósforo)",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Distúrbios Hidroeletrolíticos - Outros (Magnésio e Fósforo)", u: "https://drive.google.com/file/d/1fKafl74xi3_d-MWglEPFZzx6eySP3u5e/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios Hidroeletrolíticos - Outros (Magnésio e Fósforo)_COFEXPRESS", u: "https://drive.google.com/file/d/15Zh3QSADArGZjEDYTMHsYmY-jZ56PvLw/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipercalcemias",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Hipercalcemias", u: "https://drive.google.com/file/d/1NpSs1F89Thng52IM5hNoMgRRM8D0xWD6/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipercalcemias (COF)", u: "https://drive.google.com/file/d/1GS3vlLugr_JbwHOaT9upYmY-6cZjU3z-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipocalcemias",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Hipocalcemias", u: "https://drive.google.com/file/d/1lZT6ZrCF08hF93kLHzj3wze-ppEE1YUg/view?usp=sharing" },
+      { t: "Aula CofExpress: Hipocalcemias (COF)", u: "https://drive.google.com/file/d/1Obb2M28MNfOp1JPkVaP95LQhMIC0n-cl/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Injúria Renal Aguda (IRA): Parte 1",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Injúria Renal Aguda (IRA) Parte 1", u: "https://drive.google.com/file/d/1dSB3JHCAi0JZIXS1B9WbBVsWlW7f6WLm/view?usp=sharing" },
+      { t: "Aula CofExpress: Injúria Renal Aguda (IRA) Parte 1 (COF)", u: "https://drive.google.com/file/d/1IqTVtElROV-bTBW2fIVCi89SYzou7XCG/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Injúria Renal Aguda (IRA): Parte 2",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Injúria Renal Aguda (IRA) Parte 2", u: "https://drive.google.com/file/d/1gx2xNZ5y-ju3yivAbs2JsriV6tMRNwXU/view?usp=sharing" },
+      { t: "Aula CofExpress: Injúria Renal Aguda (IRA) Parte 2 (COF)", u: "https://drive.google.com/file/d/18gv_lUmicHxao4wBa_gO7-Zm8YTU1Zmn/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Renal Crônica I",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Doença Renal Crônica I", u: "https://drive.google.com/file/d/1xJVwdkp0QQYD2ZADp4zuhJonzEeUaURo/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença Renal Crônica I_COFEXPRESS", u: "https://drive.google.com/file/d/1jNsy5gF_hZHLm0IK782vrCH9yfkIsysM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Renal Crônica II",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Doença Renal Crônica II", u: "https://drive.google.com/file/d/1g9ddC1pTHxA4Ah4chs4qhCE6n3RrXwnM/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença Renal Crônica II_COFEXPRESS", u: "https://drive.google.com/file/d/1oSf61y_uVhu4zqiR6cAk8b7rOs7dr4SE/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Glomerulopatias I",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Glomerulopatias I", u: "https://drive.google.com/file/d/1SI9YtDquxVLBur3otkiE4BIIdvKtbmGL/view?usp=sharing" },
+      { t: "Aula CofExpress: VISÃO DO ESPECIALISTA Glomerulopatias I", u: "https://drive.google.com/file/d/1sTiuInBtx-gryvPANtzfSumQjCACvage/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Glomerulopatias II",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Glomerulopatias II", u: "https://drive.google.com/file/d/12ogTCEUSdkuLknByogqdYoVmfezEVr7a/view?usp=sharing" },
+      { t: "Aula CofExpress: VISÃO DO ESPECIALISTA Glomerulopatias II", u: "https://drive.google.com/file/d/1YjXRws6SIPLuk8kb-UdlJHVlJBvhGEHZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Infecção do Trato Urinário (ITU)",
+    description: "Módulo 7: Nefrologia e Distúrbios Hidroeletrolíticos",
+    lessons: [
+      { t: "Aula: Infecção do Trato Urinário (ITU)", u: "https://drive.google.com/file/d/1DdhAG-Gcpvsav2_kVJPl3aIq2adH8QVz/view?usp=sharing" },
+      { t: "Aula CofExpress: Infecção de Trato Urinário (ITU)_COFEXPRESS", u: "https://drive.google.com/file/d/1R4juMr-h8XnNdac9g9HT-nUuIXKRL3MA/view?usp=sharing" },
+      { t: "PDF de Slides: Infecção do Trato Urinário (ITU)", u: "https://drive.google.com/file/d/1ui3kDDuMzyoemahbVvpiRQ4dyfORo6eS/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 8: Reumatologia
+  {
+    title: "Introdução às Artrites e Artrite Reumatoide (AR)",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Introdução às Artrites e Artrite Reumatoide (AR)", u: "https://drive.google.com/file/d/1YO64CVzTA3Bq3_ghMMuJBUD66CJVJGVc/view?usp=sharing" },
+      { t: "Aula CofExpress: Artrites e Artrite Reumatoide (AR)_COFEXPRESS parte 1", u: "https://drive.google.com/file/d/15GlKcYNtnHpCpca9wrMSwe5SDfU6Rn3Y/view?usp=sharing" },
+      { t: "PDF de Slides: Artrites e Artrite Reumatoide (AR)", u: "https://drive.google.com/file/d/1f5h7h4IQtX9spE811zPKOS9GK_y3R1u1/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Espondiloartrites",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Espondiloartrites", u: "https://drive.google.com/file/d/1ZI__8ng7ydgwQZURScHV-QB-LzxQo8gC/view?usp=sharing" },
+      { t: "Aula CofExpress: Espondiloartrites_COFEXPRESS", u: "https://drive.google.com/file/d/1fSOCHvLLvFr-emzBH4odIYhZI8u8U6Kk/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Artrites Microcristalinas (Gota e CPPD)",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Artrites Microcristalinas (Gota e CPPD) parte 1", u: "https://drive.google.com/file/d/1Om8BGe1CWHQTnB5pBsY4I-KkUAcBrasT/view?usp=sharing" },
+      { t: "Aula CofExpress: Artrites Microcristalinas (Gota e CPPD)_COFEXPRESS", u: "https://drive.google.com/file/d/1YgSzBhvjZJGVdBTYl_JthB0OSkFnKRaz/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Osteoartrite",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Osteoartrite", u: "https://drive.google.com/file/d/1x7J6Y5tvEcnQBWEKvfvZHTjqXq-kjzg6/view?usp=sharing" },
+      { t: "Aula CofExpress: Osteoartrite_COFEXPRESS", u: "https://drive.google.com/file/d/1qrayQ8ZbcWjq5dJTjxvuSbVnGHQmTFiZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fibromialgia",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Fibromialgia", u: "https://drive.google.com/file/d/1QNmZAy9fOr0GfpTHVrZdD27X4b5nWDd5/view?usp=sharing" },
+      { t: "Aula CofExpress: Fibromialgia_COFEXPRESS", u: "https://drive.google.com/file/d/1fvbpXqvFmtNeGBR08AwctICB6kA626rO/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vasculites de Grandes e Médios Vasos",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Vasculites de Grandes e Médios Vasos", u: "https://drive.google.com/file/d/1SOMR7ho3mT7YjSNS0M-dAtOO50Uawn3c/view?usp=sharing" },
+      { t: "Aula CofExpress: Vasculites de Grandes e Médios Vasos_COFEXPRESS", u: "https://drive.google.com/file/d/1Sn-cUcrtroLkPcWppdyIoSfMCN75oGMd/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vasculites de Pequenos Vasos",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Vasculites de Pequenos Vasos", u: "https://drive.google.com/file/d/19dDNwVGpc2k9zwAk_Pt05tDTXNvZoPRU/view?usp=sharing" },
+      { t: "Aula CofExpress: Vasculites de Pequenos Vasos_COFEXPRESS", u: "https://drive.google.com/file/d/1W3Nb-9ouorPgI51FJKAbRzc6UFWPR9zs/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença de Behçet",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Doença de Behçet", u: "https://drive.google.com/file/d/1nH5bUonZb1C5NHJ9UGgETEIwwv7JU76H/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença de Behçet_COFEXPRESS", u: "https://drive.google.com/file/d/1iDa4xJYcjhNarGb16T5X2Fqgwx2lsmO_/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Lúpus Eritematoso Sistêmico (LES)",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Lúpus Eritematoso Sistêmico - Clínica Médica", u: "https://drive.google.com/file/d/1hBmyB2QmKv8Jl-muhq1ruBRKBZIAXfZO/view?usp=sharing" },
+      { t: "Aula CofExpress: Lúpus Eritematoso Sistêmico - Clínica Médica (COF)", u: "https://drive.google.com/file/d/1tKHVLCP51pu0Nbm3z60M-s9Si619yVTZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Osteoporose",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Osteoporose", u: "https://drive.google.com/file/d/1BWZwKNG-pMGNCmTO1SzI3JHpLvyA74Ar/view?usp=sharing" },
+      { t: "Aula CofExpress: Osteoporose (COF)", u: "https://drive.google.com/file/d/1HR2k8_iIc7KDttYSi0ftd6qRsG5auSu-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Esclerose Sistêmica",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Esclerose Sistêmica", u: "https://drive.google.com/file/d/1rhZ27jZOtJFYh7jGkhPvT2vaYsqQ8D57/view?usp=sharing" },
+      { t: "Aula CofExpress: Esclerose Sistêmica (COF)", u: "https://drive.google.com/file/d/1sOvbL3PugIj6uN7JC9iCRoVx8XZlwI_9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença de Sjögren",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Doença de Sjögren", u: "https://drive.google.com/file/d/1m7zwzIY1_v-YoJrRQcpLVxu2q_vgjeum/view?usp=sharing" },
+      { t: "Aula CofExpress: Doença de Sjögren (COF)", u: "https://drive.google.com/file/d/1plSzYIdJMbPBz9XqvVX3Ts1qjgT3WnDm/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Miopatias Autoimunes Sistêmicas",
+    description: "Módulo 8: Reumatologia",
+    lessons: [
+      { t: "Aula: Miopatias Autoimunes Sistêmicas - Clínica Médica", u: "https://drive.google.com/file/d/1Z7zgz7hHtlE_f4kCmonZLIHm-BtE9XS5/view?usp=sharing" },
+      { t: "Aula CofExpress: Miopatias Autoimunes Sistêmicas - Clínica Médica (COF)", u: "https://drive.google.com/file/d/1meQeagZPWcQgp6riUGqptkpoDt4CeUHA/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 9: Hematologia
+  {
+    title: "Avaliação Global do Hemograma",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Avaliação Global do Hemograma", u: "https://drive.google.com/file/d/1qxDR2B5PJRRTREoQ5AWuS9iqc_OlKux3/view?usp=sharing" },
+      { t: "Aula CofExpress: Introdução às Anemias e Hemocomponentes_COFEXPRESS", u: "https://drive.google.com/file/d/1V-pkdGHveBlT6GmcvRuyZNcqMm7Ki7M7/view?usp=sharing" },
+      { t: "PDF de Slides: Hemato 1 Introdução às Anemias e Hemocomponentes", u: "https://drive.google.com/file/d/18cqIMQm-ARGCKZSebzDqeJmhIdr7rYkP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Anemias Hipoproliferativas I",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Anemias Hipoproliferativas I", u: "https://drive.google.com/file/d/1MrTv6Fi7CmMn3pgsIbq5lYNyvGmYxiAh/view?usp=sharing" },
+      { t: "Aula CofExpress: Anemias Hipoproliferativas I_COFEXPRESS", u: "https://drive.google.com/file/d/1-fX48BVCbjG-pHKXHZxZWcSkHopHsvMz/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Anemias Hipoproliferativas II",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Anemias Hipoproliferativas II", u: "https://drive.google.com/file/d/1YHJzHSf1g2ci7U0571HE8WRyZ9roM-tx/view?usp=sharing" },
+      { t: "Aula CofExpress: Anemias Hipoproliferativas II_COFEXPRESS", u: "https://drive.google.com/file/d/1xjmlXLz4rtyoZShGPs5igtiFD2LtyjYP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Anemias Hemolíticas Adquiridas",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Anemias Hemolíticas Adquiridas", u: "https://drive.google.com/file/d/1zhGxSYI2-6GnPQvIV9LZ75jqI4ZGV2av/view?usp=sharing" },
+      { t: "Aula CofExpress: Anemias Hemolíticas Adquiridas (COF)", u: "https://drive.google.com/file/d/1SgyVSXQXkqi6LmN3aFzjEIP9r3J5PEFv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Anemias Hemolíticas Hereditárias",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Anemias Hemolíticas Hereditárias", u: "https://drive.google.com/file/d/1SKRa--W1R5NIvv_Dha7Q4VNwawWSjZmw/view?usp=sharing" },
+      { t: "Aula CofExpress: Hemato 3 Anemia Ferropriva e Talassemia_COFEXPRESS", u: "https://drive.google.com/file/d/1-T5rxnGYWyf9dUqaVmwYbSbTPFccd3aw/view?usp=sharing" },
+      { t: "PDF de Slides: Anemias Hemolíticas Hereditárias", u: "https://drive.google.com/file/d/19yaZkkM9eNRiGP23xsRQP9AVp13FbcrB/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Púrpura Trombocitopênica Trombótica (PTT)",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Púrpura Trombocitopênica Trombótica (PTT)", u: "https://drive.google.com/file/d/1bzTpJSiLZwLcKbh2iV16JxyLIYFMcrO1/view?usp=sharing" },
+      { t: "Aula CofExpress: Púrpura Trombocitopênica Trombótica (PTT) (COF)", u: "https://drive.google.com/file/d/1Nv5axm6HiFqNaLjKtMXPHc6TZcO3S6lZ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fisiologia da Coagulação",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Fisiologia da Coagulação", u: "https://drive.google.com/file/d/1zvlvIcs8dl_pEbrJAI3v38hCMmreGG8m/view?usp=sharing" },
+      { t: "Aula CofExpress: Fisiologia da Coagulação_COFEXPRESS", u: "https://drive.google.com/file/d/1N18D0demm3FbRIg6hyMi-qIzZsu0-khN/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Distúrbios da Hemostasia",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Distúrbios da Hemostasia", u: "https://drive.google.com/file/d/1KgfAOjDEipD00cyz4p91rPoeTq18gLoF/view?usp=sharing" },
+      { t: "Aula CofExpress: Distúrbios da Hemostasia_COFEXPRESS", u: "https://drive.google.com/file/d/1pkBCNWMdF67DQU-TRoB2OoqRD4h_QG8F/view?usp=sharing" },
+      { t: "PDF de Slides: Hemato 4 Hemostasia e Distúrbios Hemorrágicos-", u: "https://drive.google.com/file/d/1XSVLKUiX6F-W3F6h1lSmmXqwpX31HJpb/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hemoterapia",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Hemoterapia", u: "https://drive.google.com/file/d/12FPEWSRJyUWAIHImJAJj7yQHJHV1qrrf/view?usp=sharing" },
+      { t: "Aula CofExpress: Hemoterapia_COFEXPRESS", u: "https://drive.google.com/file/d/17S8r9ELFFgbwkW42zfr2l59uYUG2idRH/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Leucemias",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Leucemias", u: "https://drive.google.com/file/d/1no2eKOjyFErx2xy6U0Hwqm_mxppAgzvA/view?usp=sharing" },
+      { t: "Aula CofExpress: Leucemias_COFEXPRESS", u: "https://drive.google.com/file/d/1sQZlhR8HjUtBumECXbud9H7gzs8Ko3EE/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Linfomas",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Linfomas", u: "https://drive.google.com/file/d/1gMn5Pn2_zYBbe1ffTFKAaf8SC1TEcFkc/view?usp=sharing" },
+      { t: "Aula CofExpress: Linfomas_COFEXPRESS", u: "https://drive.google.com/file/d/1jXTUvtHjaO2mmd0KYyRKv49xTXFFQmuX/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Discrasias Plasmocitárias",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Discrasias Plasmocitárias", u: "https://drive.google.com/file/d/1fvWY4mB6mZepR4J2QQLMoh3TFolO1FrO/view?usp=sharing" },
+      { t: "Aula CofExpress: Discrasias Plasmocitárias_COFEXPRESS", u: "https://drive.google.com/file/d/1D0OU2jTeeXLR3Ydk30-6Wc8vHlFHR1hM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndromes Medulares",
+    description: "Módulo 9: Hematologia",
+    lessons: [
+      { t: "Aula: Síndromes Medulares", u: "https://drive.google.com/file/d/1dehP3W_MAU-oIhHKCaAG4RueAwmUvta5/view?usp=sharing" },
+      { t: "Aula CofExpress: Síndromes Medulares_COFEXPRESS", u: "https://drive.google.com/file/d/1U4JkviQZRapHIe52nLlFvPK3Q3RE3CiO/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 10: Medicina de Emergência e Terapia Intensiva
+  {
+    title: "Via aérea, intubação e Ventilação Não Invasiva (VNI)",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Via aérea, intubação e Ventilação Não Invasiva (VNI)", u: "https://drive.google.com/file/d/1-jpAsH5Rme7q-zBb_NSzx14lzoCyTA-j/view?usp=sharing" },
+      { t: "Aula CofExpress: Via aérea, intubação e Ventilação Não Invasiva (VNI)_COFEXPRESS", u: "https://drive.google.com/file/d/1sE8DkYfWdLOZN2WREZuC7p0gXqbAnXqA/view?usp=sharing" },
+      { t: "PDF de Slides: Via aérea, intubação e Ventilação Não Invasiva (VNI)", u: "https://drive.google.com/file/d/1QDIrmU4hXqODyjHCXbnEE59fzSiKcctH/view?usp=sharing" },
+      { t: "Ficha Resumo: Via aérea, intubação e Ventilação Não Invasiva (VNI)", u: "https://drive.google.com/file/d/1dmBFIpmvuL82d_fuO3qIfT8VIPh4XOEv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome do desconforto respiratório agudo (SDRA)",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Síndrome do desconforto respiratório agudo (SDRA)", u: "https://drive.google.com/file/d/1aOuU5uvHP-jXO_Vyfh12Qu7009WU-8ZT/view?usp=sharing" },
+      { t: "Aula CofExpress: Síndrome do desconforto respiratório agudo (SDRA)_COFEXPRESS", u: "https://drive.google.com/file/d/1srSrEZTQUnG_rC9C5DWvDuig-0TyKXEL/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Síndrome do desconforto respiratório agudo (SDRA)", u: "https://drive.google.com/file/d/1C4BS_raLL77yT3myAUhsQNaWIMcOJsbu/view?usp=sharing" },
+      { t: "Ficha Resumo: Ficha resumo - Síndrome do desconforto respiratório agudo (SDRA)", u: "https://drive.google.com/file/d/1tty64UVtFiC75ciC6NqXHfVrCUSLXXi9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Princípios de ventilação mecânica (VM)",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Princípios de ventilação mecânica (VM)", u: "https://drive.google.com/file/d/1ZOlC2gkllCiSs7klyOD3fnHh7YirGIAp/view?usp=sharing" },
+      { t: "Aula CofExpress: Princípios de ventilação mecânica (VM)_COFEXPRESS", u: "https://drive.google.com/file/d/1-0DnaFq6CC8biVY7hYjqLKaON_D2sKaa/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Princípios de ventilação mecânica (VM)", u: "https://drive.google.com/file/d/1gh1ywicxCSX3G8cxixU58mQQTmrcMam0/view?usp=sharing" },
+      { t: "Ficha Resumo: Ficha Resumo - Princípios de ventilação mecânica (VM)", u: "https://drive.google.com/file/d/1ty3uFje9A6r6tKzF_lTHWkuKGKJWpLnf/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ventilação mecânica (VM) exercícios",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Ventilação mecânica (VM) exercícios", u: "https://drive.google.com/file/d/19V9du3IPKhRoJ7p4Ub7iVYUPyGw2M41f/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Ventilação mecânica (VM) exercícios", u: "https://drive.google.com/file/d/1q6f0ghP8ISdHJi-mlD173hxG17za7b7B/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Pneumonia Associada à Ventilação Mecânica",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Pneumonia Associada à Ventilação Mecânica", u: "https://drive.google.com/file/d/11oxaflutkEDK-dNfWRVYEP8Z0pEYHx9k/view?usp=sharing" },
+      { t: "Aula CofExpress: Pneumonia Associada à Ventilação Mecânica_COFEXPRESS", u: "https://drive.google.com/file/d/1s1wjGlsyL__Tt9dQFcPenSwnQRpi_GBv/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Pneumonia Associada à Ventilação Mecânica", u: "https://drive.google.com/file/d/1Y1ShvYLLBkIo4nxgFTxmsWcw71XcJZ_V/view?usp=sharing" },
+      { t: "Ficha Resumo: Ficha resumo - Pneumonia Associada à Ventilação Mecânica", u: "https://drive.google.com/file/d/1_i9gNfAkIytgwwzdkwMeeQ2qzynIZKgo/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Intoxicações Exógenas",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Intoxicações Exógenas", u: "https://drive.google.com/file/d/16qFAwjlcBKAYFxZSCuDCqcjrD4uvHDse/view?usp=sharing" },
+      { t: "Aula CofExpress: Intoxicações Exógenas_COFEXPRESS", u: "https://drive.google.com/file/d/1OOIh7RojHmIXXUz1fkIunFN7txL0LLMT/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Choque - Abordagem Inicial",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Choque - Abordagem Inicial", u: "https://drive.google.com/file/d/1hwK-bsRWSo9OEcA_GJvjxNF7psLuy9qL/view?usp=sharing" },
+      { t: "Aula CofExpress: Choque - Abordagem Inicial (COF)", u: "https://drive.google.com/file/d/1l0a18X1fcuvc8e_NLIVjyToGVy9raxuP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Choque - Tipos de Choque",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Choque - Tipos de Choque", u: "https://drive.google.com/file/d/1poYyrLr5NRnctrnD2Akfg2EX-OkJ0x7y/view?usp=sharing" },
+      { t: "Aula CofExpress: Choque - Tipos de Choque (COF)", u: "https://drive.google.com/file/d/1p0J8erNsSsoez2GvJi4Q1E1nS8dVF2GX/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Infecção de Corrente Sanguínea (ICS)",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Infecção de Corrente Sanguínea (ICS)", u: "https://drive.google.com/file/d/1GaotAM7se1HQLMTrQ_OIALihzbyN3lAj/view?usp=sharing" },
+      { t: "Aula CofExpress: Infecção de Corrente Sanguínea (ICS) (COF)", u: "https://drive.google.com/file/d/1aetxsGNM-b2x1a3WfiwKJxg9goAL3m2f/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Analgesia e Sedação",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Analgesia e Sedação", u: "https://drive.google.com/file/d/113MNeEQ6h9raZEcZZX1r6QXm35wd5QjC/view?usp=sharing" },
+      { t: "Aula CofExpress: Analgesia e Sedação (COF)", u: "https://drive.google.com/file/d/1g6pqkfCkHzUSqvih0fb17QHUSmKuIgt-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Drogas vasoativas (DVA)",
+    description: "Módulo 10: Medicina de Emergência e Terapia Intensiva",
+    lessons: [
+      { t: "Aula: Drogas vasoativas (DVA)", u: "https://drive.google.com/file/d/1oLibbSQ7T0yDiqhPIt9Z7zEP2gwj-kDK/view?usp=sharing" },
+      { t: "Aula CofExpress: Drogas vasoativas (DVA) (COF)", u: "https://drive.google.com/file/d/1X28vh7tcV5HcjQEekj2z1LciLfjKG4Yu/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Choque e Drogas Vasoativas", u: "https://drive.google.com/file/d/1PHq99HpJ9Y0nTJrOlbnPdXW59DL4CRAE/view?usp=sharing" },
+      { t: "Ficha Resumo: Ficha Resumo - Choque e Drogas Vasoativas", u: "https://drive.google.com/file/d/1MooTbPPD2DCsWLySex1aHLLyiXIZLzHs/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 11: Psiquiatria
+  {
+    title: "Emergências psiquiátricas",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Emergências psiquiátricas", u: "https://drive.google.com/file/d/1JhbL1V0pde0mG5wEp5OqWtcwf_WaMpG9/view?usp=sharing" },
+      { t: "Aula CofExpress: Emergências psiquiátricas_COFEXPRESS", u: "https://drive.google.com/file/d/1HDmIfwe3qyK0byckjhSBt0eaPY2JRFCR/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno de Humor I",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno de Humor I", u: "https://drive.google.com/file/d/1GcKBJkF4iCczCWRBI8GQgDYE6KD-NdbI/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno de Humor I_COFEXPRESS", u: "https://drive.google.com/file/d/1gQAg3l7hRLoDzgTbDy06Ba_kgYJtQxdV/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno de Humor II: Antidepressivos",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno de Humor II Antidepressivos", u: "https://drive.google.com/file/d/14oy42xGH_PL4DqTyVW5X3aBqnnUCon70/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno de Humor II Antidepressivos_cofexpress", u: "https://drive.google.com/file/d/1ySltVJelegQG_d0ORsptiDE1Tpm7-NG3/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno de Humor III: Mania e Transtorno Bipolar",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno de Humor III Mania e Transtorno Bipolar", u: "https://drive.google.com/file/d/1L5_FBm8gmdoE3eac2GWjDKBpPg0KXplg/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno de Humor III Mania e Transtorno Bipolar_COFEXPRESS", u: "https://drive.google.com/file/d/1nDiJ6DNdRpLf0iGMVc9Bh-e11lZdQuNS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno de Ansiedade",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno de Ansiedade", u: "https://drive.google.com/file/d/1b7zWU_2MIzGaMYh8DlHBDu2MvXvuXzAR/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno de Ansiedade_COFEXPRESS", u: "https://drive.google.com/file/d/1QgacFC4tywyjIK5uukUmQ1Ffr4ALCS9D/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtornos Relacionados a Substâncias - Álcool",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtornos Relacionados a Substâncias - Álcool", u: "https://drive.google.com/file/d/1ORX3KQoivAFKsAkLkmLByRF35B3dXPcp/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtornos Relacionados a Substâncias - Álcool_COFEXPRESS", u: "https://drive.google.com/file/d/141PZN4MIhQyi9sfLivWZBiuurxtaYozv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno Psicótico",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno Psicótico", u: "https://drive.google.com/file/d/112PzkivdmCqpUPXeylAVnPGXqLZkuyXD/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno Psicótico_COFEXPRESS", u: "https://drive.google.com/file/d/1qYeQAJ9RYQi4gMW1NtGFD7AfSQ9pluSx/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno alimentares e somatoformes",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno alimentares e somatoformes", u: "https://drive.google.com/file/d/1sLpKA87t5WYXuomAOHu5hHsGRW23f2EI/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno alimentares e somatoformes_COFEXPRESS", u: "https://drive.google.com/file/d/1f1dV_qN3A2zQLPcrXIflSVf8OGhInJUP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Transtorno de personalidade",
+    description: "Módulo 11: Psiquiatria",
+    lessons: [
+      { t: "Aula: Transtorno de personalidade", u: "https://drive.google.com/file/d/1lr_1sKaqH6ctgdFtkqd0l-2lby_iI4Wm/view?usp=sharing" },
+      { t: "Aula CofExpress: Transtorno de personalidade_COFEXPRESS", u: "https://drive.google.com/file/d/1D0jFEepf3jjWelhW-e6y6ksyAmSncmhv/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 12: Geriatria
+  {
+    title: "Introdução à Geriatria",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Introdução à Geriatria", u: "https://drive.google.com/file/d/1YVxXhpvnYD5UCKmV4rJIzF_tvNZriqrY/view?usp=sharing" },
+      { t: "Aula CofExpress: Introdução à Geriatria_COFEXPRESS", u: "https://drive.google.com/file/d/1rJzJyCzIC7JOBm0bx4vM_BR3-QcB383I/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Avaliação Geriátrica Ampla",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Avaliação Geriátrica Ampla", u: "https://drive.google.com/file/d/1vaIVvgE1QefO5LtGi9W1c4zGg8SnQ5gT/view?usp=sharing" },
+      { t: "Aula CofExpress: Avaliação Geriátrica Ampla_COFEXPRESS", u: "https://drive.google.com/file/d/18PCxSOMQ8HYHXOIPcJSBgXyFS2oZa8Bm/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Iatrogenia no Idoso",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Iantrogenia no Idoso", u: "https://drive.google.com/file/d/1Lga5GfykQ5Canu8J0uONxhfT_AijYbXv/view?usp=sharing" },
+      { t: "Aula CofExpress: Iantrogenia no Idoso_COFEXPRESS", u: "https://drive.google.com/file/d/1AvqxR0AI1MSQcz1UIViBcUlHFzn_S1XN/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Instabilidade Postural, Quedas e Imobilidade",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Instabilidade Postural, Quedas e Imobilidade.", u: "https://drive.google.com/file/d/1KcJas5-amDabPRaLH1366sk_ZsInEutD/view?usp=sharing" },
+      { t: "Aula CofExpress: Instabilidade Postural, Quedas e Imobilidade_COEXPRESS", u: "https://drive.google.com/file/d/1T41va_baRQll0aJeRD6SBcCO94xNy80U/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vacinação do Idoso",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Vacinação do Idoso", u: "https://drive.google.com/file/d/1vam5_72GDslD5yVpSVj-Ogq17wCmOYNA/view?usp=sharing" },
+      { t: "Aula CofExpress: Vacinação do Idoso_COFEXPRESS", u: "https://drive.google.com/file/d/1vwH0JCJtAhHFhid7nT5sC9BBq9luh5bS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Depressão no Idoso",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Depressão no Idoso", u: "https://drive.google.com/file/d/117I_1_nFFlJ1S2y5Hk1hyfkh8nH05HVw/view?usp=sharing" },
+      { t: "Aula CofExpress: Depressão no Idoso_COFEXPRESS", u: "https://drive.google.com/file/d/1L4RE985kaWqWWl3w9ZUhkoAZdOhje0wn/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Cognitiva: Demências",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Insuficiência Cognitiva Demências", u: "https://drive.google.com/file/d/1ycuFOXhcxydUUFRpTSA8JVV_0p_4SD70/view?usp=sharing" },
+      { t: "Aula CofExpress: Insuficiência Cognitiva Demências_COFEXPRESS", u: "https://drive.google.com/file/d/1MiOzYqQL46Hqch0t-ELSn7IPPD6PfWop/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Cognitiva: Delirium no Idoso",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Insuficiência Cognitiva Delirium no Idoso", u: "https://drive.google.com/file/d/1dkH3jPN5c0f6HSK0-_KuZOBisL_J0z2k/view?usp=sharing" },
+      { t: "Aula CofExpress: Insuficiência Cognitiva Delirium no Idoso_COFEXPRES", u: "https://drive.google.com/file/d/1YdTFcC2cyiofMMeXbgZJfMnm9JaAXfIE/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fragilidade",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Fragilidade", u: "https://drive.google.com/file/d/16-1xy9jCu8JYa4xQm4HSPMpV4nUiAfCL/view?usp=sharing" },
+      { t: "Aula CofExpress: Fragilidade_COFEXPRESS", u: "https://drive.google.com/file/d/1yIq9U8rN3Ae3AxsxIRZxkriNSuTuA2-l/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Incontinência Urinária no Idoso",
+    description: "Módulo 12: Geriatria",
+    lessons: [
+      { t: "Aula: Incontinência Urinária no Idoso", u: "https://drive.google.com/file/d/1QoazDioYyAF2HQuk8E91nIbgz2OS5OdS/view?usp=sharing" },
+      { t: "Aula CofExpress: Incontinência Urinária no Idoso_COFEXPRESS", u: "https://drive.google.com/file/d/12u-bxlHBIwu_F1HlvSG1ZmPKVjhgtTqC/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 13: Dermatologia
+  {
+    title: "Hanseníase",
+    description: "Módulo 13: Dermatologia",
+    lessons: [
+      { t: "Aula: Hanseníase", u: "https://drive.google.com/file/d/1VSDNPMgnV7o6rw4HSaw8xKB-O1wVcMgk/view?usp=sharing" },
+      { t: "Aula CofExpress: Hanseníase_COFEXPRESS", u: "https://drive.google.com/file/d/1ybU1_qvp-ny8nKrq2FERCBQVwVa9Gu_K/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Lesões Elementares",
+    description: "Módulo 13: Dermatologia",
+    lessons: [
+      { t: "Aula: Lesões Elementares", u: "https://drive.google.com/file/d/1Xr2huMdvqyO9BkSCRCE2z1w3zz4SOFPH/view?usp=sharing" },
+      { t: "Aula CofExpress: Lesões Elementares_COFEXPRESS", u: "https://drive.google.com/file/d/1Rcz7dbl0--OB9CnVOYdGO40ZGeQ7s0L8/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Dermatoses Bolhosas",
+    description: "Módulo 13: Dermatologia",
+    lessons: [
+      { t: "Aula: Dermatoses Bolhosas", u: "https://drive.google.com/file/d/1wu-WD_L4qMZoyXYpCnjdtLgfBX9tLphf/view?usp=sharing" },
+      { t: "Aula CofExpress: Dermatoses Bolhosas_COFEXPRESS", u: "https://drive.google.com/file/d/11Uz_ZoEfuX1r8z-p159q8icS4xolS9Bz/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Psoríase",
+    description: "Módulo 13: Dermatologia",
+    lessons: [
+      { t: "Aula: Psoríase", u: "https://drive.google.com/file/d/18TkmiyIf4GqhfkPzRYDLPXAZUV7Drtzu/view?usp=sharing" },
+      { t: "Aula CofExpress: Psoríase_COFEXPRESS", u: "https://drive.google.com/file/d/1vCCYjoI2hYt0wCGXCt97bRGngcVAXnpW/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 14: Otorrinolaringologia e Oftalmologia
+  {
+    title: "Otologia I",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Otologia I", u: "https://drive.google.com/file/d/1gIXGAoYmG0YjrbbnlH6I8PJ45B_isdci/view?usp=sharing" },
+      { t: "Aula CofExpress: Otologia I_COFEXPRESS", u: "https://drive.google.com/file/d/1Q_ARibSJ6ztth5Gd2X9S2j5oLbEBI3nu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Otologia II",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Otologia II", u: "https://drive.google.com/file/d/1rHXBakTMhY9iUh_Z0TjvimsCLX7hAAYc/view?usp=sharing" },
+      { t: "Aula CofExpress: Otologia II_COFEXPRESS", u: "https://drive.google.com/file/d/_XU5YdCH0BmUOM4qHIr6nzXr40ndhrha/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Rinologia",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Rinologia", u: "https://drive.google.com/file/d/1Hvj0t7C5yIZ45bzJIkB3Rbvgi5zcOpGj/view?usp=sharing" },
+      { t: "Aula CofExpress: Rinologia_COFEXPRESS", u: "https://drive.google.com/file/d/127N6AQcHGlX0_kSbMN_0jfN-FcsTJ_3N/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bucofaringolaringologia I",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Bucofaringolaringologia I", u: "https://drive.google.com/file/d/1MbTYzhqD8zTCt3Str0UDhhsOdKqCeHp-/view?usp=sharing" },
+      { t: "Aula CofExpress: Bucofaringolaringologia I_COFEXPRESS", u: "https://drive.google.com/file/d/1PBS0o30Z-gSVVsEZNOaH-T2fbDR-Ga_O/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bucofaringolaringologia II",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Bucofaringolaringologia II", u: "https://drive.google.com/file/d/1n8Rh2dvDpzYw4A04aBykm_J5O40JUXMv/view?usp=sharing" },
+      { t: "Aula CofExpress: Bucofaringolaringologia II_COFEXPRESS", u: "https://drive.google.com/file/d/1SE6kIL6c5tYhlftAhWsOW6vokks3-uCS/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Oftalmologia para o generalista - parte I",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Oftalmologia para o generalista - parte I", u: "https://drive.google.com/file/d/1GwC-icAmuDTEZ9JXtRkpkCWMUFM5KQFb/view?usp=sharing" },
+      { t: "Aula CofExpress: Oftalmologia para o generalista - parte I_COFEXPRESS", u: "https://drive.google.com/file/d/1SbRykobJ3q2xuIVxMib89oV_Ov6GnVrU/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Oftalmologia para o generalista - parte II",
+    description: "Módulo 14: Otorrinolaringologia e Oftalmologia",
+    lessons: [
+      { t: "Aula: Oftalmologia para o generalista - parte II", u: "https://drive.google.com/file/d/1gohLpkV77eGn2rUyiZ7pJq4gpUE1L8kP/view?usp=sharing" },
+      { t: "Aula CofExpress: Oftalmologia para o generalista - parte II_COFEXPRESS", u: "https://drive.google.com/file/d/1o26omSsCte2qlM9OumhMJypjvPaKDXXr/view?usp=sharing" }
+    ]
+  },
+
+  // Módulo 15: Miscelânea em Clínica Médica
+  {
+    title: "Rastreamentos - Clínica Médica",
+    description: "Módulo 15: Miscelânea em Clínica Médica",
+    lessons: [
+      { t: "Aula: Rastreamento", u: "https://drive.google.com/file/d/1ejMp27Ti7WoAr2SWDYcpumCgY2oge1gP/view?usp=sharing" },
+      { t: "Aula CofExpress: Rastreamento_COFEXPRESS", u: "https://drive.google.com/file/d/1uxkdxpLzAHkMQD5GlCWOokwIgyQh68RV/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Oncologia: Cuidados paliativos",
+    description: "Módulo 15: Miscelânea em Clínica Médica",
+    lessons: [
+      { t: "Aula: Oncologia Cuidados paliativos", u: "https://drive.google.com/file/d/1FoALNfV0D12Xn0ibA7ZWQFgcmWsce06N/view?usp=sharing" },
+      { t: "Aula CofExpress: Oncologia Cuidados paliativos_COFEXPRESS", u: "https://drive.google.com/file/d/1LnFHzJKHvEwEPlNfW-kp3taKeenxKM0R/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Emergências Oncológicas",
+    description: "Módulo 15: Miscelânea em Clínica Médica",
+    lessons: [
+      { t: "Aula: Emergências Oncológicas", u: "https://drive.google.com/file/d/1qlvDkRqtUjAW9FMH_LNrmi9QevKG-ZEw/view?usp=sharing" },
+      { t: "Aula CofExpress: Emergências Oncológicas_COFEXPRESS", u: "https://drive.google.com/file/d/1kHTXA6kKedUqzYbC0WbdVJ-UOzvUNyMk/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Alergia 1: Rinite e Angioedema",
+    description: "Módulo 15: Miscelânea em Clínica Médica",
+    lessons: [
+      { t: "Aula: Alergia I Rinite e Angioedema", u: "https://drive.google.com/file/d/1dtL9jk-KTnaWQ1NB_JB5qsS36S_yWAMX/view?usp=sharing" },
+      { t: "Aula CofExpress: Alergia I Rinite e Angioedema_COFEXPRESS", u: "https://drive.google.com/file/d/1wrserIxkc-KTEd4ypC1GaY-9ktIPDdyw/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Alergia 2: Reações de hipersensibilidade",
+    description: "Módulo 15: Miscelânea em Clínica Médica",
+    lessons: [
+      { t: "Aula: Alergia II Reações de hipersensibilidade", u: "https://drive.google.com/file/d/1EQugTf2dNhv-w4gtLLNbBPFMUH1EqoXf/view?usp=sharing" },
+      { t: "Aula CofExpress: Alergia II Reações de hipersensibilidade_COFEXPRESS", u: "https://drive.google.com/file/d/1d83R-2P-Z82sdMxpPoNaDvXwqhOnaW/view?usp=sharing" }
+    ]
+  }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>

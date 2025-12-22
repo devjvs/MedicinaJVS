@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Preventiva</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Preventiva</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 49 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+            // "Core" da Preventiva
+  {
+    title: "Lei Orgânica de Saúde: 8080/90",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Lei Orgânica de Saúde 808090", u: "https://drive.google.com/file/d/1f-zwTkNkAvi6g071tVkV_aaReiWtKcQH/view?usp=sharing" },
+      { t: "Aula CofExpress: Lei Orgânica de Saúde 808090_COFEXPRESS", u: "https://drive.google.com/file/d/1JqLJ-SujS95N971HNZVycQCxy5ovprmM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Lei Orgânica de Saúde: 8142/90",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Lei Orgânica de Saúde 814290", u: "https://drive.google.com/file/d/1Jkn5xsFZU08PaGGgQcOMKj26OKkAS-Q2/view?usp=sharing" },
+      { t: "Aula CofExpress: Lei Orgânica de Saúde 814290_COFEXPRESS", u: "https://drive.google.com/file/d/19UzNBLOkxrm-l-czuTkyPVHaAg-e-LyU/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Princípios do SUS",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Princípios do SUS", u: "https://drive.google.com/file/d/1IKRI_lxYCqDmB-QB7ol5_z2nm-ZoRGfD/view?usp=sharing" },
+      { t: "Aula CofExpress: Principios do SUS COFXPRES", u: "https://drive.google.com/file/d/14sFowYfTfZmWUs4i21JXlLUDs4_oR_fr/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Testes Diagnósticos (Características e Cálculos)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Testes Diagnósticos características básicas", u: "https://drive.google.com/file/d/1GDW91mKcpZ_VXoSx0Ic6j_YT_p9P3X1J/view?usp=sharing" },
+      { t: "Aula CofExpress: Testes Diagnósticos características básicas_COFEXPRESS", u: "https://drive.google.com/file/d/1ejdwvUIqp2ZiaHhIW5ef0D4dRu9I0PIx/view?usp=sharing" },
+      { t: "PDF de Slides: Testes Diagnósticos aplicabilidade clínica", u: "https://drive.google.com/file/d/1cZEsyDSbcDbB6z_oSeimrZp6_krDXkl8/view?usp=sharing" },
+      { t: "Ficha Resumo: Testes Diagnósticos aplicabilidade clínica_COFEXPRESS", u: "https://drive.google.com/file/d/1wlPkUA1aOYAvSQv8r2WJYVohCzfoNdP2/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Classificação dos Estudos Epidemiológicos",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Classificaçãodos Estudos Epidemiológicos", u: "https://drive.google.com/file/d/1P1hZxXjy_I_ty5DjyC9i-w4s-qfVuoGA/view?usp=sharing" },
+      { t: "Aula CofExpress: Classificaçãodos Estudos Epidemiológicos_COFEXPRESS", u: "https://drive.google.com/file/d/1U5cFY2UCCov4F7lKF8mwTlzhGzcyaWQU/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Estudos Longitudinais e Transversais",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Estudos Longitudinais", u: "https://drive.google.com/file/d/1DYQ2GJRltwtoXrnxN-J8aYwwBicddTc5/view?usp=sharing" },
+      { t: "Aula CofExpress: Estudos Longitudinais_COFEXPRESS", u: "https://drive.google.com/file/d/18PBDrrviEpNuN3k_v7JijUL12shN-wjc/view?usp=sharing" },
+      { t: "PDF de Slides: Estudos transversais", u: "https://drive.google.com/file/d/1NnrKH6XZzoM_oMFGrnIKdI3jCqRakTRr/view?usp=sharing" },
+      { t: "Ficha Resumo: Estudos transversais_COFEXPRESS", u: "https://drive.google.com/file/d/1FsZKOjed_s-eZ9acic0cbNHIS3vyZBcC/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Atenção Primária à Saúde (APS)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Atenção Primária à Saúde - Parte 1", u: "https://drive.google.com/file/d/17ReEIRx-atIlrXQbPJL0en7rYNwTIMYc/view?usp=sharing" },
+      { t: "Aula CofExpress: Atenção Primária à Saúde - Parte 1_COFEXPRESS", u: "https://drive.google.com/file/d/1Rlj_Du282VaslE_bXsVHgGMEfGszY9jv/view?usp=sharing" },
+      { t: "PDF de Slides: Atenção Primária à Saúde - Parte 2", u: "https://drive.google.com/file/d/1C9bAqWJigIaTSNqXZalz418MUKcYDvbw/view?usp=sharing" },
+      { t: "Ficha Resumo: Atenção Primária à Saúde - Parte 2_COFEXPRESS", u: "https://drive.google.com/file/d/1F68rL3apHAW_yIoz5Kp3e9aJSqguJGtn/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Estratégia Saúde da Família (ESF)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Estratégia Saúde da Família I organização e funcionamento - Parte 1", u: "https://drive.google.com/file/d/1jV5veHcq7RJxB4sNufljKp1i0csrqeRk/view?usp=sharing" },
+      { t: "Aula CofExpress: Estratégia Saúde da Família I organização e funcionamento - Parte 1", u: "https://drive.google.com/file/d/1zIHRxUlPsUEwd-xhzuxdQsNZSK0Sl3Dd/view?usp=sharing" },
+      { t: "PDF de Slides: Estratégia Saúde da Família I organização e funcionamento - Parte 2", u: "https://drive.google.com/file/d/1Mi7CfjzkDWm51oFiynj7IN-mElRiC5Yd/view?usp=sharing" },
+      { t: "Ficha Resumo: Estratégia Saúde da Família II Financiamento e Programas Especiais", u: "https://drive.google.com/file/d/1RE8dBTd2KTGe4oK-1OLk4G0POGqhJe_t/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Princípios da Medicina de Família e Comunidade",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Princípios da Medicina de Família e comunidade", u: "https://drive.google.com/file/d/1bXzj4fex5PeZJJaU-xebDIVmZKz9oFLM/view?usp=sharing" },
+      { t: "Aula CofExpress: Princípios da Medicina de Família e comunidade", u: "https://drive.google.com/file/d/1ScPRT0_Rmip3iv8RwlBfYUBcqCKeU9IV/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ferramentas da APS/ESF (Genograma, Ecomapa)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Ferramentas da APSESF I - Parte 1", u: "https://drive.google.com/file/d/1YflA7GEAHwWjzDcRy017gUtfeub9f33z/view?usp=sharing" },
+      { t: "Aula CofExpress: Ferramentas da APSESF I - Parte 1", u: "https://drive.google.com/file/d/1N0UKZRBTdIdj_lf_tDg2vgsbJShXB3GW/view?usp=sharing" },
+      { t: "PDF de Slides: Ferramentas da APSESF I - Parte 2 Equipes e-MULTI", u: "https://drive.google.com/file/d/1tMV6b2L4TRl0PQWWgcWHpIkOuKDNFpZ2/view?usp=sharing" },
+      { t: "Ficha Resumo: Ferramentas da APSESF II", u: "https://drive.google.com/file/d/1E-AsS01ambbnecuiSE2TyeXr_o8nEJAt/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Método Clínico Centrado na Pessoa (MCCP)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: MCCP - Método Clínico Centrado na Pessoa", u: "https://drive.google.com/file/d/1p8tfN14OZJdzaAaVVDnUp7eqtUATy7RL/view?usp=sharing" },
+      { t: "Aula CofExpress: Método Clínico Centrado na Pessoa_COFEXPRESS", u: "https://drive.google.com/file/d/1iHPmNiNNtluBcYgPNfOraE-tiCxd7Yno/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Medicina Legal (Declaração de Óbito e Atestados)",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Medicina legal Declaração de óbito, atestados e laudos", u: "https://drive.google.com/file/d/1lsuR2ClFt1xQcQ0HuDCqPejkVL5U9FeD/view?usp=sharing" },
+      { t: "Aula CofExpress: Medicina legal Declaração de óbito, atestados e laudos_COFEXPRESS", u: "https://drive.google.com/file/d/11JX26bd8fIFghzYQrdcwEiyCWKxxf6QL/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ética Médica",
+    description: "\"Core\" da Preventiva. Legislação 8080/8142, Cálculos de Testes, Tipos de Estudo e Medicina de Família.",
+    lessons: [
+      { t: "Aula: Etica Medica", u: "https://drive.google.com/file/d/1c65bX7VL11OcLENTt_22hm-ny_BX0hwQ/view?usp=sharing" },
+      { t: "Aula CofExpress: Etica Medica_COFEXPRESS", u: "https://drive.google.com/file/d/1Z621EWCyvKBgauECmjUAaMvSTPfWLyUJ/view?usp=sharing" }
+    ]
+  },
+
+  // Prioridade Verde 🟢 (Alta Relevância)
+  {
+    title: "Níveis de Prevenção (Primária a Quaternária)",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Níveis de Prevenção", u: "https://drive.google.com/file/d/1AzTF3xr5eGtL5W7-TGP2Ju7Z8Y3aSp2X/view?usp=sharing" },
+      { t: "Aula CofExpress: Níveis de Prevenção_COFEXPRESS", u: "https://drive.google.com/file/d/1rG1LGKeyG-likQLulHXIOC7pTEhoD64g/view?usp=sharing" },
+      { t: "PDF de Slides: Prevenção Quaternária e P5", u: "https://drive.google.com/file/d/1vfG4fNfRyNlKih2ucR0AOgnaNQuxwq2G/view?usp=sharing" },
+      { t: "Ficha Resumo: Prevenção Quaternária e P5 _COFEXPRESS", u: "https://drive.google.com/file/d/1oJEdD89udyvXmXAoAcY5qIfshs4rCS-x/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Indicadores de Saúde",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Indicadores de saúde - Parte 1", u: "https://drive.google.com/file/d/1GQRRSQ-1Fhqe-TGz15BLRhjGgFj5bPYV/view?usp=sharing" },
+      { t: "Aula CofExpress: Indicadores de saúde - Parte 1 - COFEXPRESS", u: "https://drive.google.com/file/d/1LwxoF3YesV-mbRvGV320TWn0XIUNKPJ6/view?usp=sharing" },
+      { t: "PDF de Slides: Indicadores de saúde - Parte 2", u: "https://drive.google.com/file/d/118KU-IRnJ6UFVhclaTxu7u7lRyDDkG3F/view?usp=sharing" },
+      { t: "Ficha Resumo: Indicadores de saúde - Parte 2 - COFEXPRESS", u: "https://drive.google.com/file/d/1fuKaqkUStau-gfchamgKSnot4CyBFU6r/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vigilância em Saúde",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Vigilância em Saúde", u: "https://drive.google.com/file/d/1sxQ30Ilaeo8qv4tqXlLFoYIrLLz-U1y3/view?usp=sharing" },
+      { t: "Aula CofExpress: Vigilância em Saúde_COFEXPRESS", u: "https://drive.google.com/file/d/1GMcjkGXO4TnnIN68tTwCOD2vZPq1GRcB/view?usp=sharing" },
+      { t: "PDF de Slides: Processo epidêmico", u: "https://drive.google.com/file/d/1HtBDTSjkQ7oEXtd_yBjjj7gNYIWJPvhE/view?usp=sharing" },
+      { t: "Ficha Resumo: Processo epidêmico_COFEXPRESS", u: "https://drive.google.com/file/d/1XGPPh5q8C-VNrtb3XU2nqPbQd2fa0Au-/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Medidas de Associação",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Associação VS Causalidade", u: "https://drive.google.com/file/d/1395l9-wfOfgu5LeOVUHnVuj9H3IeYnD2/view?usp=sharing" },
+      { t: "Aula CofExpress: Associação VS Causalidade_COFEXPRESS", u: "https://drive.google.com/file/d/1CU2B8konmcP9x2TGMEIImVDiZ_PQF4eA/view?usp=sharing" },
+      { t: "PDF de Slides: Revisando medidas de associação-", u: "https://drive.google.com/file/d/1BOSTeRwvYWj2Lh4GjyMa_f2U3Q4lh8bF/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Financiamento do SUS",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Financiamento do SUS", u: "https://drive.google.com/file/d/1b0-nccl0Yd96q3OLv-AuXTysD6OjP0bS/view?usp=sharing" },
+      { t: "PDF de Slides: Financiamento do SUS", u: "https://drive.google.com/file/d/1qLDvwWAVe_Ggt4ND-XzyHFY3yt-uuZ0u/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ensaio Clínico",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Ensaio clínico 1", u: "https://drive.google.com/file/d/1M-ggJzoxyNmsbKtC5AZ9PYennHe5e1yU/view?usp=sharing" },
+      { t: "PDF de Slides: Ensaio clínico 2", u: "https://drive.google.com/file/d/1MJlI-b6Iko130s_B4XOQ87FR8iT6FMqa/view?usp=sharing" },
+      { t: "Ficha Resumo: Ensaio clínico 2", u: "https://drive.google.com/file/d/1CYEoek7M41CtW_sVMz9sXpZHZ-Ctu1_T/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Acidente de Trabalho",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Medicina do trabalho - acidente de trabalho", u: "https://drive.google.com/file/d/13inC1isXlCFSxGKRWdTO7dk85jXLF8yc/view?usp=sharing" },
+      { t: "Aula CofExpress: Medicina do trabalho - acidente de trabalho_COFEXPRESS", u: "https://drive.google.com/file/d/175cXW8O0WcMLYQZEXKC9oBbU946JkfEg/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças Ocupacionais (Pneumoconioses e LER/DORT)",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Saúde do trabalhador Pneumoconioses", u: "https://drive.google.com/file/d/1l2qzpeZkA08JBMLqpPDIdJxksdgJ8Oui/view?usp=sharing" },
+      { t: "Aula CofExpress: Saúde do trabalhador Pneumoconioses_COFEXPRESS", u: "https://drive.google.com/file/d/1bOeBtf6v99on6BJMMbEDwOLzJZ4PB6T0/view?usp=sharing" },
+      { t: "PDF de Slides: Saúde do trabalhador lesões musculoesqueléticas", u: "https://drive.google.com/file/d/14hhkuA0fvlraFh7EJE_CW-yLZ0_ddy-S/view?usp=sharing" },
+      { t: "Ficha Resumo: Saúde do trabalhador lesões musculoesqueléticas_COFEXPRESS", u: "https://drive.google.com/file/d/1rkWDscFUGgCPLuBiXvsin5Vmlqa_ftcW/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Intoxicações Ocupacionais e Burnout",
+    description: "Prioridade Verde 🟢 (Alta Relevância)",
+    lessons: [
+      { t: "Aula: Saúde do Trabalhador, Intoxicações, PAIRO e Burnout", u: "https://drive.google.com/file/d/1Eja0U9nnNHEmH7IROTbVI2HUecgtBZok/view?usp=sharing" },
+      { t: "Aula CofExpress: Saúde do Trabalhador, Intoxicações, PAIRO e Burnout_COFEXPRESS", u: "https://drive.google.com/file/d/1ZVG17qmDnccPIcXnBQKeXkKwaRURNRJm/view?usp=sharing" },
+      { t: "PDF de Slides: Saúde do Trabalhador - Dermatoses", u: "https://drive.google.com/file/d/1KBEJEFcik0HoTmm2cJyMs28jk7MQa3ga/view?usp=sharing" },
+      { t: "Ficha Resumo: Saúde do trabalhador - dermatose_COFEXPRESS", u: "https://drive.google.com/file/d/1swIYXSf-zqSf-fD24ynZRIcjENY4K3AS/view?usp=sharing" }
+    ]
+  },
+
+  // Prioridade Amarela 🟡 (Complementar/Específico)
+  {
+    title: "História da Saúde no Brasil",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Pré-SUS Modelos de Proteção Social e História da Saúde no Brasil", u: "https://drive.google.com/file/d/1FIut8ZFU6Z9NiMbH4RMRZJA9iUGjr0Xk/view?usp=sharing" },
+      { t: "Aula CofExpress: Pré-SUS Modelos de Proteção Social e História da Saúde no Brasil_COFEXPRESS", u: "https://drive.google.com/file/d/1dDyaf7u9J6bPmpI0MtvSrSInyLFTc9mh/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Decreto 7508/11",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Decreto 750811", u: "https://drive.google.com/file/d/1tW6yU3D-tZm-Qs3AyH-cAzBXVw_Dg2ea/view?usp=sharing" },
+      { t: "Aula CofExpress: Decreto 750811_COFEXPRESS", u: "https://drive.google.com/file/d/1GjR_WODmRajuxtcA4EZWc4CzkHJYRvcj/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Saúde Suplementar",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Saúde Suplementar", u: "https://drive.google.com/file/d/1az0yrYOQFf884VfvlXKdD6rKKLSeHtLP/view?usp=sharing" },
+      { t: "PDF de Slides: Saúde Suplementar", u: "https://drive.google.com/file/d/1LUv1CWYvHMG1PwpBOnaGBpZsyU7PvyxH/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Medicina Baseada em Evidências (MBE)",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Conceitos de MBE", u: "https://drive.google.com/file/d/1Yh2XwpzZHCkFzAwBjGs9YNMCm3DxaOw-/view?usp=sharing" },
+      { t: "Aula CofExpress: Metanálise", u: "https://drive.google.com/file/d/1WO_y4rSabt3sEm1soUxb_XaXokvxkJVS/view?usp=sharing" },
+      { t: "PDF de Slides: Revisão Sistemática", u: "https://drive.google.com/file/d/1eBliXCfvqmfkgA0DvV-GdkF7C_1GgaSG/view?usp=sharing" },
+      { t: "Ficha Resumo: Metanálise", u: "https://drive.google.com/file/d/1CiN7CuFprrsHI_DFc_KH6mwcyou-D8Ua/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Habilidades de Comunicação",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Habilidades de Comunicação - Parte 1-", u: "https://drive.google.com/file/d/1D34GCYdAAQv5ugKSLtkQqgpRnEJgjZN3/view?usp=sharing" },
+      { t: "Aula CofExpress: Habilidades de Comunicação - Parte 1_COFEXPRESS", u: "https://drive.google.com/file/d/117UON--02AHQZmqw22vJL-JVFwuMBsoB/view?usp=sharing" },
+      { t: "PDF de Slides: Habilidades de Comunicação - Parte 2", u: "https://drive.google.com/file/d/19pVQMbMKWlK9qIY1DDdzMC5dw3icbFEm/view?usp=sharing" },
+      { t: "Ficha Resumo: Habilidades de Comunicação - Parte 2_COFEXPRESS", u: "https://drive.google.com/file/d/1y5At8GWQHp9zgxMPvkq9YUCm-7VaUTy2/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Políticas Públicas de Saúde (Populações Especiais)",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Políticas Públicas de Saúde I", u: "https://drive.google.com/file/d/1X-edyeQXZoVlW8kf-f1u0qFxMWcI7g7B/view?usp=sharing" },
+      { t: "Aula CofExpress: Políticas Públicas de Saúde I_COFEXPRESS", u: "https://drive.google.com/file/d/1TfcbrRfif0f30GE5h_5Nko6PPB5lmAKM/view?usp=sharing" },
+      { t: "PDF de Slides: Políticas Públicas de Saúde II Políticas Setoriais", u: "https://drive.google.com/file/d/17pGITzHVtxx_wOeBTCmoPzDclfTKDaHI/view?usp=sharing" },
+      { t: "Ficha Resumo: CUIDADO À COMUNIDADE LGBTQIAPN+", u: "https://drive.google.com/file/d/1tSkihEokit03iSsQ1DY7jAJzhyGYNnX5/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Saúde Mental e RAPS",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Políticas Especificas Reforma Psiquiátrica e RAPS - Rede de Atenção Psicossocial", u: "https://drive.google.com/file/d/10jsxbJaBqaNOc5pj-MhrNoMkTu_WSGzG/view?usp=sharing" },
+      { t: "Aula CofExpress: Políticas Especificas Reforma Psiquiátrica e RAPS - Rede de Atenção Psicossocial_COFEXPRESS", u: "https://drive.google.com/file/d/14VI29LW0pvuwrQFPKB_3FEfPfRUK5XuK/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Determinação Social do Processo Saúde-Doença",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Determinação Social do Processo Saúde-Doença e Promoção de Saúde", u: "https://drive.google.com/file/d/1fWr07KegOy7p81vfU2xXnVgULatCOTR7/view?usp=sharing" },
+      { t: "Aula CofExpress: Determinação Social do Processo Saúde-Doença e Promoção de Saúde_COFEXPRESS", u: "https://drive.google.com/file/d/1wgRIjngRbUVRs9vRnK7NtsSc23LzMYeA/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Rastreamentos",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Rastreamento", u: "https://drive.google.com/file/d/1ejMp27Ti7WoAr2SWDYcpumCgY2oge1gP/view?usp=sharing" },
+      { t: "Aula CofExpress: Rastreamentos - Preventiva _ COFEXPRESS", u: "https://drive.google.com/file/d/1TYo3qfNyHp3Xzl4q0wgr5Bc3aczm7fm1/view?usp=sharing" },
+      { t: "PDF de Slides: Rastreamentos - Preventiva", u: "https://drive.google.com/file/d/1yNPsQa9xhL4bkO8Y_5y504ZLGPcfxnaw/view?usp=sharing" },
+      { t: "Ficha Resumo: Novas Diretrizes de Rastreamento extensivo 2025", u: "https://drive.google.com/file/d/1S1Xv9t0GRGepTp4KHlP8SpJc-k6DhzhO/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Abordagem Familiar e Comunitária",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Abordagem Familiar", u: "https://drive.google.com/file/d/1jNyizIvQFqQQO8UNKBBzpB-A6WUpZa14/view?usp=sharing" },
+      { t: "Aula CofExpress: Abordagem Familiar_COFEXPRESS", u: "https://drive.google.com/file/d/1ege1157Iw9cgFLi4GTk39TRk0EPhyPw9/view?usp=sharing" },
+      { t: "PDF de Slides: Abordagem Comunitária", u: "https://drive.google.com/file/d/1jYR65H5sijPK44pALmJ7n1cTX8e70ddk/view?usp=sharing" },
+      { t: "Ficha Resumo: Abordagem Comunitária_COFEXPRESS", u: "https://drive.google.com/file/d/1n6BT80oerBtIlmHZKOWPFlgA6S5DsOPA/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "ReSOAP e Registro Clínico",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: ReSOAP", u: "https://drive.google.com/file/d/10aAmUrYwnyrZsTLncHmJWx_xcB9xok9e/view?usp=sharing" },
+      { t: "Aula CofExpress: ReSOAP _COFEXPRESS", u: "https://drive.google.com/file/d/17KTPDrfTrnNsbD8y6tW-nmW9seHh0aXe/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "\"Foca na APS\" (Revisão Clínica em Preventiva)",
+    description: "Prioridade Amarela 🟡 (Complementar/Específico)",
+    lessons: [
+      { t: "Aula: Foca na APS Clínica Médica Geral", u: "https://drive.google.com/file/d/10PcVT8BjpyCSN2OnuNSSHODuxNNBLEH8/view?usp=sharing" },
+      { t: "Aula CofExpress: Foca na APS Infectologia - Tuberculose e Hanseníase", u: "https://drive.google.com/file/d/1v0WhTr8EHRIHujDZ0rG-xYTJPFbDwshc/view?usp=sharing" },
+      { t: "PDF de Slides: Foca na APS Pediatria", u: "https://drive.google.com/file/d/1TxnOLUbsrllO8ZW9QTPw9Yiiq0-w66sM/view?usp=sharing" },
+      { t: "Ficha Resumo: Foca na APS Psiquiatria", u: "https://drive.google.com/file/d/1C-BZqeph0XTdeMbm_AXKB28TWrXyJTTD/view?usp=sharing" }
+    ]
+  },
+
+  // Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)
+  {
+    title: "NOBs e NOAS",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: NOBS E NOAS", u: "https://drive.google.com/file/d/1XEqiy0CRt62qvqZfXjydI7uBL7SaGTVP/view?usp=sharing" },
+      { t: "Aula CofExpress: NOBs e NOAS_COFEXPRESS", u: "https://drive.google.com/file/d/1oEoqtuL0FDC4YUmAo7tONwL2q7mVuuK4/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Pacto pela Saúde",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Pacto pela Saúde-", u: "https://drive.google.com/file/d/1JDyqHSfJao49-Rf90_UwoTNt8j8FsuNa/view?usp=sharing" },
+      { t: "Aula CofExpress: Pacto pela Saúde_COFEXPRESS-", u: "https://drive.google.com/file/d/1NuvBJxIsOiZszebcm-aCIns8mT4NEusO/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Concepções sobre Saúde e Doença",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Concepções sobre Saúde e Doença", u: "https://drive.google.com/file/d/1njnakG92HXTFlImSpNKwzFNOYx3QfjnS/view?usp=sharing" },
+      { t: "Aula CofExpress: Concepções sobre Saúde e Doença_COFEXPRESS", u: "https://drive.google.com/file/d/1QsKy3yph9hXsaASgCMIPTJRcPUA_5NvX/view?usp=sharing" },
+      { t: "PDF de Slides: PDF da aula - Concepções sobre Saúde e Doença", u: "https://drive.google.com/file/d/1RIU69x9dTsxCt2ksk7HjJ8xuGSZpw8uM/view?usp=sharing" },
+      { t: "Ficha Resumo: FICHA RESUMO DA AULA - Concepções sobre Saúde e Doença", u: "https://drive.google.com/file/d/1gh7JjMUfhiTrACJ9s8Na_xf7W0WKvpcf/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Planejamento em Saúde",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Planejamento em Saúde", u: "https://drive.google.com/file/d/1e43fZ2fbz8pnNoxYU6_R0NNehI3NhJWy/view?usp=sharing" },
+      { t: "Aula CofExpress: Planejamento em Saúde_COFEXPRESS", u: "https://drive.google.com/file/d/1ErfFbVGed6JCmonUjU0Uv3TPO4RbWT5J/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ética em Pesquisa Clínica",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Ética em pesquisa clínica", u: "https://drive.google.com/file/d/13ioKm6Ks1fyD8xEqg9iFl3S44gbpY-c-/view?usp=sharing" },
+      { t: "Aula CofExpress: Ética em pesquisa clínica", u: "https://drive.google.com/file/d/10XrB1TPWuupF8Fh0Q9ivVqnXGfWVGKA2/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Saúde Planetária",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Saúde Planetária", u: "https://drive.google.com/file/d/1IXPpVcxpa8tqCZ2-0XvoB4pM_XTzwgnN/view?usp=sharing" },
+      { t: "Aula CofExpress: Saúde Planetária_COFEXPRESS", u: "https://drive.google.com/file/d/1hB7oOVOggJ7rrv9Dx2WrARHyLSH9kQS3/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Redes de Atenção à Saúde (RAS)",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Redes de Atenção à Saúde e Níveis de Atenção", u: "https://drive.google.com/file/d/1evZxADOrfj5FU33Qgz4rYXN6dB1as1Gb/view?usp=sharing" },
+      { t: "Aula CofExpress: Redes de Atenção à Saúde e Níveis de Atenção_COXPRESS", u: "https://drive.google.com/file/d/1i3LkObtqBpmO2fSfBdY7TcWCcWmrmXyb/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Avaliação e Tecnologia em Saúde",
+    description: "Prioridade Vermelha 🔴 (Baixa Incidência/Legislação Antiga)",
+    lessons: [
+      { t: "Aula: Problemas, Políticas e Sistemas de Saúde_COFEXPRESS", u: "https://drive.google.com/file/d/1OBA9kqb8gKpCR5yN03B2jc-drdeD2KK7/view?usp=sharing" },
+      { t: "Aula CofExpress: Problemas, Políticas e Sistemas de Saúde - PARTE I", u: "https://drive.google.com/file/d/1cRqnOljCVAjlA93H5qVqcCLD3OZjI6Ho/view?usp=sharing" },
+      { t: "PDF de Slides: Problemas, Políticas e Sistemas de Saúde - PARTE II", u: "https://drive.google.com/file/d/1bGhCRTTvPEArl4ltC6MJU1WwI6928Jm8/view?usp=sharing" }
+    ]
+  }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
