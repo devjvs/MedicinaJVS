@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Onboarding</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Onboarding</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 6 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+           // Introdução e Metodologia
+  {
+    title: "Introdução e Metodologia",
+    description: "Entender a metodologia e como usar as ferramentas.",
+    lessons: [
+      { t: "Aula: Onboarding - Ettore", u: "https://drive.google.com/file/d/1NWmnpB9rp6VBfGhUyT0QjCP-fc3RNOYx/view?usp=sharing" },
+      { t: "Aula: Introdução ao Extensivo", u: "https://drive.google.com/file/d/1d9MZNwpjWKG7UyiHQF9OJq8ISmvI4738/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ferramentas (Plataforma e Questões)",
+    description: "Entender a metodologia e como usar as ferramentas.",
+    lessons: [
+      { t: "Aula: Apresentação plataforma QBANK", u: "https://drive.google.com/file/d/1uG0ARZnEax0r2ZR5yuxZnE49pLSc3gLM/view?usp=sharing" }
+    ]
+  },
+  // Prioridade Verde 🟢 (Acompanhamento Longitudinal)
+  {
+    title: "Revisões do 1º Trimestre (Blocos 1-6)",
+    description: "Foco: Revisão semanal. Assista ao vídeo correspondente sempre que finalizar o estudo de um Bloco.",
+    lessons: [
+      { t: "Week in review: Bloco 1", u: "https://drive.google.com/file/d/1R2m76aLaCY4xwGy8T-nWvxEWvr0mS4mx/view?usp=sharing" },
+      { t: "Week in review: Bloco 4", u: "https://drive.google.com/file/d/1qH39ksoLCvXGhciu8_1zKKZ6sy22Zz7v/view?usp=sharing" },
+      { t: "Week in review: Bloco 6", u: "https://drive.google.com/file/d/1VglzoHRNMEkIwvfNn8yYOaH2dlhKBuzg/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Revisões do 2º Trimestre (Blocos 7-12)",
+    description: "Foco: Revisão semanal. Assista ao vídeo correspondente sempre que finalizar o estudo de um Bloco.",
+    lessons: [
+      { t: "Week in review: Bloco 7", u: "https://drive.google.com/file/d/1qv9V7YbN-hxgueZWe5LGZ9y_S957W_0q/view?usp=sharing" },
+      { t: "Week in review: Bloco 8", u: "https://drive.google.com/file/d/16aS_SMyJNaBHdQkao8B7KHbe4dzxaF4l/view?usp=sharing" },
+      { t: "Week in review: Bloco 9", u: "https://drive.google.com/file/d/1ySO2VM6F-EP8bN8hEzd1Jj7DSyzD1y7V/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Revisões do 3º Trimestre (Blocos 13-18)",
+    description: "Foco: Revisão semanal. Assista ao vídeo correspondente sempre que finalizar o estudo de um Bloco.",
+    lessons: [
+      { t: "Week in review: Bloco 13", u: "https://drive.google.com/file/d/1-lzSvgQja8725_QsSbqyGIB0ZuFPrDpB/view?usp=sharing" },
+      { t: "Week in review: Bloco 14", u: "https://drive.google.com/file/d/1zVkS4R7RW4uJ7YdkaHrv6y_IINCPpy04/view?usp=sharing" },
+      { t: "Week in review: Bloco 15", u: "https://drive.google.com/file/d/18unnfKDrargyrznHNx3_xFAU0_yDLF1w/view?usp=sharing" },
+      { t: "Week in review: Bloco 18", u: "https://drive.google.com/file/d/1RcYCt-5fOJK_cJT-k_6a33nVTBkK_OtM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Revisões Finais (Blocos 19-24)",
+    description: "Foco: Revisão semanal. Assista ao vídeo correspondente sempre que finalizar o estudo de um Bloco.",
+    lessons: [
+      { t: "Week in review: Bloco 19", u: "https://drive.google.com/file/d/1iyPrPwgG-vlYCf1yTj3szgyI_VbSB9PW/view?usp=sharing" },
+      { t: "Week in review: Bloco 20", u: "https://drive.google.com/file/d/1pyRl31hMd0o6FfpR7aYARTIp3eGAlPDc/view?usp=sharing" },
+      { t: "Week in review: Bloco 21", u: "https://drive.google.com/file/d/1QvGpd1H9AjD-c_lR1Ewq7BghsUMNlYWs/view?usp=sharing" },
+      { t: "Week in review: Bloco 22", u: "https://drive.google.com/file/d/169Ah_mDJTdjGSj0B6pgh1pod9wtx4zYj/view?usp=sharing" },
+      { t: "Week in review: Bloco 23", u: "https://drive.google.com/file/d/1gss4UhF-crpLMdaT4nImRnT8QqM7lVh_/view?usp=sharing" },
+      { t: "Week in review: Bloco 24", u: "https://drive.google.com/file/d/1G7lMl9aQmPu58kX-SqCQ4Di7tQzJwNzQ/view?usp=sharing" }
+    ]
+  }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
