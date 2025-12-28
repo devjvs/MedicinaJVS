@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Endocrinologia</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Endocrinologia</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 24 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+
+  // --- MÓDULO 14 - ENDOCRINOLOGIA ---
+  {
+    title: "Dislipidemia: Classificação e Diagnóstico",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 01)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Dislipidemia - Classificação e Diagnóstico", u: "https://drive.google.com/file/d/1hSyL3j6k0Ra0-GCGqyVqAc_eLLYHjmvl/view?usp=sharing" },
+      { t: "Aula 02 - Dislipidemia: Classificação e Diagnóstico", u: "https://drive.google.com/file/d/15Z_BFPGk25VEcop4aUl7vAwj3AswMcFP/view?usp=sharing" },
+      { t: "Ficha Resumo - Dislipidemia: Classificação e Diagnóstico", u: "https://drive.google.com/file/d/1VFlyX_wL15dacNxpDVoxtvQIZCZmpI70/view?usp=sharing" },
+      { t: "PDF de Slides - Dislipidemia: Classificação e Diagnóstico", u: "https://drive.google.com/file/d/1R_Jgb5MVEzHk_Yy5DBsFOWtf55DOPPMA/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tratamento das Dislipidemias",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 02)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Tratamento das Dislipidemias", u: "https://drive.google.com/file/d/1szrotmNQCDQsLXmeWST06B4eeCjU78ap/view?usp=sharing" },
+      { t: "Aula 02 - Tratamento das Dislipidemias", u: "https://drive.google.com/file/d/1dVgfMRf5DHYT2ysifdpYMOzdOs2ld0jI/view?usp=sharing" },
+      { t: "Ficha Resumo - Tratamento das Dislipidemias", u: "https://drive.google.com/file/d/16emHh9M7N6lg4notVVqq3vsqj7INcOAj/view?usp=sharing" },
+      { t: "PDF de Slides - Tratamento das Dislipidemias", u: "https://drive.google.com/file/d/1A4yi1ulwQGU-2Cyd3fsJOV9PaR8Vrp0H/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome Metabólica",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 03)",
+    lessons: [
+      { t: "Aula 01 - Síndrome Metabólica", u: "https://drive.google.com/file/d/1oQ-C1rvDc6ru6saxFwSbljk3zW7EbsLV/view?usp=sharing" },
+      { t: "Ficha Resumo - Síndrome Metabólica", u: "https://drive.google.com/file/d/1LO_98XHROEzoYVk37SiFqno3B1plodS5/view?usp=sharing" },
+      { t: "PDF de Slides - Síndrome Metabólica", u: "https://drive.google.com/file/d/1VOMBuiEXGI5WACFbkNe8bdLvO1EXLJ_g/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Obesidade: Introdução e Tratamento Não Farmacológico",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 04)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Obesidade - Introdução e Tratamento Não-Farmacológico", u: "https://drive.google.com/file/d/100Rd31reGVZhkBBRqJz_DTi7xmklCyJg/view?usp=sharing" },
+      { t: "Aula 02 - Obesidade: Introdução e Tratamento Não-Farmacológico", u: "https://drive.google.com/file/d/1DKdB3OBqdkZlt68FHdlIqqa2jlMy-VIk/view?usp=sharing" },
+      { t: "Ficha Resumo - Obesidade: Introdução e Tratamento Não-Farmacológico", u: "https://drive.google.com/file/d/1RZVJ1uESXku_cexX2jcohud-ZpDcpFRd/view?usp=sharing" },
+      { t: "PDF de Slides - Obesidade: Introdução e Tratamento Não-Farmacológico", u: "https://drive.google.com/file/d/1QwAwYIxeEestr7dr4IKb413AMeRoAqwv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Obesidade: Tratamento Farmacológico e Cirúrgico",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 05)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Obesidade - Tratamento Farmacológico e Cirúrgico", u: "https://drive.google.com/file/d/12oBT_veAxTrkeKOw68XOyGSoqk5w-2p7/view?usp=sharing" },
+      { t: "Aula 02 - Obesidade: Tratamento Farmacológico e Cirúrgico", u: "https://drive.google.com/file/d/14myIur7DkVfjvVtjDYzAfTER9ZLlahSm/view?usp=sharing" },
+      { t: "Ficha Resumo - Obesidade: Tratamento Farmacológico e Cirúrgico", u: "https://drive.google.com/file/d/1qeOY05Qf0GbAD6xJcHyA_WzoW9hPGHcb/view?usp=sharing" },
+      { t: "PDF de Slides - Obesidade: Tratamento Farmacológico e Cirúrgico", u: "https://drive.google.com/file/d/1ujz4oCI6F47Oa86xIAPQvg29NcGFIYZ_/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doença Hepática Esteatótica Metabólica (DHEM)",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 06)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Doença Hepática Esteatótica Metabólica (DHEM)", u: "https://drive.google.com/file/d/11c0asYVQHPbOjc9Bxl9bNMZaKiRN8dVe/view?usp=sharing" },
+      { t: "Aula 02 - Doença Hepática Esteatótica Metabólica (DHEM)", u: "https://drive.google.com/file/d/1hMljPxpvZ6-3dqG4t1F45qK-aFeqbawg/view?usp=sharing" },
+      { t: "PDF de Slides - Doença Hepática Esteatótica Metabólica (DHEM)", u: "https://drive.google.com/file/d/1r8OAGHKaNdL4kPOLAVyiiBv2alxZYiGj/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Diabetes: Classificação, Fisiopatologia e Diagnóstico",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 07)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Diabetes - Classificação, Fisiopatologia e Diagnóstico", u: "https://drive.google.com/file/d/1r8v4ikBgzWyFWw1aovoisyhXYVvIqxrS/view?usp=sharing" },
+      { t: "Aula 02 - Diabetes: Classificação, Fisiopatologia e Diagnóstico", u: "https://drive.google.com/file/d/1L_lsHEjEGKcLbVriXC377hAKEeM5HEp4/view?usp=sharing" },
+      { t: "Ficha Resumo - Diabetes: Classificação, Fisiopatologia e Diagnóstico", u: "https://drive.google.com/file/d/16uTBVEFm7MCWQSkOG32hTZqyj6g0A3SU/view?usp=sharing" },
+      { t: "PDF de Slides - Diabetes: Classificação, Fisiopatologia e Diagnóstico", u: "https://drive.google.com/file/d/1PjqrYqRDaLdwzxiaaNGeawR475X00O8S/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Meta Terapêutica, Manejo do Pré-DM e Tratamento Não Farmacológico do DM",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 08)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Meta Terapêutica, Manejo do Pré-DM e Tratamento Não-Farmacológico do DM", u: "https://drive.google.com/file/d/1USeD-JUrRho8P9VbD-pZLEPOthGrWze6/view?usp=sharing" },
+      { t: "Aula 02 - Meta Terapêutica, Manejo do Pré-DM e Tratamento Não-Farmacológico do DM", u: "https://drive.google.com/file/d/13xqDjtPaTA4JY0tE9tZ5tc2dnwQT2Cbv/view?usp=sharing" },
+      { t: "Ficha Resumo - Meta Terapêutica, Manejo do Pré-DM e Tratamento Não-Farmacológico do DM", u: "https://drive.google.com/file/d/1taqm1jNX-sFE_NFKt9lM53ipZ83blQfO/view?usp=sharing" },
+      { t: "PDF de Slides - Meta Terapêutica, Manejo do Pré-DM e Tratamento Não-Farmacológico do DM", u: "https://drive.google.com/file/d/118ReH1zWOiKyjMQPx_dn2TeW2yfcI-id/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antidiabéticos Orais e Subcutâneos: Parte I",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 09)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Antidiabéticos Orais e Subcutâneos - Parte I", u: "https://drive.google.com/file/d/173h7ePTNQoOZSpZVGmynO5K3XKhrJJgx/view?usp=sharing" },
+      { t: "Aula 02 - Antidiabéticos Orais e Subcutâneos: Parte I", u: "https://drive.google.com/file/d/1HmuDRHga6CIQXfJgL85l4q9NR7J3E39o/view?usp=sharing" },
+      { t: "Ficha Resumo - Antidiabéticos Orais e Subcutâneos I", u: "https://drive.google.com/file/d/1mO23G_EklGKZRhAvKx-K1N-yoJjbAlaw/view?usp=sharing" },
+      { t: "PDF de Slides - Antidiabéticos Orais e Subcutâneos I", u: "https://drive.google.com/file/d/1vbmJkxPTWj1U9tXFgVDrmIkDtMSafVkp/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antidiabéticos Orais e Subcutâneos: Parte II",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 10)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Antidiabéticos Orais e Subcutâneos - Parte II", u: "https://drive.google.com/file/d/1iPvo9MD-7ZU9OrnoZTXAGM3bZSGfoQGn/view?usp=sharing" },
+      { t: "Aula 02 - Antidiabéticos Orais e Subcutâneos: Parte II", u: "https://drive.google.com/file/d/1n-H_ZxplcsF6Ry2OTqs1S2-6hxHTCZHJ/view?usp=sharing" },
+      { t: "Ficha resumo - Antidiabeticos Orais e Subcutaneos - Parte II", u: "https://drive.google.com/file/d/1gHKNICFlUJ5xuZSUAHArrzlabUX9rGIF/view?usp=sharing" },
+      { t: "ERRATA_ Antidiabeticos Orais e Subcutaneos - Parte II", u: "https://drive.google.com/file/d/1fWb-3MyfRoR13w3Gin7YxhzEfNAFJUDp/view?usp=sharing" },
+      { t: "PDF de slides - Antidiabeticos Orais e Subcutaneos - Parte II", u: "https://drive.google.com/file/d/1sfvulbBnfDqsZCkn2AMURTmmbnKhIDou/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insulinoterapia",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 11)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Insulinoterapia", u: "https://drive.google.com/file/d/1WDfxXGgyqJAeKtPGaNjkH4IIN_8UTqAw/view?usp=sharing" },
+      { t: "Aula 02 - Insulinoterapia", u: "https://drive.google.com/file/d/110V60vqFQ3-7VYROjUfdqXshsjHVEjLQ/view?usp=sharing" },
+      { t: "Ficha Resumo - Insulinoterapia", u: "https://drive.google.com/file/d/1FmLxne5R8KLlrXfkruGJPz4vXVnPBTe5/view?usp=sharing" },
+      { t: "PDF de Slides - Insulinoterapia", u: "https://drive.google.com/file/d/16maglEGYCuLgerJT4dXcwuuJIEIQM3HQ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hiperglicemia Hospitalar",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 12)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Hiperglicemia Hospitalar", u: "https://drive.google.com/file/d/1ZER_zKMmInbuy4Ll5VzVzsJ7CojUoTPe/view?usp=sharing" },
+      { t: "Aula 02 - Hiperglicemia Hospitalar", u: "https://drive.google.com/file/d/1zzHPPB1t1yoL-vfBCwpU4FAWrCFNCCsz/view?usp=sharing" },
+      { t: "Ficha Resumo - Hiperglicemia Hospitalar", u: "https://drive.google.com/file/d/1sqg6K8nDyY7r5qGVxajaDrJeGpl-o6Dt/view?usp=sharing" },
+      { t: "PDF de Slides - Hiperglicemia Hospitalar", u: "https://drive.google.com/file/d/1_MN_yZ0Ifya3ikj1aHQuuEeAfj0jA0LU/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Complicações Crônicas do Diabetes Mellitus (DM)",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 13)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Complicações Crônicas do Diabetes Mellitus (DM)", u: "https://drive.google.com/file/d/11on7ZWzdJbGiR8VmbAyCTfDZfa8KR1ra/view?usp=sharing" },
+      { t: "Aula 02 - Complicações Crônicas do Diabetes Mellitus (DM)", u: "https://drive.google.com/file/d/1AG5_1BfYTuYlh4DctqFm49lYkaIqjxrW/view?usp=sharing" },
+      { t: "Ficha Resumo - Complicações Crônicas do Diabetes Mellitus (DM)", u: "https://drive.google.com/file/d/1S73VwlKXpcvn4D94UdakeDyeKpl18fLi/view?usp=sharing" },
+      { t: "PDF de Slides - Complicações Crônicas do Diabetes Mellitus (DM)", u: "https://drive.google.com/file/d/1YJmbhUgREMHSgfK3cacdfns6w4JUojX_/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fisiologia da Tireoide",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 14)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1AtxHJyGULqIdP_oI23m_JXMLIWSV6Iqi/view?usp=sharing" },
+      { t: "Aula 02 - Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1GLpS0tZucKxB1HryuGyNyq12UF28ckG2/view?usp=sharing" },
+      { t: "Ficha Resumo - Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1L94q6Ri78Ea8tiMDLChrh6EWLwJLKA0v/view?usp=sharing" },
+      { t: "PDF de Slides - Fisiologia da Tireoide", u: "https://drive.google.com/file/d/1RPvuT1SbhF_eHEbfvIclo5WxrzgXe84A/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipotireoidismo",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 15)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Hipotireoidismo", u: "https://drive.google.com/file/d/161DskCCJypWSh7NPkJhvBSQIUR5whl85/view?usp=sharing" },
+      { t: "Aula 02 - Hipotireoidismo", u: "https://drive.google.com/file/d/1q4maUbfVtYamh8mnPsyNGHbo_MEKTPev/view?usp=sharing" },
+      { t: "Ficha Resumo - Hipotireoidismo", u: "https://drive.google.com/file/d/1LBHeXzlR_qJaGCWpxHJzzsNSEh4MSJw2/view?usp=sharing" },
+      { t: "PDF de Slides - Hipotireoidismo", u: "https://drive.google.com/file/d/110VOWsuXWZgEwi1ytMWDA0nEiWn_GC9s/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hipertireoidismo",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 16)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Hipertireoidismo", u: "https://drive.google.com/file/d/18jGMwpSrbl-KXRiW7l6F-giTx7elqv44/view?usp=sharing" },
+      { t: "Aula 02 - Hipertireoidismo", u: "https://drive.google.com/file/d/1ActvRUGw0-6Dkxt4JuPHSAVv8MVD8p0l/view?usp=sharing" },
+      { t: "Ficha Resumo - Hipertireoidismo", u: "https://drive.google.com/file/d/1cqDnxaXMwalKH1vRKL-T2TTr-EK5xnGA/view?usp=sharing" },
+      { t: "PDF de Slides - Hipertireoidismo", u: "https://drive.google.com/file/d/1ooUmcMEveftilWeMJA3r3txVvTWkEClQ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Nódulos e Câncer de Tireoide",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 17)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Nódulos e Câncer de Tireoide", u: "https://drive.google.com/file/d/1uJHSf8nduH-6jBK0pBe6R_ZAz0ANEbor/view?usp=sharing" },
+      { t: "Aula 02 - Nódulos e Câncer de Tireoide", u: "https://drive.google.com/file/d/1wB52BZe4WpDid169hZ37dmYPhQC4WZ-k/view?usp=sharing" },
+      { t: "Ficha Resumo - Nódulos e Câncer de Tireoide", u: "https://drive.google.com/file/d/1E_6g9uHESFA3A9-4mq-Hytm8BynoZcRz/view?usp=sharing" },
+      { t: "PDF de Slides - Nódulos e Câncer de Tireoide", u: "https://drive.google.com/file/d/1DrZcHhcxMfaeoJI5ZMn7nnijpPUt1znE/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tireoidites & Síndrome do Eutireoidiano Doente",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 18)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Tireoidites & Síndrome do Eutireoidiano Doente", u: "https://drive.google.com/file/d/1zgMnX7Hp_mYthLTQLOwuJADVwjlpap_a/view?usp=sharing" },
+      { t: "Aula 02 - Tireoidites & Síndrome do Eutireoidiano Doente", u: "https://drive.google.com/file/d/1TRVrOfKw7wWzXgGPwjUie4tXVUFV2Qmg/view?usp=sharing" },
+      { t: "Ficha Resumo - Tireoidites & Síndrome do Eutireoidiano Doente", u: "https://drive.google.com/file/d/1YtpY0d0HSF1Zt6P_yKb2EXzA-W14Lft3/view?usp=sharing" },
+      { t: "PDF de Slides - Tireoidites & Síndrome do Eutireoidiano Doente", u: "https://drive.google.com/file/d/1q5uVtAZRBqIYSd0cyelJyJzQ6238mmrC/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Insuficiência Adrenal",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 19)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Insuficiência Adrenal", u: "https://drive.google.com/file/d/1lZYiMpP_R7cuq1Q3dSSdTmqhL2aBUtmV/view?usp=sharing" },
+      { t: "Aula 02 - Insuficiência Adrenal", u: "https://drive.google.com/file/d/1ENWTg_oiPOAgZy6ynWchCRgahbsXFssX/view?usp=sharing" },
+      { t: "Ficha Resumo - Insuficiência Adrenal", u: "https://drive.google.com/file/d/1jegd8TBNDETPCMFerr5k5HSM-S0ch-09/view?usp=sharing" },
+      { t: "PDF de Slides - Insuficiência Adrenal", u: "https://drive.google.com/file/d/1ENcsNlM-JpA_sOSAu0uj6sZRNlsr5Jmf/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hiperaldosteronismo Primário",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 20)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Hiperaldosteronismo Primário", u: "https://drive.google.com/file/d/1gk53JARCYfsyFTTuqlNzUjVBt19c4zp8/view?usp=sharing" },
+      { t: "Aula 02 - Hiperaldosteronismo Primário", u: "https://drive.google.com/file/d/1Xg9NW1pyT6Dsj7w-OxNg5FJdACWVC3Hf/view?usp=sharing" },
+      { t: "Ficha Resumo - Hiperaldosteronismo Primário", u: "https://drive.google.com/file/d/1A0M98trYGv9Z6Wla-JMRl_dIhzVEH0VH/view?usp=sharing" },
+      { t: "PDF de Slides - Hiperaldosteronismo Primário", u: "https://drive.google.com/file/d/1tGcMMn6pl4u5ViMCsfZXypVZTQzLpTtb/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Incidentaloma Adrenal",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 21)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Incidentaloma Adrenal", u: "https://drive.google.com/file/d/1sXtUGS3KY5HVoJ0b7asmixkhUeMORRQk/view?usp=sharing" },
+      { t: "Aula 02 - Incidentaloma Adrenal", u: "https://drive.google.com/file/d/1gDA5HfoEZfuP9jufowN2GegPjzPyVywn/view?usp=sharing" },
+      { t: "Ficha Resumo - Incidentaloma Adrenal", u: "https://drive.google.com/file/d/10Q-j9S5AKEZQVOOWi2xN6ZFXV2O71dHO/view?usp=sharing" },
+      { t: "PDF de Slides - Incidentaloma Adrenal", u: "https://drive.google.com/file/d/1qKfxapoqel6OnAOvbF3582C6O9LuHQDF/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Prolactinomas",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 22)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Prolactinomas", u: "https://drive.google.com/file/d/11na5j0tjhZTLLQYz-W875qiJ5ZpXqOzJ/view?usp=sharing" },
+      { t: "Aula 02 - Prolactinomas", u: "https://drive.google.com/file/d/1Qh2UoQptzs09aMEKsuv6uB7KvjWPwlGp/view?usp=sharing" },
+      { t: "Ficha Resumo - Prolactinomas", u: "https://drive.google.com/file/d/1nI8UVILDOZD9GC_uRQQeZJNC9_f7A9E6/view?usp=sharing" },
+      { t: "PDF de Slides - Prolactinomas", u: "https://drive.google.com/file/d/1yTnO3F4QGlq0CtKHDZEFCQjtoGYdBqcR/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Outros Distúrbios Hipofisários",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 23)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Outros Distúrbios Hipofisários", u: "https://drive.google.com/file/d/1WoApQpB4iL_i6Ob1S4wVHhjUitg9mAUn/view?usp=sharing" },
+      { t: "Aula 02 - Outros Distúrbios Hipofisários", u: "https://drive.google.com/file/d/13Efez6hMVtim4jQ-CMy7M3Ew8tSfPD45/view?usp=sharing" },
+      { t: "Ficha Resumo - Outros Distúrbios Hipofisários", u: "https://drive.google.com/file/d/1iR4CFoOfL3b51enI4FTog39SrfgzY3Kj/view?usp=sharing" },
+      { t: "PDF de Slides - Outros Distúrbios Hipofisários", u: "https://drive.google.com/file/d/1jSg_3ee0pyvRHo8O9g8PQXSJB03NWAJv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Síndrome de Cushing",
+    description: "Módulo 14 - Endocrinologia (Sub-Módulo 24)",
+    lessons: [
+      { t: "Aula 01 - CofExpress: Síndrome de Cushing", u: "https://drive.google.com/file/d/1BmATYdAYB1xjaQ4q7VLJG1bYA3I_Bw3R/view?usp=sharing" },
+      { t: "Aula 02 - Síndrome de Cushing", u: "https://drive.google.com/file/d/1o_YgeSX48Rsp9ArwkEf24Pt3SNRTlcHj/view?usp=sharing" },
+      { t: "Ficha Resumo - Síndrome de Cushing", u: "https://drive.google.com/file/d/15poww6uHLf-6f6eCqAbynEaXOh0CL9yy/view?usp=sharing" },
+      { t: "PDF de Slides - Síndrome de Cushing", u: "https://drive.google.com/file/d/1wlYXhKtTWZ7SwhyfDXxgd8Y_EcKLdTxu/view?usp=sharing" }
+    ]
+  }
+];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
