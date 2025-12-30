@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Infectologia</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Infectologia</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 20 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+
+  // --- MÓDULO 06 - INFECTOLOGIA ---
+  {
+    title: "Doenças oportunistas HIV",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 01)",
+    lessons: [
+      { t: "Doenças oportunistas HIV", u: "https://drive.google.com/file/d/1vj7y5cekBueZzDav-sW6uODajCUSdtru/view?usp=sharing" },
+      { t: "Doenças oportunistas HIV_COFEXPRESS", u: "https://drive.google.com/file/d/11knhx-Qz4f-oi6PUtBn2zTTwcBrKBNFi/view?usp=sharing" },
+      { t: "PDF de slide - Doencas oportunistas HIV", u: "https://drive.google.com/file/d/1lfnW81wFjvaWC6ecVRcnsq-2_jN4fL5O/view?usp=sharing" },
+      { t: "Ficha Resumo - Doencas oportunistas HIV", u: "https://drive.google.com/file/d/1AjRZKSuJyV3gjscJgRKhDYFtWwNRomcC/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antibióticos I",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 02)",
+    lessons: [
+      { t: "Antibióticos I", u: "https://drive.google.com/file/d/1eFhzuF8-U2rZPUMOGMQwzuKs4feKEjrK/view?usp=sharing" },
+      { t: "Antibióticos 1_cofexpress", u: "https://drive.google.com/file/d/1NQESKooEFKtHJv6vuqDxH1Zq1GR75DFG/view?usp=sharing" },
+      { t: "PDF de slide - Antibioticos I", u: "https://drive.google.com/file/d/12P2lOHewf5Z0pKMRX4P6dRyMkK_n72dF/view?usp=sharing" },
+      { t: "Ficha Resumo - Antibioticos I", u: "https://drive.google.com/file/d/1kC4RkAfBZgWsW0Cb3FKvbLI8KAdE8QZV/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antibióticos II",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 03)",
+    lessons: [
+      { t: "Antibióticos II", u: "https://drive.google.com/file/d/1GvY2GjBjo8bX6tQVVQd4yX9GV0NaNhN9/view?usp=sharing" },
+      { t: "Antibióticos II_cofexpress", u: "https://drive.google.com/file/d/16uCxyr-TfJhO8iHNX0P7ne5KmgLn3LJ1/view?usp=sharing" },
+      { t: "PDF de slide - Antibioticos II", u: "https://drive.google.com/file/d/14t6zSb3Q5y1sx03oueafrHbquJNnnQFa/view?usp=sharing" },
+      { t: "Ficha Resumo - Antibioticos II", u: "https://drive.google.com/file/d/1EUC-S7Dw3TYqMdlntl3f-WUerzBX2LMg/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antibióticos - Conceitos Avançados",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 04)",
+    lessons: [
+      { t: "Antibióticos - Conceitos Avançados", u: "https://drive.google.com/file/d/10U_mUwFYucMVaHpW-idx9hosL5gTHqrb/view?usp=sharing" },
+      { t: "PDF - Antibioticos - Conceitos Avancados", u: "https://drive.google.com/file/d/1RfWOzyAvvbamCYwmAYTv2jhletk02pvI/view?usp=sharing" },
+      { t: "Ficha resumo - Antibioticos - Conceitos Avancados", u: "https://drive.google.com/file/d/1lMb9Xpy9fMovufuEK0ZR0DMWcKy2-zl9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "HIV",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 05)",
+    lessons: [
+      { t: "HIV", u: "https://drive.google.com/file/d/1B9fEDbhi-OkQEdwNujWHUpyROFsSVp9R/view?usp=sharing" },
+      { t: "HIV_COFEXPRESS", u: "https://drive.google.com/file/d/14YSCbnpSSBF9QffiQaEqmyoLTRlymlxs/view?usp=sharing" },
+      { t: "PDF de slide - HIV", u: "https://drive.google.com/file/d/1mr9Tx4fu-qRvgLHfl0QPppY-nN4Li0d3/view?usp=sharing" },
+      { t: "Ficha resumo - HIV", u: "https://drive.google.com/file/d/1IBdMfPDqJ10iFAJv-g9ljIDAKMPR27Fm/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Sífilis e Uretrites Infecciosas",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 06)",
+    lessons: [
+      { t: "Sífilis e Uretrites Infecciosas", u: "https://drive.google.com/file/d/1ZqqYwvP-Tyh7XtgHgSc-BX9G2lYhViJ9/view?usp=sharing" },
+      { t: "Sífilis e Uretrites Infecciosas_COFEXPRESS", u: "https://drive.google.com/file/d/19jl-LITbfUdYfFdlrd5iPxto2m9DBec9/view?usp=sharing" },
+      { t: "PDF de slides - Sifilis e Uretrites Infecciosas", u: "https://drive.google.com/file/d/1uG6IxuhyV_A_vq7TQobkKenUXtyyV586/view?usp=sharing" },
+      { t: "Ficha Resumo - Sifilis e Uretrites Infecciosas", u: "https://drive.google.com/file/d/1L2Z6letRR0GrrpPs9ONIgb1iz8wxTrqq/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Neurossífilis",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 07)",
+    lessons: [
+      { t: "NEUROSSIFILIS _COFEXPRESS", u: "https://drive.google.com/file/d/1lONiAtxI2XatLygszpAwpmoxXKHg_o1v/view?usp=sharing" },
+      { t: "PDF de slides - Neurossifilis", u: "https://drive.google.com/file/d/1rZtYcUBRmafbrLgovaceNfn8IRMvDe_V/view?usp=sharing" },
+      { t: "Ficha Resumo - Neurossifilis", u: "https://drive.google.com/file/d/1y73Vnf2hQ-cSNzGH5wTy9PQGdh4FH6vA/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Infecções em Imunossuprimidos",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 08)",
+    lessons: [
+      { t: "Infecções em Imunossuprimidos", u: "https://drive.google.com/file/d/1QavjiFqRIXeRGxk3w_Ac06xS2C-d7aH4/view?usp=sharing" },
+      { t: "Infecções em Imunossuprimidos_COFEXPRESS", u: "https://drive.google.com/file/d/1QzySHJIAjCCZn-mOPONsfyKzYzN6Gnvy/view?usp=sharing" },
+      { t: "PDF de slides - Infeccoes em Imunossuprimidos", u: "https://drive.google.com/file/d/1lq2R9fK2ntgrXLKbAM3V5b41DZ1AwTn2/view?usp=sharing" },
+      { t: "Ficha Resumo - Infeccoes em Imunossuprimidos", u: "https://drive.google.com/file/d/1_tN4s4UAeJXvce8Npfp8kesezfJuBulB/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculose Pulmonar",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 09)",
+    lessons: [
+      { t: "Tuberculose Pulmonar_COFEXPRESS", u: "https://drive.google.com/file/d/1GmcCaHO6ry3rv685lfCgrmGO6fR1FUHA/view?usp=sharing" },
+      { t: "PDF de slides - Tuberculose Pulmonar", u: "https://drive.google.com/file/d/1F-huXN8FX7Cr8DwnjgWvYj8hjcBC-LY9/view?usp=sharing" },
+      { t: "Ficha Resumo - Tuberculose Pulmonar", u: "https://drive.google.com/file/d/1YaLs5HIxnClnO3FiXbntdvQ73ikBPjx3/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tratamento de Tuberculose e efeitos colaterais do RIPE",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 10)",
+    lessons: [
+      { t: "Tratamento de Tuberculose e efeitos colaterais do RIPE", u: "https://drive.google.com/file/d/18l9N1PzLGBcOqC3Jpq7nxHHsJyKq85E5/view?usp=sharing" },
+      { t: "Tratamento de Tuberculose e efeitos colaterais do RIPE_COFEXPRESS", u: "https://drive.google.com/file/d/1t62ADNfM8hLPJI6gQP65RN7s7CxctflE/view?usp=sharing" },
+      { t: "PDF de slides - Tratamento de Tuberculose e efeitos colaterais do RIPE", u: "https://drive.google.com/file/d/1shNg8x729VZGNACm-7gftXlubD2keJAL/view?usp=sharing" },
+      { t: "Ficha Resumo - Tratamento de Tuberculose e efeitos colaterais do RIPE", u: "https://drive.google.com/file/d/1TV435Yv5vdilNyOFFTfJQDI9PIy7UDeJ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculose Extra Pulmonar",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 11)",
+    lessons: [
+      { t: "Tuberculose Extra Pulmonar", u: "https://drive.google.com/file/d/1Gi5x72pBdz3XMAAhSDbJr7zBGkbczDOD/view?usp=sharing" },
+      { t: "PDF de slides - Tuberculose Extra Pulmonar", u: "https://drive.google.com/file/d/1nAPnvqYHCpatZ66XfHSoiRJsJFQDabDg/view?usp=sharing" },
+      { t: "Ficha Resumo - Tuberculose Extra Pulmonar", u: "https://drive.google.com/file/d/1XlM-OWon76dq56A5Ur-C0UtSYTHSXDII/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculose Resistência e Tratamento Específico",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 12)",
+    lessons: [
+      { t: "Tuberculose Resistência e Tratamento Específico", u: "https://drive.google.com/file/d/1ZmhI0V7gLJehX8z1N4jWMw0gA5xhdti5/view?usp=sharing" },
+      { t: "Tuberculose Resistência e Tratamento Específico_COFEXPRESS", u: "https://drive.google.com/file/d/1dlRAdJpbl0DA2vT-zRDL258uurvlvBDB/view?usp=sharing" },
+      { t: "PDF de slides - Tuberculose Resistencia e Tratamento Especifico", u: "https://drive.google.com/file/d/1CONrD3Yxy4z3RDyAQdTyqrlTObd1X9xb/view?usp=sharing" },
+      { t: "Ficha Resumo - Tuberculose Resistencia e Tratamento Especifico", u: "https://drive.google.com/file/d/1MBYx-UhSFv_AQcvWVPXHP2zKFTQ-jfxv/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças Negligenciadas",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 13)",
+    lessons: [
+      { t: "Doenças Negligenciadas", u: "https://drive.google.com/file/d/1Yfibj1ukFSf7bZGg5QQ-pVIfTPcdx28s/view?usp=sharing" },
+      { t: "doenças_negligenciadas_cofexpress", u: "https://drive.google.com/file/d/11RNwjZ06ZWoaHGiRb8FuYwM0rEg6mCRe/view?usp=sharing" },
+      { t: "PDF de slides - Doencas Negligenciadas", u: "https://drive.google.com/file/d/1ezwepPYWahSlzTfJggccGuuxYuSOxStJ/view?usp=sharing" },
+      { t: "Ficha Resumo - Doencas Negligenciadas", u: "https://drive.google.com/file/d/1DuCL4Su29y4MnKvjznbbMIRNzHJpLFr4/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Acidentes com Animais Peçonhentos",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 14)",
+    lessons: [
+      { t: "Acidentes com Animais Peçonhentos", u: "https://drive.google.com/file/d/1XyKtn6cMOjCaVDRMNX6Bdi8h4lPKFuwX/view?usp=sharing" },
+      { t: "PDF de slides - Acidentes com Animais Peconhentos", u: "https://drive.google.com/file/d/1C2CzwPJOU691yw86yUpQAN5YccuiBp4t/view?usp=sharing" },
+      { t: "Ficha Resumo - Acidentes com Animais Peconhentos", u: "https://drive.google.com/file/d/1Ezof3cG1wzTCt2HK6Hhm_6rEgF54UnZw/view?usp=sharing" },
+      { t: "ERRATAS - ACIDENTES COM ANIMAIS PECONHENTOS", u: "https://drive.google.com/file/d/1dr0bVL_XmTYdKirueaIBBCaD_GBSVD__/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Vacinação - Situações Especiais",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 15)",
+    lessons: [
+      { t: "Vacinação - Situações Especiais", u: "https://drive.google.com/file/d/10-H7k793L3uCbNyE69OrrD57XgmF87Jo/view?usp=sharing" },
+      { t: "Vacinação - Situações Especiais_COFEXPRESS", u: "https://drive.google.com/file/d/1fE4sPwA8IwgmqFxKqPV85IVMWftVMPvh/view?usp=sharing" },
+      { t: "PDF de slides - Vacinacao - Situacoes Especiais", u: "https://drive.google.com/file/d/1sOwsASAGVEXy3YPR6zgIcc-mJ7dlpsTg/view?usp=sharing" },
+      { t: "Ficha Resumo - Vacinacao - Situacoes Especiais", u: "https://drive.google.com/file/d/1pKS7_ucPijuIsOhW-3GvpYQJvp4xL6wi/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Doenças Virais e Pandêmicas",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 16)",
+    lessons: [
+      { t: "Doenças Virais e Pandêmicas", u: "https://drive.google.com/file/d/1caz9uqip9eU0HUI_qH-DyLIqB4pZQZzf/view?usp=sharing" },
+      { t: "Doenças Virais e Pandêmicas _COFEXPRESS", u: "https://drive.google.com/file/d/1GgtKOSt2bJavpGfLw8UpbXoWwHf55f4w/view?usp=sharing" },
+      { t: "PDF de slides - Doencas Virais e Pandemicas", u: "https://drive.google.com/file/d/1l9-4KMDdPBnB52AVTmbAAtsw7uD_iCcr/view?usp=sharing" },
+      { t: "Ficha resumo - Doencas Pandemicas", u: "https://drive.google.com/file/d/1L_ZQhnv188atlqV94uCgaZ3kkLfG3O8t/view?usp=sharing" },
+      { t: "Ficha resumo - Doencas Virais", u: "https://drive.google.com/file/d/1NRBYV0QOETyYmO8HtOZs4pQUVTapLY5o/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Arboviroses - Clínica Médica",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 17)",
+    lessons: [
+      { t: "Arboviroses - Clínica Médica", u: "https://drive.google.com/file/d/1JyTa1ShPe34hpOEFFsg15KSc-5028r32/view?usp=sharing" },
+      { t: "Arboviroses - Clínica Médica _COFEXPRESS", u: "https://drive.google.com/file/d/1rAHyJF8na8f0XJjSztgW5hCTuEFyFnhP/view?usp=sharing" },
+      { t: "PDF de slides - Arboviroses - Clinica Medica", u: "https://drive.google.com/file/d/11M3W8wGf1AtbMCnG6I0ln1JDQ0CvCCww/view?usp=sharing" },
+      { t: "Ficha resumo - Arboviroses - Clinica Medica", u: "https://drive.google.com/file/d/1UhCPBSfNT1Z-th5-LZnOq46EzHQ-lPpu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Icterícias febris e Febre Maculosa",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 18)",
+    lessons: [
+      { t: "Icterícias febris e Febre Maculosa", u: "https://drive.google.com/file/d/18Hg3bF6tYzxPcQDM--w2E6fvwrfTzWVU/view?usp=sharing" },
+      { t: "PDF de slides - Ictericias febris e Febre Maculosa", u: "https://drive.google.com/file/d/1-odLHfF3Rxr28Ei-MD8tm9adtr-3sozn/view?usp=sharing" },
+      { t: "Ficha resumo - Ictericias febris e Febre Maculosa", u: "https://drive.google.com/file/d/1nUYy-mdKC19qRvs1HH04Rjv5uZ_r3OFy/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hepatites Virais - Clínica Médica",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 19)",
+    lessons: [
+      { t: "Hepatites Virais - Clínica Médica", u: "https://drive.google.com/file/d/1n8jf-bORgPf3kvXVfM_NmGbx02g2CUm2/view?usp=sharing" },
+      { t: "Hepatites Virais - Clínica Médica_COFEXPRESS", u: "https://drive.google.com/file/d/1ScyfZKk4Gpfd0bL7q4FUO0EE4FphHU_l/view?usp=sharing" },
+      { t: "PDF de slides - Hepatites Virais - Clinica Medica", u: "https://drive.google.com/file/d/1vqF2GsDCoILM8RLNxQELmfaHY46wbh3Q/view?usp=sharing" },
+      { t: "Ficha resumo - Hepatites Virais - Clinica Medica", u: "https://drive.google.com/file/d/1yTexYOUtj18vxKbOLXqrXBmVPPTB0nXk/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Parasitoses Intestinais - Clínica Médica",
+    description: "Módulo 06 - Infectologia (Sub-Módulo 20)",
+    lessons: [
+      { t: "PDF de slides - Parasitoses Intestinais - Clinica Medica", u: "https://drive.google.com/file/d/11vir3SiW62SK1jP1GuUKNPVAdUp18UGI/view?usp=sharing" },
+      { t: "Ficha resumo - Parasitoses Intestinais - Clinica Medica", u: "https://drive.google.com/file/d/10H3poLmgx8mZR-N9SZbWEBvW1cgdG_DD/view?usp=sharing" }
+    ]
+  }
+];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>

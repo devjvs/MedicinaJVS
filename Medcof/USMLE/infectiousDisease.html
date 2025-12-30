@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neurologia e Psiquiatria - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0b1120; color: #e2e8f0; } /* Darker slate/blue base */
+        
+        /* Estilos do Player */
+        /* Cor Royal Blue para o Extensivo */
+        .selected-lesson { background-color: #1d4ed8; border-left: 4px solid #60a5fa; } 
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1e293b; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #334155;
+        }
+        .lesson-item:hover { background-color: #334155; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #3b82f6; /* Blue-500 */
+        }
+        .module-icon {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-700 to-indigo-900 flex items-center justify-center shadow-lg">
+                <i class="fas fa-graduation-cap text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Infectious Disease</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Extensivo Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Infectious Disease</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Do básico ao avançado: explore todos os 39 módulos do nosso curso extensivo.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO EXTENSIVO (29 MÓDULOS)
+        // ==================================================================================
+        
+        const courseData = [
+
+  // --- MÓDULO 20 - INFECTIOUS DISEASE ---
+  {
+    title: "Microbiology Introduction",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 01)",
+    lessons: [
+      { t: "Microbiology Introduction", u: "https://drive.google.com/file/d/1DcF8wHz8O92zVfRhvNlhf3aoKnJ_BtVE/view?usp=sharing" },
+      { t: "PDF de slides - Microbiology Introduction - Medcof USA.pdf", u: "https://drive.google.com/file/d/1rck47DzYlN54kkI5e_9qkQVPlWpdC8-L/view?usp=sharing" },
+      { t: "Ficha resumo - Microbiology Introduction - Medcof USA.pdf", u: "https://drive.google.com/file/d/1GckEOV2PwSCC3HWgkL2MGK3PiD3H17tu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bacteria Morphology",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 02)",
+    lessons: [
+      { t: "Bacteria Morphology", u: "https://drive.google.com/file/d/1qtH8U-yI3v5YPvgZnl6i2a3gkLz9QzIt/view?usp=sharing" },
+      { t: "PDF de slides - Bacteria Morphology - Medcof USA.pdf", u: "https://drive.google.com/file/d/1HDslRF4Dw-1ID3SFQzyqrgAFCspT8oeL/view?usp=sharing" },
+      { t: "Ficha resumo - Bacteria Morphology - Medcof USA.pdf", u: "https://drive.google.com/file/d/1GgqYGL4fnvMff2AKhL0xkyPeLCGrkw1H/view?usp=sharing" }
+    
+    ]
+  },
+  {
+    title: "Bacterial Culture",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 03)",
+    lessons: [
+      { t: "Bacterial Culture", u: "https://drive.google.com/file/d/1X5EcFyNWkMKbIScr9cXF7QBR72HuxiAN/view?usp=sharing" },
+      { t: "PDF de slides - Bacterial Culture - Medcof USA.pdf", u: "https://drive.google.com/file/d/1oP8UXVkaFAl8g8sq2iatulYQjOuiEa_3/view?usp=sharing" },
+      { t: "Ficha resumo - Bacterial Culture - Medcof USA.pdf", u: "https://drive.google.com/file/d/1RwlD5IXVr96_zSra0CY6WFNg2NicmkDw/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bacterial Metabolism",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 04)",
+    lessons: [
+      { t: "Bacterial Metabolism", u: "https://drive.google.com/file/d/1EllcdCMX8ue_5EQpE4WGSAdl4ZojzW_z/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Virulence",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 05)",
+    lessons: [
+      { t: "Virulence", u: "https://drive.google.com/file/d/1m8IgQ-4x5VwVZpyofmw-gg2FC2ZjCHc0/view?usp=sharing" },
+      { t: "PDF de slides - Virulence - Medcof USA.pdf", u: "https://drive.google.com/file/d/1Rjov6ZoUiFta0AaAbvp3zMTve6eCpS97/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bacterial Genetics",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 06)",
+    lessons: [
+      { t: "Bacterial Genetics", u: "https://drive.google.com/file/d/1PaeK_03qe7SB8KXYpZctW6P-7XXRyfXP/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Bacterial classification",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 07)",
+    lessons: [
+      { t: "Bacterial classification", u: "https://drive.google.com/file/d/11frcFrPVnQ-6jOu23KY1qJNrAP-lXSk9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Staphylococcus SPP",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 08)",
+    lessons: [
+      { t: "Staphylococcus SPP", u: "https://drive.google.com/file/d/1Wv_1Y91sJLvqnLnxiNs4_EQUVJBghzgq/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Streptococcus SPP",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 09)",
+    lessons: [
+      { t: "Streptococcus SPP", u: "https://drive.google.com/file/d/1kK0Vi5H5vtqA-M81Qawkk0TEqezvhg9V/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Nocardia and Actinomyces",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 10)",
+    lessons: [
+      { t: "Nocardia and Actinomyces", u: "https://drive.google.com/file/d/1jwUaBZrN1PvwUFyZnpnWjDs4nItDL1XY/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Clostridium SPP",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 11)",
+    lessons: [
+      { t: "Clostridium SPP", u: "https://drive.google.com/file/d/1aO4Y5ma29Rwjq5FpV6HDxI9f2EK9pXIT/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Gram Positive Bacilli - Aerobic",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 12)",
+    lessons: [
+      { t: "Gram Positive Bacilli - Aerobic", u: "https://drive.google.com/file/d/1FRYdTdA25AcXTA0WSXPVzqh1pIZNqrBV/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Gram Negative Bacilli",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 13)",
+    lessons: [
+      { t: "Gram Negative Bacilli", u: "https://drive.google.com/file/d/1S5vbXkxiDX-KQ1q8RWq1mCwFw7h8-Zf2/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Other Gram Negatives",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 14)",
+    lessons: [
+      { t: "Other Gram Negatives", u: "https://drive.google.com/file/d/1_DWQdI3WDqJQ8HABrG8eVUt6_8VqU42e/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Leptospirosis, Syphilis and Lyme disease",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 15)",
+    lessons: [
+      { t: "Leptospirosis, Syphilis and Lyme Disease", u: "https://drive.google.com/file/d/1sc5YtcMjgVPi4ae3eJycfcv-xMnlJTHL/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Zoonosis",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 16)",
+    lessons: [
+      { t: "Zoonosis", u: "https://drive.google.com/file/d/1UEgiTU-pmelJU_A7SS76phNX05A8QVVu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Tuberculosis",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 17)",
+    lessons: [
+      { t: "Tuberculosis", u: "https://drive.google.com/file/d/1v0uicaahmGnGk4WlYuvQYbo2EpNE0BuH/view?usp=sharing" },
+      { t: "Tuberculosis (Arquivo 2)", u: "https://drive.google.com/file/d/1yhMF6xgfqauKf-F2a5Q2uO1e7H0xNLr9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Penicillins",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 18)",
+    lessons: [
+      { t: "Penicillins", u: "https://drive.google.com/file/d/1Wou9uFKYNXgbM_h_Tcs-DVnqlPISRilr/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Beta Lactams",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 19)",
+    lessons: [
+      { t: "Beta Lactams", u: "https://drive.google.com/file/d/1ojR3p-UyxqCMR43ZlOF8MoPhuUZkLrdp/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Sulfonamides",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 20)",
+    lessons: [
+      { t: "Sulfonamides", u: "https://drive.google.com/file/d/1qLZBO9ntkrvZaypQxQ5RcPhheOWWgyHd/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Protein Synthesis Inhibitors",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 21)",
+    lessons: [
+      { t: "Protein Synthesis Inhibitors", u: "https://drive.google.com/file/d/1csa2CneZxHaajgIGC4g2dh-A0U4vjOfM/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Fluoroquinolones and Metronidazole",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 22)",
+    lessons: [
+      { t: "Fluoroquinolones and Metronidazole", u: "https://drive.google.com/file/d/1qiLqF_pisEucHe1Pz4SgOeCVtagW-xsu/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Endemic mycoses",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 23)",
+    lessons: [
+      { t: "Endemic Mycoses", u: "https://drive.google.com/file/d/1dHwVnAkmMZUkMKBE1amiHzSG8meNSPz8/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Opportunistic mycoses",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 24)",
+    lessons: [
+      { t: "Opportunistic mycoses", u: "https://drive.google.com/file/d/1Ee5g6_bo9916p6XwnL9Qi78V5d_lhQ67/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Cutaneous mycoses",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 25)",
+    lessons: [
+      { t: "Cutaneous mycoses", u: "https://drive.google.com/file/d/1ZAln0wwsFYjLCtSEeKC75ID-U82MQnFg/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antifungals",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 26)",
+    lessons: [
+      { t: "Antifungals", u: "https://drive.google.com/file/d/1P3qf4WGim3G2llfJT2ve9KUBe2nCljP3/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Protozoa I",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 27)",
+    lessons: [
+      { t: "Protozoa I", u: "https://drive.google.com/file/d/1CXaRyVN5Zdl336uB4yMUNv4qoUFNTeq9/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Protozoa II",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 28)",
+    lessons: [
+      { t: "Protozoa II", u: "https://drive.google.com/file/d/1Yox6Fka4ZwdjnFux0xqhBL06T0slPuPb/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Worms I",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 29)",
+    lessons: [
+      { t: "Worms I", u: "https://drive.google.com/file/d/1zGBywBusUlPnbgVxHB2bSdg24sO-L540/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Worms II",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 30)",
+    lessons: [
+      { t: "Worms II", u: "https://drive.google.com/file/d/19t43C56F4vIrn95qOJY3gOuPmkOR_EXJ/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Ectoparasites",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 31)",
+    lessons: [
+      { t: "Ectoparasites", u: "https://drive.google.com/file/d/1e6hT8c68Cpn9TL7rwfNbwkAZ23C7HaUU/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Virology",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 32)",
+    lessons: [
+      { t: "Virology", u: "https://drive.google.com/file/d/1KB77urj8OyhHpHLx9oE8SierKKUPG7-P/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Viruses of DNA",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 33)",
+    lessons: [
+      { t: "Viruses of DNA", u: "https://drive.google.com/file/d/1ish43LqVnIoRRhUvp0gB4i1HVu0geEvR/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Viruses of DNA II",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 34)",
+    lessons: [
+      { t: "Viruses of DNA II", u: "https://drive.google.com/file/d/137t-boq3oCfVbingdMp7eFNULVjuEPOi/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Viruses of RNA",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 35)",
+    lessons: [
+      { t: "Viruses of RNA", u: "https://drive.google.com/file/d/1AtsiIOnHQ1-t2BxvdSqHd__uvG8vDhah/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Hepatitis viruses",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 36)",
+    lessons: [
+      { t: "Hepatitis Viruses", u: "https://drive.google.com/file/d/1prHUsyBC2UNSjReRHJSYG7ucIuBYGp3w/view?usp=sharing" },
+      { t: "PDF de slides - Hepatitis viruses.pdf", u: "https://drive.google.com/file/d/1SpJBCeff75hk1NnX3mZklOIKJVJJYK5N/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "The HIV virus",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 37)",
+    lessons: [
+      { t: "The HIV virus", u: "https://drive.google.com/file/d/10RGVxPTM_SMG5O_BM34B0vUjuD5caTv-/view?usp=sharing" },
+      { t: "PDF Slide - The HIV.pdf", u: "https://drive.google.com/file/d/1N_hE7bSHUYZsb3R5Txy_FtgzOLmpwZVG/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antiretroviral therapy",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 38)",
+    lessons: [
+      { t: "Antiretroviral therapy", u: "https://drive.google.com/file/d/12Fnk9wqyEYF0_jeXwYJ7Jtg0pAasQs9O/view?usp=sharing" },
+      { t: "PDF Slide - Antiretroviral therapy.pdf", u: "https://drive.google.com/file/d/1GrxUMJSj6UD2ImBNH0zObCYYclo07i2p/view?usp=sharing" }
+    ]
+  },
+  {
+    title: "Antivirals",
+    description: "Módulo 20 - Infectious Disease (Sub-Módulo 39)",
+    lessons: [
+      { t: "Antivirals", u: "https://drive.google.com/file/d/1uf1Oj15KMxZxBnFUtNR5O2jP0Cwfjd2e/view?usp=sharing" },
+      { t: "PDF de slides - Antivirals.pdf", u: "https://drive.google.com/file/d/1j-uGblw8YCW2VI2ik0aK2Ge7cFPuIoOe/view?usp=sharing" }
+    ]
+  }
+];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Alzheimer') || mod.title.includes('Demência')) icon = 'fa-user-clock';
+                if(mod.title.includes('Parkinson') || mod.title.includes('Tremor')) icon = 'fa-walking';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-head-side-virus';
+                if(mod.title.includes('Epilepsia')) icon = 'fa-bolt';
+                if(mod.title.includes('Sono') || mod.title.includes('Insônia')) icon = 'fa-moon';
+                if(mod.title.includes('Neuroimuno') || mod.title.includes('Esclerose')) icon = 'fa-shield-alt';
+                if(mod.title.includes('Tumores')) icon = 'fa-biohazard';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
