@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Atualizações em Neurologia - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e2e8f0; }
+        
+        /* Estilos do Player */
+        .selected-lesson { background-color: #2563eb; border-left: 4px solid #60a5fa; }
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1f2937; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #374151;
+        }
+        .lesson-item:hover { background-color: #374151; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1f2937, #111827);
+            border: 1px solid #374151;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #3b82f6;
+        }
+        .module-icon {
+            background: rgba(37, 99, 235, 0.1);
+            color: #3b82f6;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #111827; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-lg">
+                <i class="fas fa-brain text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Atualizações</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Neurologia</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Bem-vindo ao Curso</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Selecione um módulo abaixo para iniciar seus estudos.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO
+        // ==================================================================================
+        
+        const courseData = [
+            {
+                title: "Módulo 01 — Atualizações Diversas (2025)",
+                description: "Novidades do Congresso Internacional de AVC e novos tratamentos.",
+                lessons: [
+                    // ATUALIZADO: Link corrigido conforme lista
+                    { t: "Aula 01 — Congresso Internacional de AVC (2025)", u: "https://drive.google.com/file/d/1fSQG8b8PW78AiciGOsteivezLzw5MOUJ/view?usp=sharing" },
+                    { t: "Aula 02 — Novos Tratamentos para Alzheimer", u: "https://drive.google.com/file/d/1jQUMGwl2yKUxgHt83PX4JXM6gEDW74p7/view?usp=sharing" },
+                    { t: "Aula 03 — Congresso Europeu de AVC (2025)", u: "https://drive.google.com/file/d/1R4nIRx74VBQtYXDMs9o1BJTDmlsrzpch/view?usp=sharing" },
+                    { t: "Aula 04 — Congresso Americano de Cefaleia (2025.1)", u: "https://drive.google.com/file/d/1FH0mfs2mXkkzp_bkgLpUZndJ1o-ffWmG/view?usp=sharing" },
+                    { t: "Aula 05 — Congresso Americano de Cefaleia (2025.2)", u: "https://drive.google.com/file/d/1NVezPadVMkBRsRT10pg9YqGVkVlpSNdf/view?usp=sharing" },
+                    { t: "Aula 06 — Atualizações em Miastenia Gravis (2025)", u: "https://drive.google.com/file/d/1qH84wHtR6K7qsPmxHayKGD3cd3ELQ44p/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 02 — Cefaleia (2025)",
+                description: "Atualizações focadas em Cefaleia do ano de 2025.",
+                lessons: [
+                    { t: "Aula 01 — Parte I", u: "https://drive.google.com/file/d/1TBsLzPe_HR_LvXD6FOl1znAVlqUFdlUM/view?usp=sharing" },
+                    { t: "Aula 02 — Parte II", u: "https://drive.google.com/file/d/1i0exEuTCjoJhmAhxi95Gl0KWJQLb2x2K/view?usp=sharing" },
+                    { t: "Aula 03 — Parte III", u: "https://drive.google.com/file/d/1nlL3cNQ59LXlF4T5ZOXi3jDdHCH9_-Pf/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 03 — Neuroimunologia (2025)",
+                description: "Novos estudos e tratamentos em Neuroimunologia.",
+                lessons: [
+                    // ATUALIZADO: Corrigida duplicidade com Módulo 02. Inserido link correto da lista.
+                    { t: "Aula 01 — Parte I", u: "https://drive.google.com/file/d/1HIpuhboETajl2rrvXClssoGw5HtPXPlq/view?usp=sharing" },
+                    // ATUALIZADO: Corrigida duplicidade com Módulo 02. Inserido link correto da lista.
+                    { t: "Aula 02 — Parte II", u: "https://drive.google.com/file/d/11c6Gdhku9hLpgU2DC0mmwxF5hwN_yvW6/view?usp=sharing" },
+                    { t: "Aula 03 — Parte III", u: "https://drive.google.com/file/d/1R88ZbyhUSsvfkoQUjFR51MV5q-v5nkU9/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 04 — Congresso Americano (2025)",
+                description: "Cobertura completa do Congresso Americano de 2025.",
+                lessons: [
+                    // ATUALIZADO: Link de Introdução substituído
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1WK_fDAg6vKaHYwh2F-X51u6P2etUi9PR/view?usp=sharing" },
+                    { t: "Aula 02 — Biomarcadores Diagnósticos", u: "https://drive.google.com/file/d/13V3o13luXbpfsfyYjNUNNXLtSPzGYfeG/view?usp=sharing" },
+                    { t: "Aula 03 — Meta de Pressão Arterial no AVCH", u: "https://drive.google.com/file/d/1EbBCl116GYmpvD9v2Ac6uWrScnEI4vYn/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 04 — Primeira Linha em Enxaqueca", u: "https://drive.google.com/file/d/1lzDkEVMZQSyqHX_mYmWw0SciIDr60G75/view?usp=sharing" },
+                    { t: "Aula 05 — NeuroPost no Congresso Paulista", u: "https://drive.google.com/file/d/1n0aKuik0FAkq4Lm6L_8ycdus-6mVvg2-/view?usp=sharing" },
+                    { t: "Aula 06 — Apneia do Sono e Parkinson", u: "https://drive.google.com/file/d/12ABDFQU1opdbtOkxulsfJPjIfxlXOc0k/view?usp=sharing" },
+                    { t: "Aula 07 — Demência Rapidamente Progressiva", u: "https://drive.google.com/file/d/161YZEq9mjdR2Zow_88R0uBbmpLXyLhYs/view?usp=sharing" },
+                    { t: "Aula 08 — Doença de Huntington", u: "https://drive.google.com/file/d/1Kl7UOxodSH2-jTVzJZlij2PuBEzJxzTe/view?usp=sharing" },
+                    { t: "Aula 09 — Esclerose Múltipla", u: "https://drive.google.com/file/d/1EAWbo0QYgpXV7BpJPljj3Q-BYOYyGquV/view?usp=sharing" },
+                    { t: "Aula 10 — Síndrome de Guillain-Barré", u: "https://drive.google.com/file/d/133fPT3c4HtDaw0aWtzzISnFtpcwwl6r3/view?usp=sharing" },
+                    { t: "Aula 11 — Miastenia Gravis", u: "https://drive.google.com/file/d/1fxCGdcdEEPQMbCDMDs7nTlrzrp2-TLRl/view?usp=sharing" },
+                    { t: "Aula 12 — Conclusão", u: "https://drive.google.com/file/d/18YAcGG1l1BeLBUCDHHMJGfOcLDIydslh/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 05 — Simpósios Satélite (2025)",
+                description: "Temas específicos: Alzheimer, Friedreich e AME.",
+                lessons: [
+                    { t: "Aula 01 — Alzheimer, Friedreich e AME (2025)", u: "https://drive.google.com/file/d/1LY-LXI4sZHEiRFOSeaVgchzqza4dwKd7/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 06 — Congresso Americano (2024)",
+                description: "Retrospectiva do Congresso Americano de 2024.",
+                lessons: [
+                    { t: "Aula 01 — Visão Geral", u: "https://drive.google.com/file/d/1gnEAfp7b6Uz6Vp2ZgeVpSfIRp1BlKvxV/view?usp=sharing" },
+                    { t: "Aula 02 — Neurologia Infantil e Neuroimunologia", u: "https://drive.google.com/file/d/1G1ogZF2RKC7803Gcf36Pv2bKRoZFr8W9/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 03 — Cognitivo e Extrapiramidal", u: "https://drive.google.com/file/d/1o0iE0HNorSAlxzBrYyhToW4Fox16LOwF/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 04 — Vascular e Geral", u: "https://drive.google.com/file/d/1RQBL9VhZ3OY716j-H6_iMbFHB28E7NTf/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 07 — Atualizações Diversas (2024)",
+                description: "Cefaleia, Radiologia, ECTRIMS e AVC em 2024.",
+                lessons: [
+                    { t: "Aula 01 — Congresso Americano de Cefaleia (2024) (Parte I)", u: "https://drive.google.com/file/d/1TNe2Rn4Le_3O9FryZIXeCBuJEd6JSRYE/view?usp=sharing" },
+                    { t: "Aula 02 — Congresso Americano de Cefaleia (2024) (Parte II)", u: "https://drive.google.com/file/d/1hoTLlWjRCePdaHTDD2D5m3vaCoZCU9uY/view?usp=sharing" },
+                    { t: "Aula 03 — Congresso Americano de Radiologia (2024)", u: "https://drive.google.com/file/d/1vj1y4iZzLJG1v2WZbSnY7A7UyWdVjl9Z/view?usp=sharing" },
+                    { t: "Aula 04 — Congresso ECTRIMS (2024)", u: "https://drive.google.com/file/d/13XwMH_humLZpH7cpBOpPVBy4TyvD9A46/view?usp=sharing" },
+                    { t: "Aula 05 — Congresso Internacional de AVC (2024)", u: "https://drive.google.com/file/d/1TugGz8p3wGEUTL4sx3_166HL6cnV5K5g/view?usp=sharing" },
+                    { t: "Aula 06 — Diretriz Trombose Venosa Cerebral (2024)", u: "https://drive.google.com/file/d/1oR64AXLKYmkSQR97LheisY05r_hUeH-I/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 08 — NeuroPost Trends (2023)",
+                description: "Tendências e tópicos quentes de 2023.",
+                lessons: [
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1pz45qMW98DxgOg0T2feXr2MxeTso8dJn/view?usp=sharing" },
+                    { t: "Aula 02 — Neuromuscular", u: "https://drive.google.com/file/d/1wq8-dmhe1O5-JU8cBrSh8MunIhaiYNSJ/view?usp=sharing" },
+                    { t: "Aula 03 — Transtornos do Movimento", u: "https://drive.google.com/file/d/1oplA4IAc-sZTBS5H1a9U40bQSqjgko9R/view?usp=sharing" },
+                    { t: "Aula 04 — Neuroimunologia", u: "https://drive.google.com/file/d/1pWZAW450JXgeR-n3ST5EauGWw1LNZWE_/view?usp=sharing" },
+                    { t: "Aula 05 — Cefaleia", u: "https://drive.google.com/file/d/1E7wyXDlMy-rYa2iFQrXEp0i9Nf00OLlp/view?usp=sharing" },
+                    { t: "Aula 06 — Cognitivo", u: "https://drive.google.com/file/d/1I9AV4k205N9ZilY1J2Jq0ltVjOVKwoQA/view?usp=sharing" },
+                    { t: "Aula 07 — Neurovascular", u: "https://drive.google.com/file/d/1TVNvvkAT18g7HZnaJ968wmhdepvaLmQa/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 09 — Congresso Americano (2023)",
+                description: "Resumo do congresso americano do ano de 2023.",
+                lessons: [
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1o257uZL97xWQ4XsXu1sFrC4L1HyuhDqW/view?usp=sharing" },
+                    { t: "Aula 02 — Cefaleia", u: "https://drive.google.com/file/d/1ILHakxUOXggGo3NKY6TX8qpwHuVcbYVs/view?usp=sharing" },
+                    { t: "Aula 03 — Neuroimunologia", u: "https://drive.google.com/file/d/1SJoxugckbxuIfIvaW7X4BNPey2RGE4Kr/view?usp=sharing" },
+                    { t: "Aula 04 — Cognitivo e Transtornos do Movimento", u: "https://drive.google.com/file/d/1RQsyEdhWFmLP91s42GyAVHDOut0Nk8lC/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 05 — Neurovascular e Epilepsia", u: "https://drive.google.com/file/d/1G3bY40Ds8CJoNNJy5UOpSgmxMRbPDP1F/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 10 — Atualizações Diversas (2023)",
+                description: "Outras atualizações importantes de 2023.",
+                lessons: [
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 01 — Congresso Internacional de AVC (2023)", u: "https://drive.google.com/file/d/1e6Av4V8ceAZuloGC_eNnvXIXo0DE0_Ut/view?usp=sharing" },
+                    { t: "Aula 02 — Congresso Internacional de Alzheimer (2023)", u: "https://drive.google.com/file/d/1sewGpSy7yQmWal_KR_MwafEproOugDO-/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 03 — Estudo CREST Estenose de Carótida", u: "https://drive.google.com/file/d/13yBb3XiCmIxfJ4n-D0TxNt--096TTErg/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 04 — Parkinson na Inglaterra (2023)", u: "https://drive.google.com/file/d/1VhNTd45hRlU5EPtDmUcf8ZhyQl6gr6dQ/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 05 — TDAH Baseado em Evidência", u: "https://drive.google.com/file/d/1xUPyvSIILvPzqiqtdhj8M1teCE2JXMO1/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 11 — NeuroPost Trends (2022)",
+                description: "O que foi tendência em 2022.",
+                lessons: [
+                    // ATUALIZADO: Link de Introdução substituído
+                    { t: "Aula 01 — Introdução", u: "https://drive.google.com/file/d/1R7EYQTW8rtrdDrhJ8VOANvGKFfdDhJKT/view?usp=sharing" },
+                    { t: "Aula 02 — Cefaleia", u: "https://drive.google.com/file/d/11So2Gs13sCqESUi8IQNRaW6ftEwuthSw/view?usp=sharing" },
+                    { t: "Aula 03 — Cognitivo", u: "https://drive.google.com/file/d/1I9AV4k205N9ZilY1J2Jq0ltVjOVKwoQA/view?usp=sharing" },
+                    { t: "Aula 04 — Neuroimunologia", u: "https://drive.google.com/file/d/1RTBqZ1xG_FMftPJnuiQrMF8AVuPGisKh/view?usp=sharing" },
+                    { t: "Aula 05 — Sono", u: "https://drive.google.com/file/d/1R2HGVgsyEdzYEmu865LrK4PexhqoS1jW/view?usp=sharing" },
+                    { t: "Aula 06 — Epilepsia", u: "https://drive.google.com/file/d/1GWo2aM9OEmDNk95bjhlAOfSlSMrGAFI0/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 07 — Dor", u: "https://drive.google.com/file/d/1V7-g2dFcIwLjhE-Q6wNU1SZOsOr_bfj1/view?usp=sharing" },
+                    { t: "Aula 08 — Neuromuscular", u: "https://drive.google.com/file/d/14WYuf8DT0TERo-qQwN5kR3DWx6xPPDBj/view?usp=sharing" },
+                    { t: "Aula 09 — Neuroinfantil", u: "https://drive.google.com/file/d/1kHIubfLiIHMZwKSgMdoQ_F2JLi3Eg6Ed/view?usp=sharing" },
+                    { t: "Aula 10 — Neurovascular", u: "https://drive.google.com/file/d/16gjYILGIg3zglhx6ndTIVJe3WigE6mMa/view?usp=sharing" },
+                    { t: "Aula 11 — Distúrbios do Movimento", u: "https://drive.google.com/file/d/1HasQu8eRskC-Gv-75HtyN1zfWAauXQpS/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 12 — Atualizações (2021-2022)",
+                description: "Arquivo histórico das atualizações de 2021 e 2022.",
+                lessons: [
+                    { t: "Aula 01 — Congresso Europeu de AVC (2022)", u: "https://drive.google.com/file/d/11yMNHyEN42lLpcXNrW0IIkvNKojTf4fw/view?usp=sharing" },
+                    { t: "Aula 02 — Congresso Internacional de AVC (2022)", u: "https://drive.google.com/file/d/12D-PRBrvDHRLCAEgOnNXo-LDvJONGJzk/view?usp=sharing" },
+                    // ATUALIZADO: Link substituído
+                    { t: "Aula 03 — Nova Diretriz de AVCH (2022)", u: "https://drive.google.com/file/d/1ZHBgzog2zddFG3mzkN2p2MpN07egP7S1/view?usp=sharing" },
+                    { t: "Aula 04 — Interpretação de Artigo Científico", u: "https://drive.google.com/file/d/1xXhs7mt_a_IrgGX7TERtpRvf9cmJvZtq/view?usp=sharing" },
+                    { t: "Aula 05 — Congresso Internacional de AVC (2021)", u: "https://drive.google.com/file/d/13laB2eDZSHEDdc-3Z2WrWl0fLfv6qp6B/view?usp=sharing" },
+                    { t: "Aula 06 — Monoclonais em Alzheimer (2021)", u: "https://drive.google.com/file/d/1F3ALdML_TL3JCNxFNY3LtOntntzWZr31/view?usp=sharing" },
+                    { t: "Aula 07 — Aprovação do Aducanumab (2021)", u: "https://drive.google.com/file/d/1Xp164csqwxBsVLgOEJkxSBNyxiinRn2R/view?usp=sharing" },
+                    { t: "Aula 08 — TREAT-CAD (Dissecção)", u: "https://drive.google.com/file/d/1nVjKFaNnhHUhBTP4BSYVynsJec01ThpP/view?usp=sharing" },
+                    { t: "Aula 09 — Atualizações em AVC (2021)", u: "https://drive.google.com/file/d/122tjXEHzZ70z_LbyhndQNCxx7zioGL-r/view?usp=sharing" },
+                    { t: "Aula 10 — Atualizações em Neuroimunologia (2021)", u: "https://drive.google.com/file/d/1bYiIei3LE_fORWRNSoaVBR08ZEBqmJEB/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título (simples heurística)
+                let icon = 'fa-book';
+                if(mod.title.includes('Congresso')) icon = 'fa-users';
+                if(mod.title.includes('AVC')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Cefaleia')) icon = 'fa-brain';
+                if(mod.title.includes('2025')) icon = 'fa-calendar-alt';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-blue-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-blue-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-blue-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>

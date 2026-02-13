@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Neuroanatomia - Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #111827; color: #e2e8f0; }
+        
+        /* Estilos do Player */
+        .selected-lesson { background-color: #be185d; border-left: 4px solid #f472b6; } /* Cor Rosa/Red para Neuroanatomia */
+        .lesson-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 0.75rem; 
+            background-color: #1f2937; 
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            margin-bottom: 0.75rem; 
+            cursor: pointer; 
+            transition: all 0.2s ease-in-out; 
+            border: 1px solid #374151;
+        }
+        .lesson-item:hover { background-color: #374151; transform: translateX(4px); }
+        
+        /* Estilos da Home (Cards) */
+        .module-card {
+            background: linear-gradient(145deg, #1f2937, #111827);
+            border: 1px solid #374151;
+            transition: all 0.3s ease;
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #db2777; /* Rosa */
+        }
+        .module-icon {
+            background: rgba(219, 39, 119, 0.1);
+            color: #db2777;
+        }
+
+        /* Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #111827; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <!-- Header Geral -->
+    <header class="bg-gray-900 border-b border-gray-800 p-4 flex items-center justify-between shrink-0 z-20 shadow-lg">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pink-600 to-rose-800 flex items-center justify-center shadow-lg">
+                <i class="fas fa-brain text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tight leading-tight">Neuroanatomia</h1>
+                <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Curso Completo</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (visíveis apenas no player) -->
+        <div id="player-controls" class="hidden flex items-center gap-3">
+            <button onclick="goHome()" class="text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-md hover:bg-gray-800 flex items-center gap-2 text-sm font-medium">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            <div class="h-6 w-px bg-gray-700 mx-2"></div>
+            <select id="moduleSelector" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent min-w-[200px] max-w-[300px]"></select>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria de Módulos) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-10 bg-gray-950">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Estruturas e Funções</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Mergulhe na anatomia do sistema nervoso. Selecione uma estrutura abaixo para iniciar.</p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Cards serão gerados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER (Layout de Vídeo) -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden">
+        
+        <!-- Área do Vídeo (Esquerda) -->
+        <section class="flex-1 bg-black flex flex-col overflow-hidden relative">
+            <div class="flex-grow relative bg-black flex items-center justify-center">
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mb-6 border border-gray-800">
+                        <i class="fas fa-play text-3xl text-gray-700 ml-1"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-500 mb-2">Selecione uma aula</h2>
+                    <p class="text-gray-600 text-sm">Escolha um vídeo na lista lateral para começar a assistir.</p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título do Vídeo -->
+            <div class="bg-gray-900 p-4 border-t border-gray-800 shrink-0">
+                <h2 id="lessonTitle" class="text-lg font-semibold text-white flex items-center gap-3">
+                    <span class="w-2 h-2 rounded-full bg-pink-500"></span>
+                    <span>Módulo Selecionado</span>
+                </h2>
+            </div>
+        </section>
+
+        <!-- Sidebar (Direita) -->
+        <aside class="w-full lg:w-[400px] bg-gray-900 border-l border-gray-800 flex flex-col shrink-0 h-1/2 lg:h-auto z-10">
+            <div class="p-5 bg-gray-850 border-b border-gray-800 shadow-sm shrink-0 bg-gray-800">
+                <h3 class="font-bold text-gray-300 uppercase text-xs tracking-wider flex items-center gap-2">
+                    <i class="fas fa-list-ul"></i> Conteúdo do Módulo
+                </h3>
+            </div>
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-1 pb-20">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO DE NEUROANATOMIA
+        // ==================================================================================
+        
+        const courseData = [
+            {
+                title: "Módulo 01 - Diagnóstico Neurológico",
+                description: "Fundamentos do raciocínio neurológico, grandes vias e semiologia básica.",
+                lessons: [
+                    { t: "Aula 01 - Raciocínio e Grandes Vias", u: "https://drive.google.com/file/d/1GJWWZvqx2DzKAouTl3Bvc9HmxWF5lU-I/view?usp=sharing" },
+                    { t: "Aula 02 - Via da Motricidade", u: "https://drive.google.com/file/d/1y00WjsPCOg_4b1B6XzsDbb8bMCAFE0f9/view?usp=sharing" },
+                    { t: "Aula 03 - Fraqueza Muscular", u: "https://drive.google.com/file/d/1s70ay3JQubkLZEZhC8cxuSwu_vKEggK_/view?usp=sharing" },
+                    { t: "Aula 04 - Via da Sensibilidade", u: "https://drive.google.com/file/d/1ejJE4pib6HtRudREU0iDwCsMljIqj6jj/view?usp=sharing" },
+                    { t: "Aula 05 - Parestesias", u: "https://drive.google.com/file/d/1foOIdkut8tSvpKTbKWDbVlexrebhHjlb/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 02 - Medula Espinhal",
+                description: "Anatomia clínica, substância cinzenta e branca, vascularização e síndromes.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia Clínica", u: "https://drive.google.com/file/d/1sLm4zqvhmGIjwwlNkw3j-FYVj8rcZjuv/view?usp=sharing" }, // Atualizado
+                    { t: "Aula 02 - Substância Cinzenta", u: "https://drive.google.com/file/d/1spPuT52QKbcI7pNsff5wgEolRJpwO24a/view?usp=sharing" },
+                    { t: "Aula 03 - Substância Branca", u: "https://drive.google.com/file/d/1u1icBZDRiAAC49jVAoUFeFyQOFRcHSoK/view?usp=sharing" },
+                    { t: "Aula 04 - Vascularização", u: "https://drive.google.com/file/d/1GFmSWaNEwvFP06BCC_OlxpxWAZhi4Z6x/view?usp=sharing" },
+                    { t: "Aula 05 - Casos Clínicos", u: "https://drive.google.com/file/d/1eDQSLi5wDcpPZH_791YGs5Znn8-clFAV/view?usp=sharing" } // Atualizado
+                ]
+            },
+            {
+                title: "Módulo 03 - Bulbo",
+                description: "Organização didática, síndromes de Wallemberg e Dejerine.",
+                lessons: [
+                    { t: "Aula 01 - Conceitos Básicos", u: "https://drive.google.com/file/d/1BrBQOOJa06HzLYSiA8u0Thj9KQT4g3IV/view?usp=sharing" },
+                    { t: "Aula 02 - Organização Didática", u: "https://drive.google.com/file/d/1lmvolCG9J8FhTb5JqBo3J24h7GLFngFk/view?usp=sharing" }, // Atualizado
+                    { t: "Aula 03 - Síndrome de Wallemberg", u: "https://drive.google.com/file/d/1bdHStkwLJc7ThiGWWFoCgMq2gKyNzEsI/view?usp=sharing" },
+                    { t: "Aula 04 - Síndrome de Dejerine", u: "https://drive.google.com/file/d/1rxtnxCpfDejo3cbcjBrLvkK1f_91s4N6/view?usp=sharing" },
+                    { t: "Aula 05 - Mioclonia Palatina e Vômitos", u: "https://drive.google.com/file/d/1PHSvvudYub5_UyQzXAR8gF6_54vqv16U/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 04 - Ponte",
+                description: "Controle do olhar horizontal, síndromes de Foville e Millard-Gubler.",
+                lessons: [
+                    { t: "Aula 01 - Organização Didática", u: "https://drive.google.com/file/d/1tjxkAeAio9KE0M8AoUqlNnlaEu_XEoy_/view?usp=sharing" },
+                    { t: "Aula 02 - Olhar Horizontal", u: "https://drive.google.com/file/d/1gjtIyjyOyueGsqIGue9OdxZXKUlPu1_G/view?usp=sharing" },
+                    { t: "Aula 03 - Foville e Millard-Gubler", u: "https://drive.google.com/file/d/1qaeAU_Fhi23GJxmZKx0toMc8luV4zLLf/view?usp=sharing" },
+                    { t: "Aula 04 - Rombencefalite e Coma", u: "https://drive.google.com/file/d/1yHs9r8tPZeHmpOpLJ8LV4kCfpUQlqFXO/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 05 - Mesencéfalo",
+                description: "Anatomia do mesencéfalo, queda palpebral, olhar vertical e síndromes.",
+                lessons: [
+                    { t: "Aula 01 - Organização Didática", u: "https://drive.google.com/file/d/1TmvqjcNPmYX2S6rQ2CcWb4Wo6kMHj11z/view?usp=sharing" },
+                    { t: "Aula 02 - Desenhando Mesencéfalo", u: "https://drive.google.com/file/d/10t5XJIVQ874aaCcGtxh9CcOZuRYd7zxi/view?usp=sharing" },
+                    { t: "Aula 03 - Queda Palpebral", u: "https://drive.google.com/file/d/1gesTGLTEBw8GuzqQE-cCp2YNwPnXZg5Z/view?usp=sharing" },
+                    { t: "Aula 04 - Síndromes Mesencefálicas", u: "https://drive.google.com/file/d/1eimnCJK9aOK8BsinBjbG9rAuSLSsnO1G/view?usp=sharing" },
+                    { t: "Aula 15 - Olhar Vertical e Posturas", u: "https://drive.google.com/file/d/1Z6Ig0U743veXFjBTTAOHaDC8IjEIrzCb/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 06 - Cerebelo",
+                description: "Divisões funcionais: Vestíbulo, Espino e Cerebrocerebelo e suas síndromes.",
+                lessons: [
+                    { t: "Aula 01 - Introdução ao Cerebelo", u: "https://drive.google.com/file/d/1iqmjg6kkheXLqQptWT8_Sk1noBeurAzd/view?usp=sharing" }, // Atualizado
+                    { t: "Aula 02 - Anatomia Geral do Cerebelo", u: "https://drive.google.com/file/d/1r17mr3HA8bD00eS-lebWzMnZZFXJxDtR/view?usp=sharing" },
+                    { t: "Aula 03 - Divisões Cerebelares", u: "https://drive.google.com/file/d/1IKiZ0PNgoW65yljkJdHd1trv_pM8W6vU/view?usp=sharing" },
+                    { t: "Aula 04 - Vestibulocerebelo", u: "https://drive.google.com/file/d/1KWCeyzzyfVht_vYQvNl5nDyO2jtz85xw/view?usp=sharing" },
+                    { t: "Aula 05 - Espinocerebelo", u: "https://drive.google.com/file/d/1MSTH7l26OoHWAFcnbl6yUgq5yD679gM0/view?usp=sharing" },
+                    { t: "Aula 06 - Cerebrocerebelo", u: "https://drive.google.com/file/d/1UgoTOfS7BtxR2xpwZxATlVO4yq6XjXl9/view?usp=sharing" },
+                    { t: "Aula 07 - Síndromes Cerebelares", u: "https://drive.google.com/file/d/1RimXWRHewXDJ84GsgTF3JMfOiM-Tggb6/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 07 - Núcleos da Base",
+                description: "Anatomia e fisiologia dos gânglios da base e distúrbios do movimento.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia dos Núcleos da Base", u: "https://drive.google.com/file/d/1a_QVKSPNXskWlaIcS7uEF4v_CY6UMcQA/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiologia dos Núcleos da Base", u: "https://drive.google.com/file/d/1ssp1RCEySykW_xMwfcQY1J8myNtadYVu/view?usp=sharing" },
+                    { t: "Aula 03 - Distúrbios do Movimento", u: "https://drive.google.com/file/d/13CrQoNL4dewefKxlbpHxkir3f2UWwj-o/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 08 - Tálamo",
+                description: "Núcleos talâmicos e síndromes vasculares associadas.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia do Tálamo", u: "https://drive.google.com/file/d/11-FPD_-yX-ujinWAHXgBAsQmNd8mevFC/view?usp=sharing" },
+                    { t: "Aula 02 - Núcleos do Tálamo", u: "https://drive.google.com/file/d/16XyAuEhe5pJXwL6PccW0vsYml4p_QPnx/view?usp=sharing" },
+                    { t: "Aula 03 - Síndromes Talâmicas", u: "https://drive.google.com/file/d/1xen-CeJA9gUfTXLWcliSJN45JAbibvIr/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 09 - Cérebro",
+                description: "Anatomia macroscópica e funcional dos lobos cerebrais.",
+                lessons: [
+                    { t: "Aula 01 - Localizando no Cérebro", u: "https://drive.google.com/file/d/1GD946lsNPFvVBfF5hJEu0Ox7Lw3kukGP/view?usp=sharing" },
+                    { t: "Aula 02 - Lobo Frontal", u: "https://drive.google.com/file/d/1rInGDUHgRmz5vIIRXb4yQC6Nw3tm5KH4/view?usp=sharing" },
+                    { t: "Aula 03 - Lobo Parietal", u: "https://drive.google.com/file/d/12GUOHlbMTMKMTO_05muUU9yaZml-AL1g/view?usp=sharing" },
+                    { t: "Aula 04 - Lobo Temporal", u: "https://drive.google.com/file/d/1VS1pxqoYx5LFgl_PLq0xsADdgKL1gULJ/view?usp=sharing" }, // Atualizado
+                    { t: "Aula 05 - Lobo Occipital", u: "https://drive.google.com/file/d/1WM0ozqEPeU4d9dx_bBrD2A7OtVXAp_hw/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 10 - Vascularização",
+                description: "Irrigação arterial (anterior e posterior), síndromes vasculares e drenagem venosa.",
+                lessons: [
+                    { t: "Aula 01 - Artéria Oftálmica", u: "https://drive.google.com/file/d/1FTUCCAD03u9wCo396Pg6-Y_NH32bGad-/view?usp=sharing" },
+                    { t: "Aula 02 - Coroideia Anterior", u: "https://drive.google.com/file/d/1ijbJzcRQnELpw1gQYJWrcby7llLuFsDb/view?usp=sharing" },
+                    { t: "Aula 03 - Cerebral Anterior", u: "https://drive.google.com/file/d/1d0dNYGnB9aaiwqTCt0JJZuQxSdyYYpQJ/view?usp=sharing" },
+                    { t: "Aula 04 - Cerebral Média", u: "https://drive.google.com/file/d/15hkCUWfEFWHO64v-gwJ9ZLeNTNpgxfti/view?usp=sharing" },
+                    { t: "Aula 05 - Cerebral Posterior", u: "https://drive.google.com/file/d/1jGSRerCPcyKarQKnu3SQtzCdsl9Qax4m/view?usp=sharing" },
+                    { t: "Aula 06 - Síndromes Vasculares", u: "https://drive.google.com/file/d/1Idr-c6zTiKz0gskazpAmcwBMfRCDMA_U/view?usp=sharing" },
+                    { t: "Aula 07 - Drenagem Venosa", u: "https://drive.google.com/file/d/1RyfeoAZjfUmKwDbIKywPDAr3p7JWLu7k/view?usp=sharing" },
+                    { t: "Aula 08 - Atlas Vascular", u: "https://drive.google.com/file/d/1ozV_O84ayd7Z6wQLcEFPzbc_xIIb_K2K/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 11 - Nervos Periféricos",
+                description: "Sistema nervoso periférico e principais plexos (braquial, lombar, sacral).",
+                lessons: [
+                    { t: "Aula 01 - Sistema Nervoso Periférico", u: "https://drive.google.com/file/d/1KsbIkktmkr83H_vjaFgLdGvgefzGv5Xs/view?usp=sharing" },
+                    { t: "Aula 02 - Plexo Braquial", u: "https://drive.google.com/file/d/1UtrFNRA8NvcCVVvmwLozjcq5SwlcEgYb/view?usp=sharing" },
+                    { t: "Aula 03 - Plexo Lombar", u: "https://drive.google.com/file/d/1XQQb4ui8s0YbZOqJseUELsQu_lIgVi1v/view?usp=sharing" }, // Atualizado
+                    { t: "Aula 04 - Plexo Sacral", u: "https://drive.google.com/file/d/1MGPwyq2Q1CgGtp4hAyHUzuIle2OIgfFO/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-brain';
+                if(mod.title.includes('Medula')) icon = 'fa-arrow-down';
+                if(mod.title.includes('Vascular')) icon = 'fa-heartbeat';
+                if(mod.title.includes('Nervos')) icon = 'fa-project-diagram';
+                if(mod.title.includes('Diagnóstico')) icon = 'fa-stethoscope';
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-xl p-6 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="module-icon w-12 h-12 rounded-lg flex items-center justify-center text-xl">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <span class="bg-gray-800 text-gray-400 text-xs font-bold px-2 py-1 rounded border border-gray-700">
+                            ${mod.lessons.length} Aulas
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">${mod.title}</h3>
+                    <p class="text-gray-400 text-sm flex-grow">${mod.description || 'Clique para acessar as aulas deste módulo.'}</p>
+                    <div class="mt-6 pt-4 border-t border-gray-800 flex items-center justify-between text-sm">
+                        <span class="text-pink-500 font-semibold group-hover:underline">Acessar conteúdo</span>
+                        <i class="fas fa-arrow-right text-pink-500 transform group-hover:translate-x-1 transition-transform"></i>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo ao sair
+            contentPlayer.src = "";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            // Atualiza o select do player
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            module.lessons.forEach(lesson => {
+                html += `
+                <div class="lesson-item group hover:border-pink-500/30" onclick="loadVideo('${lesson.id}', '${lesson.title.replace(/'/g, "\\'")}', '${lesson.url}')" data-id="${lesson.id}">
+                    <div class="item-thumbnail-placeholder group-hover:bg-pink-600/20 group-hover:text-pink-400 transition-colors">
+                        <i class="fas fa-play text-xs"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-200 group-hover:text-white leading-tight">${lesson.title}</p>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = module.title;
+            selectedLessonId = null;
+        }
+
+        function loadVideo(lessonId, title, url) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) prev.classList.remove('selected-lesson');
+            }
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) cur.classList.add('selected-lesson');
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                let embedUrl = url;
+                if (url.includes('drive.google.com') && (url.includes('/view') || url.includes('/edit'))) {
+                    embedUrl = url.replace(/\/view.*/, '/preview').replace(/\/edit.*/, '/preview');
+                }
+                contentPlayer.src = embedUrl;
+                contentPlayer.style.display = 'block';
+                emptyState.style.display = 'none';
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header (para navegação rápida dentro do player)
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
