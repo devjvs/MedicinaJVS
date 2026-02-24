@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anatomia de Lesões Esportivas | Plataforma</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sports: {
+                            dark: '#09090b',    /* Zinc 950 */
+                            card: '#18181b',    /* Zinc 900 */
+                            primary: '#ea580c', /* Orange 600 */
+                            primaryLight: '#f97316', /* Orange 500 */
+                            accent: '#e11d48',  /* Rose 600 */
+                            success: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #050505; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(234, 88, 12, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(225, 29, 72, 0.08), transparent 25%);
+            color: #e4e4e7; 
+        }
+        
+        h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar Premium */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+        /* Estilos da Lista de Aulas */
+        .lesson-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+        }
+        .lesson-item:hover { 
+            background-color: rgba(234, 88, 12, 0.08); 
+            border-left-color: #52525b;
+        }
+        .selected-lesson { 
+            background: linear-gradient(90deg, rgba(234, 88, 12, 0.15) 0%, transparent 100%);
+            border-left-color: #ea580c; 
+        }
+        .selected-lesson .lesson-icon { color: #f97316; transform: scale(1.1); }
+        .selected-lesson .lesson-text { color: #fff; font-weight: 600; }
+        
+        /* Cards da Home */
+        .module-card {
+            background: rgba(39, 39, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; 
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(234, 88, 12, 0.8), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .module-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px -15px rgba(234, 88, 12, 0.15);
+            border-color: rgba(234, 88, 12, 0.3);
+            background: rgba(39, 39, 42, 0.8);
+        }
+        .module-card:hover::before { opacity: 1; }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #f97316;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Pulso para aula ativa */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        .active-indicator {
+            animation: pulse-ring 2s infinite;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-zinc-300">
+
+    <!-- Header Glass -->
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative border-b border-white/5">
+        <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-500/30 transition-shadow">
+                <i class="fas fa-dumbbell text-white text-sm transform -rotate-45"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-none uppercase">Anatomia</h1>
+                <p class="text-[10px] text-orange-400 font-bold uppercase tracking-widest mt-0.5">Lesões Esportivas</p>
+            </div>
+        </div>
+        
+        <!-- Controles do Header (Player) -->
+        <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
+            <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+            
+            <div class="relative group">
+                <select id="moduleSelector" class="appearance-none bg-zinc-900/80 text-white text-xs font-semibold py-2 pl-3 pr-8 rounded-lg border border-zinc-700 focus:outline-none focus:border-orange-500 cursor-pointer min-w-[260px] truncate transition-colors hover:border-zinc-500">
+                    <!-- Opções via JS -->
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <button onclick="goHome()" class="text-zinc-400 hover:text-white hover:bg-white/5 transition-all px-4 py-2 rounded-lg flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-transparent hover:border-white/10">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- VIEW 1: HOME (Galeria) -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative">
+        <div class="max-w-7xl mx-auto pb-20">
+            <!-- Hero Section -->
+            <div class="mb-14 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight">O Foco na <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Performance</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-orange-500 to-red-500 rounded-full mb-6"></div>
+                <p class="text-zinc-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Mergulhe na biomecânica avançada, ciência básica dos ossos e no detalhamento anatômico das lesões dos membros superiores e inferiores.
+                </p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <!-- Cards via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: PLAYER -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-[#000]">
+        
+        <!-- Área do Vídeo/PDF -->
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group bg-zinc-950">
+            <div class="w-full aspect-video max-h-[75vh] flex-shrink-0 relative bg-black flex items-center justify-center border-b border-white/5 shadow-xl">
+                <!-- Loading State -->
+                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-zinc-950 z-0 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <!-- IFRAME Otimizado -->
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-zinc-900 to-zinc-950 w-full">
+                    <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10 shadow-[0_0_40px_rgba(234,88,12,0.1)]">
+                        <i class="fas fa-play text-3xl text-orange-500 ml-2"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3">Ambiente de Estudo</h2>
+                    <p class="text-zinc-500 text-sm max-w-md mx-auto leading-relaxed">
+                        Selecione uma aula ou material na lista lateral para iniciar sua jornada de aprendizado.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Barra de Info -->
+            <div class="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-5 border-t border-white/10 shrink-0 flex justify-between items-center z-20">
+                <div>
+                    <h2 id="lessonTitle" class="text-lg font-bold text-white flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-orange-500 active-indicator"></span>
+                        <span>Selecione um conteúdo</span>
+                    </h2>
+                    <p id="moduleTitleDisplay" class="text-xs text-zinc-500 mt-1.5 font-bold uppercase tracking-wider pl-5">Módulo não selecionado</p>
+                </div>
+            </div>
+
+            <!-- Área de Materiais Complementares (Nova Seção) -->
+            <div id="materialsSection" class="bg-zinc-950 border-t border-white/5 p-4 shrink-0 hidden">
+                <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <i class="fas fa-paperclip text-zinc-400"></i> Materiais Complementares
+                </h3>
+                <div id="materialsContainer" class="flex flex-wrap gap-3">
+                    <!-- Materiais injetados via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Sidebar Playlist -->
+        <aside class="w-full lg:w-[420px] glass-panel border-l border-white/5 flex flex-col shrink-0 h-[40vh] lg:h-auto z-20 shadow-2xl">
+            <div class="p-6 border-b border-white/5 bg-zinc-900/50 shrink-0 flex justify-between items-center">
+                <h3 class="font-black text-zinc-100 text-xs uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ul text-orange-500"></i> Cronograma
+                </h3>
+                <span id="lessonCountBadge" class="bg-orange-500/10 text-orange-400 text-[10px] font-bold px-2.5 py-1 rounded border border-orange-500/20">0 Itens</span>
+            </div>
+            
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1 pb-20 bg-zinc-950/80">
+                <!-- Aulas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO (ANATOMIA DE LESÕES ESPORTIVAS)
+        // ==================================================================================
+        const courseData = [
+            {
+                title: "Módulo 01 - Boas-Vindas e Instruções",
+                description: "Instruções iniciais, manual do curso e técnicas do cérebro para maior retenção.",
+                lessons: [
+                    { t: "Aula 01 - 🎯 O que esperar de Anatomia de Lesões Esportivas.mp4", u: "https://drive.google.com/file/d/1HBD-QLzY-SOQxs0R028TWkGxD71KlsFl/view?usp=sharing" },
+                    { t: "Aula 02 - 🛣️ A Jornada e O Curso Perfeito.mp4", u: "https://drive.google.com/file/d/1HKU7A7ymMiNwNSMmP30o7pwgyYV9RVMd/view?usp=sharing" },
+                    { t: "Aula 03 - 🆕 Instruções 2.0 (Atualizado).mp4", u: "https://drive.google.com/file/d/1HEOiw7NGhbz5GfD_zt3X_v2zsw6H55Vi/view?usp=sharing" },
+                    { t: "Aula 04 - ✍️ Manual de Instruções - Como Extrair o Máximo.mp4", u: "https://drive.google.com/file/d/1HAtNBM82_Cq1Z1FmpJmFwuucrVg2MmbR/view?usp=sharing" },
+                    { t: "Aula 05 - 🧠 Manual do Cérebro com Neurocirurgião.mp4", u: "https://drive.google.com/file/d/1H8-TyWJqN7LBHRK1BniHlj8failOMQ-C/view?usp=sharing" },
+                    { t: "Aula 06 - 📈 Bônus ANKI na Prática Parte 1.mp4", u: "https://drive.google.com/file/d/1HIqeJeMVvoo6CpQAbO3tWWuiH00mWso3/view?usp=sharing" },
+                    { t: "Aula 07 - 📈 Bônus ANKI na Prática Parte 2.mp4", u: "https://drive.google.com/file/d/1H9d6FwUURpFw86hn5Oe6f1p__aZuon8u/view?usp=sharing" },
+                    { t: "💬 Dúvidas e Suporte.pdf", u: "https://drive.google.com/file/d/1-AuMClG6TBIwtTm2DZOrkHQ3rHI4nK9y/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 02 - Princípios de Lesões e Biomecânica",
+                description: "Física básica, vetores, momento, alavancas e biomecânica aplicada ao esporte.",
+                lessons: [
+                    { t: "Aula 01 - Introdução.mp4", u: "https://drive.google.com/file/d/1IylUMNqhouyc9h6OT_2j9m7jfrL05lp_/view?usp=sharing" },
+                    { t: "Aula 02 - O Mapa Classificações.mp4", u: "https://drive.google.com/file/d/1IeGCMRz3sneDN3XLgtd9O7Jn9X0dqGQl/view?usp=sharing" },
+                    { t: "Aula 03 - O Que é Mais Comum Epidemiologia - Parte 1.mp4", u: "https://drive.google.com/file/d/1JEsgWgPUlvnQOk02_0lp94zRFynaNEjf/view?usp=sharing" },
+                    { t: "Aula 04 - O Que é Mais Comum Epidemiologia - Parte 2.mp4", u: "https://drive.google.com/file/d/1Imy8GTsEiu8SBau5hcwk_wtn51Pg4yWm/view?usp=sharing" },
+                    { t: "Aula 05 - Biomecânica Aplicações.mp4", u: "https://drive.google.com/file/d/1Ii4cZ--hOBM5QvET3S2hZDR5_zJARA4L/view?usp=sharing" },
+                    { t: "Aula 06 - Biomecânica Conceitos Chave.mp4", u: "https://drive.google.com/file/d/1IflAX2ZvDUDLXQYFIqy6Us0bdKJFyNNi/view?usp=sharing" },
+                    { t: "Aula 07 - Biomecânica Física Básica - Centro de Gravidade.mp4", u: "https://drive.google.com/file/d/1IcwIdBC01xFk9Y2Hx53qM0A8eR2suQbn/view?usp=sharing" },
+                    { t: "Aula 08 - 🥇Curiosidade Biomecânica e Recorde Olímpico.mp4", u: "https://drive.google.com/file/d/1IhLIX2J7OsAc7hxuyc9OjhcdasdS8Jwp/view?usp=sharing" },
+                    { t: "Aula 09 - ⚽ Curiosidade Biomecânica do Drible - Messi Vs. CR7.mp4", u: "https://drive.google.com/file/d/1HTSZf7sqs5UE5AHvKW5XDYZ60xtxynVh/view?usp=sharing" },
+                    { t: "Aula 10 - Biomecânica Física Básica - Torque e Momento.mp4", u: "https://drive.google.com/file/d/1JEs6Gsj_tzX7wbr3uzbUuSdkjfv22U4_/view?usp=sharing" },
+                    { t: "Aula 11 - 🥋Curiosidade Biomecânica dos Golpes.mp4", u: "https://drive.google.com/file/d/1IyaYT081BECWvjhZ6Ki6Vux9T9YZXooc/view?usp=sharing" },
+                    { t: "Aula 12 - 🏋️ Exemplo Prático Momento na Elevação lateral.mp4", u: "https://drive.google.com/file/d/1HNH9udIzF48-Ha8qiindtOf24rfpQvoT/view?usp=sharing" },
+                    { t: "Aula 13 - Biomecânica Física Básica - Alavancas.mp4", u: "https://drive.google.com/file/d/1Ina--F-Gc_oTZeHN4BJrj7TeGR302ZRB/view?usp=sharing" },
+                    { t: "Aula 14 - ⚡️Curiosidade O Segredo da Velocidade.mp4", u: "https://drive.google.com/file/d/1IuMxVvBjM3Wuxx3G15wS8otyBDJSaxN_/view?usp=sharing" },
+                    { t: "Aula 15 - Biomecânica Física Básica - Vetores.mp4", u: "https://drive.google.com/file/d/1J41hNb3RDqaAAMeXBoTTapWkvkP_vzCH/view?usp=sharing" },
+                    { t: "Aula 16 - Biomecânica Física Básica - Newton.mp4", u: "https://drive.google.com/file/d/1If-RvvBIZCOOjlK-wH94ZkVBGvZZbp8Q/view?usp=sharing" },
+                    { t: "Aula 17 - 💪Curiosidade Quem é o Super-Herói Mais Forte.mp4", u: "https://drive.google.com/file/d/1IuGikmpV7qEIa9zm8w11dbIDRGF8HM6W/view?usp=sharing" },
+                    { t: "Aula 18 - Biomecânica Física Básica - Pressão.mp4", u: "https://drive.google.com/file/d/1JF-ZZluCsKS9VbQYbTm2-H6GbqsYpRQl/view?usp=sharing" },
+                    { t: "Aula 19 - 🥊 Curiosidade Motivo de Luvas nas Lutas.mp4", u: "https://drive.google.com/file/d/1HVA3-rFsKGv4w3rtFK8KOM4vxCu_gzed/view?usp=sharing" },
+                    { t: "Aula 20 - 🏃Curiosidade Lesões por Impacto na Corrida.mp4", u: "https://drive.google.com/file/d/1Ig-F8yYAdQN1_fVvnqORSIbtSHfoYy37/view?usp=sharing" },
+                    { t: "Aula 21 - 👟Curiosidade Amortecimento em Tênis de Corrida.mp4", u: "https://drive.google.com/file/d/1IarNknOVNeX7AaNRsTGAkrREv-QvRti2/view?usp=sharing" },
+                    { t: "Aula 22 - 🛤️ Curiosidade Correr na Grama vs Rua.mp4", u: "https://drive.google.com/file/d/1JEaXnBkMwaDXKOFLG0n2pxbfxJrWI9m_/view?usp=sharing" },
+                    { t: "Aula 23 - Biomecânica Física Aplicada - Conceitos Finais.mp4", u: "https://drive.google.com/file/d/1HTBH48lldLJLTeBSAHTvPmbsfkPt12nJ/view?usp=sharing" },
+                    { t: "Aula 24 - 📈Macete Prático Melhore a Corrida.mp4", u: "https://drive.google.com/file/d/1J55bkCf9RZRS0PJPLF2GmTx3u_rrJWYP/view?usp=sharing" },
+                    { t: "Aula 25 - Biomecânica Propriedades dos Materiais.mp4", u: "https://drive.google.com/file/d/1IiOdcwFzm0d6o3Bmm7L42sWcGFr3RjXg/view?usp=sharing" },
+                    { t: "Aula 26 - 🕵️ Curiosidade Fator de Segurança.mp4", u: "https://drive.google.com/file/d/1IsD6WpGFK6_csujwejfBUOTuQ-hgfWxx/view?usp=sharing" },
+                    { t: "Aula 27 - 🎲 Curiosidade O Motivo da Aleatoridade das Lesões.mp4", u: "https://drive.google.com/file/d/1J9Dk2ja-wKqwqwWNmf9LsNJTmSH7bJjC/view?usp=sharing" },
+                    { t: "Aula 28 - Bibliografia.mp4", u: "https://drive.google.com/file/d/1JDTy9c1EERiT1HD1N1HhqREZFAx7NoGc/view?usp=sharing" },
+                    { t: "Aula 05 - Biomecânica Aplicações.pdf", u: "https://drive.google.com/file/d/1kFiPGzW3NSwYwnchDUnGDa4xydNfDsH7/view?usp=sharing" },
+                    { t: "Aula 07 - Biomecânica Física Básica - Centro de Gravidade.pdf", u: "https://drive.google.com/file/d/1E6zEnv_yyADi0Ekmjc5m2fRn9L3jaaZK/view?usp=sharing" },
+                    { t: "Aula 10 - Biomecânica Física Básica - Torque e Momento.pdf", u: "https://drive.google.com/file/d/1Sri7e3XZrU1foSQqx_9Wb6iNjY7F-dz7/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 03 - Ciência Básica Ossos",
+                description: "Funções, composição, vascularização e consolidação das fraturas ósseas.",
+                lessons: [
+                    { t: "Aula 01 - Introdução.mp4", u: "https://drive.google.com/file/d/1GwRfF97B67W8i4pXITiXHXMU4e1uAZ_M/view?usp=sharing" },
+                    { t: "Aula 02 - Funções e Composição.mp4", u: "https://drive.google.com/file/d/1G_Ol4euxvg_SdNA_INzbSVzec5DGESo6/view?usp=sharing" },
+                    { t: "Aula 03 - 🍲 Macete Prático Caldo de Sopa e Fraturas.mp4", u: "https://drive.google.com/file/d/1G_gg7oQdoTsOQRJyhfrHpYu6I5uO77wP/view?usp=sharing" },
+                    { t: "Aula 04 - Classificações + Relevância Clínica Prática.mp4", u: "https://drive.google.com/file/d/1GJYy8rpTwnqiDeDMBGR9aofdFW-9e_U8/view?usp=sharing" },
+                    { t: "Aula 05 - Vascularização Óssea.mp4", u: "https://drive.google.com/file/d/1GMXr1Q9iIlt8G99ykP27L3biGPSS2tDG/view?usp=sharing" },
+                    { t: "Aula 06 - Clínica Vascular dos Ossos.mp4", u: "https://drive.google.com/file/d/1GJxXyogGzLwCHGhfcBFUn15rdMHzjyuM/view?usp=sharing" },
+                    { t: "Aula 07 - Embriologia Desenvolvimento Ossificação.mp4", u: "https://drive.google.com/file/d/1GkPRGjENgbWGBcXN3lFGYhfZN6kampZM/view?usp=sharing" },
+                    { t: "Aula 08 - Patologias no Desenvolvimento Ósseo.mp4", u: "https://drive.google.com/file/d/1GjpNSpsvh_TVoCOnDDQcUOg61_wlA41_/view?usp=sharing" },
+                    { t: "Aula 09 - Remodelação Óssea.mp4", u: "https://drive.google.com/file/d/1GuRwFROjUGEcoFRuUvLsjMCd_wOo42yt/view?usp=sharing" },
+                    { t: "Aula 10 - 🎾 Curiosidade Antebraço Roger Federer.mp4", u: "https://drive.google.com/file/d/1GvLJv_eL60iuQ1fbrXP0DCEbqHieugLz/view?usp=sharing" },
+                    { t: "Aula 11 - Melhores Exercícios Para Ossos.mp4", u: "https://drive.google.com/file/d/1GCRY-SB_gShGuFYDtK6s4bbhcNo-isUp/view?usp=sharing" },
+                    { t: "Aula 12 - Biomecânica Óssea.mp4", u: "https://drive.google.com/file/d/1GB1r4IOCr6uxQb6eIMgpFlu5mdj5p4at/view?usp=sharing" },
+                    { t: "Aula 13 - 🕸 Curiosidade Ossos vs Teia de Aranha.mp4", u: "https://drive.google.com/file/d/1GEi3qxCcFezTYFR1Gt56HNDWRH7IBMni/view?usp=sharing" },
+                    { t: "Aula 14 - 🛡️ Curiosidade Fator de Segurança em Fraturas.mp4", u: "https://drive.google.com/file/d/1GFy0066mcLnQGYtHzqnuYBjGgnw5xE1u/view?usp=sharing" },
+                    { t: "Aula 15 - ⛓ Reparo Consolidação Óssea.mp4", u: "https://drive.google.com/file/d/1GgH8adek0e-JDzGoVC8v_cBRH-bCTLRG/view?usp=sharing" },
+                    { t: "Aula 16 - 💢 Contusões Ósseas Bone Bruise.mp4", u: "https://drive.google.com/file/d/1GhEpXu_a3c1ueC1CYgCc4gG1-YPmU0BE/view?usp=sharing" },
+                    { t: "Aula 17 - 🩸 Hematoma Subperiosteal.mp4", u: "https://drive.google.com/file/d/1GA6am03L11ZeV8MAGzaeSLPwa3Z6nL7F/view?usp=sharing" },
+                    { t: "Aula 01 - Introdução.pdf", u: "https://drive.google.com/file/d/1HS4bGmFXXxG_2ellgPXaU3aTO2Ryb2xL/view?usp=sharing" },
+                    { t: "Aula 02 - Funções e Composição.pdf", u: "https://drive.google.com/file/d/14d4zsyfHeyGHZirdCrmJQrghGdiwLcAZ/view?usp=sharing" },
+                    { t: "Aula 03 - 🍲 Macete Prático Caldo de Sopa e Fraturas.pdf", u: "https://drive.google.com/file/d/1q_2vBjCgwv1y6mfHRfnNtrO1UYGLbr0f/view?usp=sharing" },
+                    { t: "Aula 11 - Melhores Exercícios Para Ossos.pdf", u: "https://drive.google.com/file/d/1Mjw73jzFQ4EeAShv-dZRQyhAovuLGyQ_/view?usp=sharing" },
+                    { t: "Aula 14 - ⛓ Reparo Consolidação Óssea.pdf", u: "https://drive.google.com/file/d/1jOhjYmwn5ObP5zWXsRieYufDfr811pPg/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 04 - FXs Membros Superiores",
+                description: "Estudo detalhado de fraturas do ombro, braço, antebraço e mão.",
+                lessons: [
+                    { t: "Aula 01 - FXs Clavícula.mp4", u: "https://drive.google.com/file/d/1DrXf4kCH6_KKB7U7LOHWsXyCjlrFSDF5/view?usp=sharing" },
+                    { t: "Aula 02 - 🏛Apresentação Fratura Exposta de Clavícula.mp4", u: "https://drive.google.com/file/d/1DaneQdGlVaPpBR3ocjIytTjH_KSH5w3m/view?usp=sharing" },
+                    { t: "Aula 03 - FXs Escápula.mp4", u: "https://drive.google.com/file/d/1DB0erj7fBP4BTLdQxppEIRiez3SSavPp/view?usp=sharing" },
+                    { t: "Aula 04 - FXs Úmero Proximal.mp4", u: "https://drive.google.com/file/d/1Dh_PVJfF4QK_q0BLawTNe884RVqXAr8M/view?usp=sharing" },
+                    { t: "Aula 05 - FXs Úmero Diáfise.mp4", u: "https://drive.google.com/file/d/1DFv1wD6OtywiMBjlgTlrbLQGahlq39vy/view?usp=sharing" },
+                    { t: "Aula 06 - 💪🏻#Análise Fratura em Espiral - Úmero.mp4", u: "https://drive.google.com/file/d/1D_LmIR9jISfTkKBAjhHFPcBxAon8FUot/view?usp=sharing" },
+                    { t: "Aula 07 - FXs Úmero Distal.mp4", u: "https://drive.google.com/file/d/1DdDDdrl_fRDmzMH3cW3KwMElvhC-wWEB/view?usp=sharing" },
+                    { t: "Aula 08 - FXs Cabeça do Rádio.mp4", u: "https://drive.google.com/file/d/1DEwE5-Yj3ZV9yvPUzNr5r-eqrbDTTZeM/view?usp=sharing" },
+                    { t: "Aula 09 - FXs Essex Lopresti e Ulna Proximal.mp4", u: "https://drive.google.com/file/d/1DDPm5F1FHUybK9H12yxGIz-sDhdflJdO/view?usp=sharing" },
+                    { t: "Aula 10 - FXs Antebraço e Rádio Distal.mp4", u: "https://drive.google.com/file/d/1DyRBgGfefABXTT-JrF2xTHuiZKS4jfY8/view?usp=sharing" },
+                    { t: "Aula 11 - 🥊#Análise Night Stick Fracture Fx Ulna.mp4", u: "https://drive.google.com/file/d/1Dlugmq_rrF8kdq9alXEsyW4ZpyVYDSqu/view?usp=sharing" },
+                    { t: "Aula 12 - FXs Escafóide.mp4", u: "https://drive.google.com/file/d/1DG_1YgEKESUQYcfoDVmbmD3YTr1TGnbN/view?usp=sharing" },
+                    { t: "Aula 13 - FXs Piramidal.mp4", u: "https://drive.google.com/file/d/1DW6qKuC3PiQwVNcZWOdiHKZT03u3vMJD/view?usp=sharing" },
+                    { t: "Aula 14 - FXs Trapézio.mp4", u: "https://drive.google.com/file/d/1DLvXeZc1s-3-gu27EKdYRlTtFrzQPSxa/view?usp=sharing" },
+                    { t: "Aula 15 - FXs Trapezoide.mp4", u: "https://drive.google.com/file/d/1DxjcNq73Eogfc_yJrdJdzACW0yFMsgrs/view?usp=sharing" },
+                    { t: "Aula 16 - FXs Hamato.mp4", u: "https://drive.google.com/file/d/1DZ8tMmmmVnwnOatdK7axddmeZ3QJXG-z/view?usp=sharing" },
+                    { t: "Aula 17 - FXs Semilunar + Kienbock.mp4", u: "https://drive.google.com/file/d/1DuXrVHmlD-lq5No7UJvEkugMnb2-cJqL/view?usp=sharing" },
+                    { t: "Aula 18 - FXs Capitato.mp4", u: "https://drive.google.com/file/d/1DRzLo-x7vbtN6jm2DmXQlNgPWDL-PekU/view?usp=sharing" },
+                    { t: "Aula 19 - FXs Pisiforme.mp4", u: "https://drive.google.com/file/d/1E2PFTpkCzdgYZRl2uZTTZGkuZyWWC-tV/view?usp=sharing" },
+                    { t: "Aula 20 - FXs Metacarpos.mp4", u: "https://drive.google.com/file/d/1DTvR1BX-hw8n-MNlfW9zH-dpduUEqbn-/view?usp=sharing" },
+                    { t: "Aula 21 - FXs Falange Distal.mp4", u: "https://drive.google.com/file/d/1Dw3w7GasnhzsI0BMRqVCnff8-zDavjG_/view?usp=sharing" },
+                    { t: "Aula 22 - FXs Falanges Média e Proximal.mp4", u: "https://drive.google.com/file/d/1DXt6KAqo-R-JfzDz5Sr27D9dUAKUXrWj/view?usp=sharing" },
+                    { t: "Aula 02 - 🏛Apresentação Fratura Exposta de Clavícula.pdf", u: "https://drive.google.com/file/d/1t7VIxUdcSXnGo_5tbIzpYCKf-PDPfHEt/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 05 - FXs Membros Inferiores",
+                description: "Estudo detalhado de fraturas da pelve, fêmur e patela.",
+                lessons: [
+                    { t: "Aula 01 - FXs MMIII Intro.mp4", u: "https://drive.google.com/file/d/1EK9MWJiDPwAwn8LQLkGPSwz6h1q23PrS/view?usp=sharing" },
+                    { t: "Aula 02 - FXs Anel Pélvico.mp4", u: "https://drive.google.com/file/d/1ER865zEkmASXA7ONU0QAlDa4BEAXNsFn/view?usp=sharing" },
+                    { t: "Aula 03 - FXs e Lesões Sacro e Cóccix.mp4", u: "https://drive.google.com/file/d/1E3fgBSTwqDcl5-tJnhfGJvtQjRT3vt8W/view?usp=sharing" },
+                    { t: "Aula 04 - FXs Acetábulo.mp4", u: "https://drive.google.com/file/d/1ESFPRPgc2eXt7uQT7IE0FOuvB3qb2jce/view?usp=sharing" },
+                    { t: "Aula 05 - FXs Fêmur Proximal.mp4", u: "https://drive.google.com/file/d/1E74CVj8iWyasJfhxlZ2R2JK6t8ZZQFsQ/view?usp=sharing" },
+                    { t: "Aula 06 - FXs Fêmur Diáfise e Distal.mp4", u: "https://drive.google.com/file/d/1EBPnoYftoRcoIokPaOeiuT1aZ-tCHzul/view?usp=sharing" },
+                    { t: "Aula 07 - 🦴#Análise Fratura de Fêmur Distal.mp4", u: "https://drive.google.com/file/d/1EH0Nfd480iMZf6cTpwnj2MLUAK4FqQNu/view?usp=sharing" },
+                    { t: "Aula 08 - FXs Patela.mp4", u: "https://drive.google.com/file/d/1E4KoBvkpTKkllBpxLFmfkbN1PXqsPiGz/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 06 - FXs Pé e Tornozelo",
+                description: "Fraturas da tíbia, fíbula, maléolos e ossos do pé.",
+                lessons: [
+                    { t: "Aula 01 - Fx Platô Tibial.mp4", u: "https://drive.google.com/file/d/1HgRacK37Qzamfvh19r_IAvFQd39OQiti/view?usp=sharing" },
+                    { t: "Aula 02 - Fx Diáfise da Tíbia.mp4", u: "https://drive.google.com/file/d/1HrK5sKhUey2sYjOr4dTUPfAj7A9paF5a/view?usp=sharing" },
+                    { t: "Aula 03 - 🔺️Curiosidade O Motivo do Chute com a Tíbia.mp4", u: "https://drive.google.com/file/d/1I-CRtpFJRjeXcDQ_OEY6ceZisXVhRfMl/view?usp=sharing" },
+                    { t: "Aula 04 - 🕷#Análise Fratura Anderson Silva.mp4", u: "https://drive.google.com/file/d/1I09yHvI2lXt7PZrrXThr_ISLZG3Uzs49/view?usp=sharing" },
+                    { t: "Aula 05 - 📸#Análise Fratura Chris Weidmann.mp4", u: "https://drive.google.com/file/d/1HmiQwwIqnZgBHhMJRd2KyCihNTr-qsNm/view?usp=sharing" },
+                    { t: "Aula 06 - 🏃🏻‍♂️Tíbia (Estresse) Fx Esportiva Mais Comum.mp4", u: "https://drive.google.com/file/d/1HiBsvZpNneJyeX4_W_aa5wzznoGhk4RE/view?usp=sharing" },
+                    { t: "Aula 07 - FXs Fíbula.mp4", u: "https://drive.google.com/file/d/1HyvYoZGooPiWOzr5uB_nApqO1_190KW3/view?usp=sharing" },
+                    { t: "Aula 08 - Fx Pilão Tibial.mp4", u: "https://drive.google.com/file/d/1Hhogprqb79VGpgaDcPqIbBVtLRkKgJw6/view?usp=sharing" },
+                    { t: "Aula 09 - FXs Tornozelo (Maléolos).mp4", u: "https://drive.google.com/file/d/1HqgV1N5e5gY2D79rKGq4DNwMwqFNMWZL/view?usp=sharing" },
+                    { t: "Aula 10 - 🏈#Análise Fx de Tornozelo - Dak Prescott.mp4", u: "https://drive.google.com/file/d/1HcGgQf_ElJXGzJVgwwUu0hfTfUorupkC/view?usp=sharing" },
+                    { t: "Aula 11 - FXs Tálus.mp4", u: "https://drive.google.com/file/d/1HgKJxsaSLsb9r3_UFyT7ocHp6buoTRY3/view?usp=sharing" },
+                    { t: "Aula 12 - FXs Calcâneo.mp4", u: "https://drive.google.com/file/d/1HzKbBcdedy31qRbJdTVuGrshixQN8ILH/view?usp=sharing" },
+                    { t: "Aula 13 - FXs Navicular e Lesões Parte 1.mp4", u: "https://drive.google.com/file/d/1H_Uh4dMP8xSxjAgow6TGmd3XXHMskleY/view?usp=sharing" },
+                    { t: "Aula 14 - FXs Navicular e Lesões Parte 2.mp4", u: "https://drive.google.com/file/d/1HvT1LTj-ZmIKX_aI2z1zgSLWpIdwTDYu/view?usp=sharing" },
+                    { t: "Aula 15 - FXs Cuboide.mp4", u: "https://drive.google.com/file/d/1HY_uNa-Zwgsceurh_OEDXyzUvtAS9F09/view?usp=sharing" },
+                    { t: "Aula 16 - FXs Cuneiformes.mp4", u: "https://drive.google.com/file/d/1Hnv6L6zrhyJXPmJeczra3-bBIk1bcWQG/view?usp=sharing" },
+                    { t: "Aula 17 - FXs Metatarsos.mp4", u: "https://drive.google.com/file/d/1HcLOMTnSsYerYZQQZ5Cf2cp40TDCw4l-/view?usp=sharing" },
+                    { t: "Aula 18 - FXs Falanges.mp4", u: "https://drive.google.com/file/d/1HZjC-CAFDb1MaKdaN1RxyrA0828NQbu7/view?usp=sharing" },
+                    { t: "Aula 03 - 🔺️Curiosidade O Motivo do Chute com a Tíbia.pdf", u: "https://drive.google.com/file/d/1aXIOpTA8fj6E-xW7xhEYlcyvFrufTyzl/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 07 - Ciência Básica Articulações",
+                description: "Conceitos fundamentais sobre cápsula articular, líquido sinovial e meniscos.",
+                lessons: [
+                    { t: "Aula 01 - Intro.mp4", u: "https://drive.google.com/file/d/1Ba8bso7zVZsTu0BaOZbGMz39yngIAJXf/view?usp=sharing" },
+                    { t: "Aula 02 - Cápsula Articular, Membrana e Líquido Sinovial.mp4", u: "https://drive.google.com/file/d/1B_N0DM4jL_d_RfQ0Wteue_zc34VlxXIA/view?usp=sharing" },
+                    { t: "Aula 03 - 🍯 Curiosidade Líquido Sinovial e Mel.mp4", u: "https://drive.google.com/file/d/1Bk-v0oYwkNgeBW1iJtkkKSP7KgqzrPI_/view?usp=sharing" },
+                    { t: "Aula 04 - 🤸🏿‍♂️ Curiosidade Hipermobilidade Articular.mp4", u: "https://drive.google.com/file/d/1BZLAEoyQr8vQwgUZKlEZUaplOueCPOx-/view?usp=sharing" },
+                    { t: "Aula 05 - 💢 Curiosidade Por Que Articulações Estalam.mp4", u: "https://drive.google.com/file/d/1Bj-dGyLhZzsUMGfYjDqqnSCUt5XQO_GO/view?usp=sharing" },
+                    { t: "Aula 06 - Cartilagem Articular.mp4", u: "https://drive.google.com/file/d/1BSWTom6A1duQ8oqnf_zY_p3nGvT0yFht/view?usp=sharing" },
+                    { t: "Aula 07 - Bursas e Bursites.mp4", u: "https://drive.google.com/file/d/1BZEf1qQ77GrGRkikj9hk3rZ2lxY7h3ob/view?usp=sharing" },
+                    { t: "Aula 08 - Disco Articular Meniscos.mp4", u: "https://drive.google.com/file/d/1Bli5ryRo3Y0IQsm4IXChSxpHKPtueLhJ/view?usp=sharing" },
+                    { t: "Aula 09 - Ligamentos.mp4", u: "https://drive.google.com/file/d/1BiP8UX8Gszs8BuzSzwXRXfNHeOJjB2_D/view?usp=sharing" },
+                    { t: "Aula 03 - 🍯 Curiosidade Líquido Sinovial e Mel.pdf", u: "https://drive.google.com/file/d/1drXY2srgHOrEvy-oj8aH2AWMEiMo5QBF/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 08 - Articulações (Entorses e Luxações)",
+                description: "Abordagem completa sobre entorses, ligamentos e luxações em todo o corpo.",
+                lessons: [
+                    { t: "Aula 01 - 🔮Luxação Esternoclavicular (LEC).mp4", u: "https://drive.google.com/file/d/19fkRk3Ixm0a2yKr_DcclBQDjBebFe7xS/view?usp=sharing" },
+                    { t: "Aula 02 - 🔮 Luxação Acromioclavicular (LAC) Parte 1.mp4", u: "https://drive.google.com/file/d/1B346dIsgBLcfcWInOyeaQb-rjMSO_Gpk/view?usp=sharing" },
+                    { t: "Aula 03 - 🔮 Luxação Acromioclavicular (LAC) Parte 2.mp4", u: "https://drive.google.com/file/d/19y1F_XNTg7S-G7LaXiBZziM2-1nXnRS0/view?usp=sharing" },
+                    { t: "Aula 04 - 🏀 Revisão Rápida Luxação Acromioclavicular.mp4", u: "https://drive.google.com/file/d/1AM05ZxubNPJizcv4pbYwpidFEY7YkOzV/view?usp=sharing" },
+                    { t: "Aula 05 - 🔮Osteólise Distal da Clavícula.mp4", u: "https://drive.google.com/file/d/1BRPNoC6UkIIQg3eVFBbw-84ZWxGVe_lP/view?usp=sharing" },
+                    { t: "Aula 06 - 🏋️ Revisão Rápida Ombro do Levantador de Peso.mp4", u: "https://drive.google.com/file/d/1BAgwgFUgkSlQr5ktvEfosKb5uqoUgmpm/view?usp=sharing" },
+                    { t: "Aula 07 - 🔮 Luxação Glenoumeral.mp4", u: "https://drive.google.com/file/d/19o1s3BCs2_4s2oJEZMiCY-0jVK7aT6-S/view?usp=sharing" },
+                    { t: "Aula 08 - 👀 Curiosidade Erro Médico no BBB.mp4", u: "https://drive.google.com/file/d/1AoImLhSiwYUJH-AliDAq2fadoHIUNT28/view?usp=sharing" },
+                    { t: "Aula 09 - 🔮 Instabilidade Glenoumeral.mp4", u: "https://drive.google.com/file/d/19nOJZt3OLv8UP4qcfACc5xISUqAwQr0V/view?usp=sharing" },
+                    { t: "Aula 10 - 🔮 SLAP Labrum Superior Anterior e Posterior.mp4", u: "https://drive.google.com/file/d/1A2WsE0oaDrUIBX_YB529PMu3U1T6g53_/view?usp=sharing" },
+                    { t: "Aula 11 - 🔮 Ombro Congelado Frozen Shoulder.mp4", u: "https://drive.google.com/file/d/1AnewFN8gYIMxKWG1D4_3Mkg5AWdmD6_B/view?usp=sharing" },
+                    { t: "Aula 12 - 🇺🇸 #Bônus Frozen Shoulder - Diego Lima, MD.mp4", u: "https://drive.google.com/file/d/1B9JBjc5FAKmstDeDIWjSmoobXfmrp5Hy/view?usp=sharing" },
+                    { t: "Aula 13 - 🦾 Luxações e Instabilidades do Cotovelo Parte 1.mp4", u: "https://drive.google.com/file/d/1AwyUptiQHuPkkQJrPBB3mHA9S2mbSlbO/view?usp=sharing" },
+                    { t: "Aula 14 - 🦾 Luxações e Instabilidades do Cotovelo Parte 2.mp4", u: "https://drive.google.com/file/d/19qKIl7O_lHWVIFno_g6Ygzy4N3yDbrWk/view?usp=sharing" },
+                    { t: "Aula 15 - 🧤 LCM Tommy John e Estabilidade em Valgo do Cotovelo.mp4", u: "https://drive.google.com/file/d/1At9Qp5byAavW05u5qr8xet2NEIlBbeEg/view?usp=sharing" },
+                    { t: "Aula 16 - 🦾 Osteocondrite Dissecante e Doença de Panner.mp4", u: "https://drive.google.com/file/d/1Anlpm9if27HfmzdEdeJnVdHNAa7a99LV/view?usp=sharing" },
+                    { t: "Aula 17 - ✋🏻 Instalibilidade Cárpica Abrir o Punho.mp4", u: "https://drive.google.com/file/d/19bc6800egEUyNawR92D1BOX5JJOGe1v4/view?usp=sharing" },
+                    { t: "Aula 18 - ✋🏻 Radioulnar Distal (ARUD) Complexo da Fibrocartilagem.mp4", u: "https://drive.google.com/file/d/1BN4wnCMiOG6o_CjVKuHKV4ehFwfDnt25/view?usp=sharing" },
+                    { t: "Aula 19 - ✋🏻 Luxações dos Dedos (MCF e IF).mp4", u: "https://drive.google.com/file/d/1A_pmJBbFRXKsyzrNOwquv5HV67Sgz-TE/view?usp=sharing" },
+                    { t: "Aula 20 - ✋🏻 Luxações e Lesões Ligamentares do Polegar.mp4", u: "https://drive.google.com/file/d/1Avq30gEhfY5GoMCb34h6-CmqLbr_ntKX/view?usp=sharing" },
+                    { t: "Aula 21 - 🍑 Sacroileíte e Disfunção Sacroilíaca.mp4", u: "https://drive.google.com/file/d/1B5Oo-3_GulsUiZl1nVs1Ch8VAfSl4m3N/view?usp=sharing" },
+                    { t: "Aula 22 - 🍑 Osteíte Púbica, Pubalgia, Sports Hernia.mp4", u: "https://drive.google.com/file/d/1BH1a0jfzAZkb4W4LGjyfuJOazjVNHFCB/view?usp=sharing" },
+                    { t: "Aula 23 - 🍑 Impacto Femoroacetabular (IFA).mp4", u: "https://drive.google.com/file/d/1AkQu9bHTsUOYlF4vgSXXOxY244OIUmBl/view?usp=sharing" },
+                    { t: "Aula 24 - 🍑 Ruptura Labral (Labrum Acetabular).mp4", u: "https://drive.google.com/file/d/19aRBOJAanopW2g3GmsDFOPdTCugNuWWR/view?usp=sharing" },
+                    { t: "Aula 25 - 🍑 Lx Quadril.mp4", u: "https://drive.google.com/file/d/19_ooHuS6iKxcfztCg8xYzUKW-Ha_nNZW/view?usp=sharing" },
+                    { t: "Aula 26 - 🦿 Lx Joelho (Fêmoro-Tibial).mp4", u: "https://drive.google.com/file/d/1AmCH1CFKlPSd6e1jdESDTYct0lvRtImS/view?usp=sharing" },
+                    { t: "Aula 27 - 🦿 Lx e Instabilidade Patelar, Condromalácia.mp4", u: "https://drive.google.com/file/d/1Adqy7qdoSctnZ8LmwIlkybUsWVyz2qWR/view?usp=sharing" },
+                    { t: "Aula 28 - 🩺 Exame Físico J-SIGN Sinal do Jota.mp4", u: "https://drive.google.com/file/d/19s7Fplqy_ewBzpoA4-WEaVSsp94rU14l/view?usp=sharing" },
+                    { t: "Aula 29 - ⬅️ Macete Prático Luxação da Patela - Redução.mp4", u: "https://drive.google.com/file/d/1ASJT4jbPU_WXRjJcZIiLEFMDzIUTYtwB/view?usp=sharing" },
+                    { t: "Aula 30 - 🩺 Dica Rápida Luxação Patelar.mp4", u: "https://drive.google.com/file/d/19rTD22kk3a0c1M7R8Fge2tWkwMxpD4YK/view?usp=sharing" },
+                    { t: "Aula 31 - 🦿 LCM - Ligamento Colateral Medial.mp4", u: "https://drive.google.com/file/d/1BJjr3yvpCI7KHI_1Ruk5Qr_e3RR1jUhL/view?usp=sharing" },
+                    { t: "Aula 32 - ✔ Resumo Lesão LCM e Braces.mp4", u: "https://drive.google.com/file/d/1ArYxXnxL4-OEv0A2KOEI2N06X4OOhfPX/view?usp=sharing" },
+                    { t: "Aula 33 - 🩺 LCM - Macete Prático no Exame Físico.mp4", u: "https://drive.google.com/file/d/19b3lpf21Hk8q9eGFVw4cqjYl9JHfy79M/view?usp=sharing" },
+                    { t: "Aula 34 - 🚑 Revisão Rápida Motivo de Lesão do LCM.mp4", u: "https://drive.google.com/file/d/1AkBR47gCQwrPVXNiQ3kgoiwfdBK7v8jW/view?usp=sharing" },
+                    { t: "Aula 35 - ⚽ Curiosidade LCM no Futebol.mp4", u: "https://drive.google.com/file/d/1A5riLinKWktB5cA1iEnE6b2VrCL77aqO/view?usp=sharing" },
+                    { t: "Aula 36 - 🦿 LCA - Ligamento Cruzado Anterior.mp4", u: "https://drive.google.com/file/d/1Asi-kTKLSg_GL2ny-B1ZqrRk70IrCslT/view?usp=sharing" },
+                    { t: "Aula 37 - 👩 LCA e Mulheres ♀ Até 8x Mais Risco 💣.mp4", u: "https://drive.google.com/file/d/1B6_CsUv2XxrWxCSwlebgsx8mdmqn1VVS/view?usp=sharing" },
+                    { t: "Aula 38 - 🧬 #ErrosAnatômicos Evolutiva do LCA.mp4", u: "https://drive.google.com/file/d/1A1T9nLPGE55hzhxa2tcMzklx5p_9F2hb/view?usp=sharing" },
+                    { t: "Aula 39 - 🦍 Curiosidade LCA - Anatomia Evolutiva.mp4", u: "https://drive.google.com/file/d/1AGdtzBqYCt9vTLy8rtIHEloyKJw_dsqR/view?usp=sharing" },
+                    { t: "Aula 40 - 🩺 Macete Prático Melhor teste na Beira do Gramado.mp4", u: "https://drive.google.com/file/d/1AdqiOuFFKvt6CCqfIzQwUtG2bbAwd1os/view?usp=sharing" },
+                    { t: "Aula 41 - 📷 Imagem Diagnóstico Raio-X (LCA) Fratura de Segond.mp4", u: "https://drive.google.com/file/d/19hW4CBWXDftAKisuE5AQ22mcxD9k6vfe/view?usp=sharing" },
+                    { t: "Aula 42 - 🔪 Revisão Rápida Reconstrução do LCA.mp4", u: "https://drive.google.com/file/d/1AoSp-XrhLMwPSAVif4r--NJzpcQ655SJ/view?usp=sharing" },
+                    { t: "Aula 43 - ⚽ LCA - Virgil Vin Dijk 🚑.mp4", u: "https://drive.google.com/file/d/19fcl2DvQBQYxeNf4YXQfsXknYK6mKH_q/view?usp=sharing" },
+                    { t: "Aula 44 - 🏋🏻‍♀️ #Análise Lesão LCA Sissy Squat.mp4", u: "https://drive.google.com/file/d/1AwsQw5k7XnWSH9ipP6DoLB0ekg_Vv70M/view?usp=sharing" },
+                    { t: "Aula 45 - 🦿 LCP Ligamento Cruzado Posterior.mp4", u: "https://drive.google.com/file/d/19hTtCvKE1QsfQCDj332Rv8e0AJdn1fDF/view?usp=sharing" },
+                    { t: "Aula 46 - ⚽ #Análise Lesão LCP Rodrigo Moledo 🔴.mp4", u: "https://drive.google.com/file/d/1A3PZeSsY7Kv_CIcadJMCV7xk63kRkrB0/view?usp=sharing" },
+                    { t: "Aula 47 - 🦿 LCL e CPL (Canto Posterolateral).mp4", u: "https://drive.google.com/file/d/1BJYb_mVY02LCkawQ8j1_mfEmZQk8bVBO/view?usp=sharing" },
+                    { t: "Aula 48 - 💥 #Análise Hiperextensão do Joelho.mp4", u: "https://drive.google.com/file/d/19cqBlD4X474gGPSDYV8UhqQDFzcMX9pa/view?usp=sharing" },
+                    { t: "Aula 49 - ⚽ #Análise Lesão de TODOS os LIGAMENTOS.mp4", u: "https://drive.google.com/file/d/19zhb3tcsHFMW86KCnx5b_9Omyzwp6yrR/view?usp=sharing" },
+                    { t: "Aula 50 - 🦿 Meniscos (Ruptura, Discoide, Cistos e Baker).mp4", u: "https://drive.google.com/file/d/19Xxj5MGY3O8DbRG7tquNNPROX3T4jJO5/view?usp=sharing" },
+                    { t: "Aula 51 - ⚽ #Análise Lesão Meniscal - Ansu Fati 🔴🔵.mp4", u: "https://drive.google.com/file/d/19Z7nuOe4SuXXS7hAG4a959UcjVUJAtv9/view?usp=sharing" },
+                    { t: "Aula 52 - ⚽ #Análise Menisco Lateral - Philippe Coutinho.mp4", u: "https://drive.google.com/file/d/19ZcZVOidDwXHwF-3edxHNRP6h8e8MM6z/view?usp=sharing" },
+                    { t: "Aula 53 - 🩺 Macete Prático Menisco Lateral Diagnóstico [Moragas].mp4", u: "https://drive.google.com/file/d/19yqMmBkGOUKJQSJ3KXJOYX8n7KgBN8t0/view?usp=sharing" },
+                    { t: "Aula 54 - ✂️ Revisão Rápida Meniscos - Ressecção vs Reparo.mp4", u: "https://drive.google.com/file/d/1BLSq__KBLe4CEwD7ddrxseFMv5mZNlWr/view?usp=sharing" },
+                    { t: "Aula 55 - 🦿 Plica Sinovial.mp4", u: "https://drive.google.com/file/d/1AXWLveuizHXg-bSIKNjvlMr9UQvac_iS/view?usp=sharing" },
+                    { t: "Aula 56 - 🦶 Entorses de Tornozelo Parte 1.mp4", u: "https://drive.google.com/file/d/1AW3j3v68fTJ5VmDNuMiHWe4AfbkHuDbM/view?usp=sharing" },
+                    { t: "Aula 57 - 🦶 Entorses de Tornozelo Parte 2.mp4", u: "https://drive.google.com/file/d/19soA8ERMeyoeH62vGLQvdh5ppvzWetCg/view?usp=sharing" },
+                    { t: "Aula 58 - 🦴 Macete Prático Descubra se Houve Fratura (97% Precisão).mp4", u: "https://drive.google.com/file/d/19x9rNnxSsTakxLDMMgFz_z-KF5SBL2_O/view?usp=sharing" },
+                    { t: "Aula 59 - ⚽️ #Análise Entorse Tornozelo - Neymar.mp4", u: "https://drive.google.com/file/d/1AsSYSw5CnPPAbrbVfbnE2Ec8cQDssyv5/view?usp=sharing" },
+                    { t: "Aula 60 - 👠 #Análise Entorse Medial.mp4", u: "https://drive.google.com/file/d/1BI51hlRBbF8VPUIYWZ-IGp2cmqapZd84/view?usp=sharing" },
+                    { t: "Aula 61 - ⚽️ #Análise Entorse Medial - Vitor Roque.mp4", u: "https://drive.google.com/file/d/1B3Rmgk-w2xPMR6EuLUHxpvNyb9OSeD_N/view?usp=sharing" },
+                    { t: "Aula 62 - ⚽️ #Análise Entorse Medial - Pedro Geromel.mp4", u: "https://drive.google.com/file/d/19wroCNj9IF2k6YadAiv3Z-I4lX4cOS10/view?usp=sharing" },
+                    { t: "Aula 63 - 🦶 Lesão de Turco Ligamento Lisfranc.mp4", u: "https://drive.google.com/file/d/1BPWamAlhcZWMQzWDnOiEBLboBXuaoFC8/view?usp=sharing" },
+                    { t: "Aula 64 - 🦶 Fx-Luxação de Lisfranc.mp4", u: "https://drive.google.com/file/d/1AbC2IGHN8heSrXxy0iQTVa7xbHPawTaU/view?usp=sharing" },
+                    { t: "Aula 65 - 🦶 TURF TOE Dedo de Turfa.mp4", u: "https://drive.google.com/file/d/1ACD0K2vOuui73MEG3pDIloq1wcBt6-SX/view?usp=sharing" },
+                    { t: "Aula 37 - 👩 LCA e Mulheres ♀_ Até 8x Mais Risco 💣.pdf", u: "https://drive.google.com/file/d/1j8wcRKRHC_2Ve0-Tv-fF-U3pACcgOsi1/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 09 - Ciência Básica Músculos",
+                description: "Estudo sobre tipos de fibras musculares, contrações e processo de lesão e reparo.",
+                lessons: [
+                    { t: "Aula 01 - Introdução [Músculos - Anatomia].mp4", u: "https://drive.google.com/file/d/1F1iJyWtLP_AF_6yrP-SSOpPPFTzzpJHy/view?usp=sharing" },
+                    { t: "Aula 02 - Contração Excêntrica A Causa da Maioria das Lesões.mp4", u: "https://drive.google.com/file/d/1FS2LLgO8pRvUUojDjaMvdRVQgH5lEZr4/view?usp=sharing" },
+                    { t: "Aula 03 - 🆚Curiosidade Distensão e Estiramento.mp4", u: "https://drive.google.com/file/d/1FMAEbsspKhZ9K-zU6sJzIq_QrdJbLcAz/view?usp=sharing" },
+                    { t: "Aula 04 - Cãibra Cãibras Musculares - Parte 1.mp4", u: "https://drive.google.com/file/d/1FDUIW8Nm6whOndTrkVBaF7V0RV0ipRvh/view?usp=sharing" },
+                    { t: "Aula 05 - Cãibra Cãibras Musculares - Parte 2.mp4", u: "https://drive.google.com/file/d/1FVe7lPpmQR64pUcB3uosE9Szw4VN7Myh/view?usp=sharing" },
+                    { t: "Aula 06 - Estrutura Partes (ex. Junção Miotendínea).mp4", u: "https://drive.google.com/file/d/1FTqB4zE8xIwwC9RUIcQIblb34mI9ikoB/view?usp=sharing" },
+                    { t: "Aula 07 - Contusão Muscular (Tostão, Paulistinha).mp4", u: "https://drive.google.com/file/d/1FJNlRnS3F-Lfe0gVOH12WZFm3qguAWji/view?usp=sharing" },
+                    { t: "Aula 08 - Tipos de Músculos Classificações Anatômicas.mp4", u: "https://drive.google.com/file/d/1FUKXk9PwynTr_kOgEmV_Co4sp-q2uBTH/view?usp=sharing" },
+                    { t: "Aula 09 - Tipos de Fibras Lentas (I) vs Rápidas (II).mp4", u: "https://drive.google.com/file/d/1F4x1yBRrDdwJjDnydfB5Qt6w0-UuYQWx/view?usp=sharing" },
+                    { t: "Aula 10 - MM. Biarticulares.mp4", u: "https://drive.google.com/file/d/1F3LeBBJp-0qBvcuV-6PoCCsZaSnkr316/view?usp=sharing" },
+                    { t: "Aula 11 - Lesões Musculares.mp4", u: "https://drive.google.com/file/d/1F60ePz5YfXAPVgQRcENKU3k73UE68wXC/view?usp=sharing" },
+                    { t: "Aula 12 - Graus Classificações.mp4", u: "https://drive.google.com/file/d/1F8ulSERQQMyTHAXj8hW0qwnUdSnXmx2F/view?usp=sharing" },
+                    { t: "Aula 13 - 📸 Bônus Diagnóstico (Exames de Imagem).mp4", u: "https://drive.google.com/file/d/1F47DAI6j2D8DXeWqQd4xqRJeHbM1XdLJ/view?usp=sharing" },
+                    { t: "Aula 14 - Reparo.mp4", u: "https://drive.google.com/file/d/1FScZVmH5sY-NIdQerv5_8f22uPVWwQG0/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 10 - Lesões Musculares",
+                description: "Análise aprofundada das lesões nos isquiotibiais, adutores e panturrilha.",
+                lessons: [
+                    { t: "Aula 01 - Isquiotibiais Posterior de Coxa.mp4", u: "https://drive.google.com/file/d/1Fz7LekquWUnXBfPpU9o4o-x9M0ReGxiv/view?usp=sharing" },
+                    { t: "Aula 02 - ✔️Resumo - Posterior de Coxa.mp4", u: "https://drive.google.com/file/d/1G-MR6cNszNx1ICOih0nIGS2SaDBxDTFv/view?usp=sharing" },
+                    { t: "Aula 03 - 🥈Curiosidade Conheça a 2ª Lesão Muscular Mais Comum.mp4", u: "https://drive.google.com/file/d/1FuUCXKR_zoYgCUv_y0hn-xFwBZjbUQPm/view?usp=sharing" },
+                    { t: "Aula 04 - Adutores Groin Strain.mp4", u: "https://drive.google.com/file/d/1GzV4YWzf_kbYY_60My-1kWMUOYEuxxiT/view?usp=sharing" },
+                    { t: "Aula 05 - 🧹 Resumo Lesão de Adutores Groin Strain.mp4", u: "https://drive.google.com/file/d/1FvZUewuZO-RRo4aVisHSIf7Rdbv07bWL/view?usp=sharing" },
+                    { t: "Aula 06 - Panturrilha (mm. Gastrocnêmio e Sóleo).mp4", u: "https://drive.google.com/file/d/1FwL5ry8ZTiPWZxoEgyXrtruuTctjqUPH/view?usp=sharing" },
+                    { t: "Aula 07 - ⚽️ Ruptura do m. Reto Femoral - Músculo do Chute.mp4", u: "https://drive.google.com/file/d/1G5JuVN05ry7kZLDjqPrFFhT_HQX-lwLt/view?usp=sharing" },
+                    { t: "Aula 08 - 🧱 Miosite Ossificante.mp4", u: "https://drive.google.com/file/d/1GxKvpT4yh-tKQP3cEUIM2SmSab6XPJxo/view?usp=sharing" },
+                    { t: "Aula 09 - 🎾 Ruptura do m. Reto Abdominal.mp4", u: "https://drive.google.com/file/d/1FxVdwKWMKjG9L6n_9-y5XvxxLM6-Kt_M/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 11 - Ciência Básica Tendões e Partes Moles",
+                description: "Mecanismos de Apoio à Função Muscular, fáscia, bainha sinovial e túneis osteofibrosos.",
+                lessons: [
+                    { t: "Aula 01 - Introdução [Tendão - Anatomia].mp4", u: "https://drive.google.com/file/d/1FtD7AS5DMFkpgb-So9eVWpM9M0_qZUuP/view?usp=sharing" },
+                    { t: "Aula 02 - ⛓️ Curiosidade Fraturas por Avulsão - Fibras de Sharpey.mp4", u: "https://drive.google.com/file/d/1FsplSxigslmSzBrEWQCtWKAAhkqE3jhz/view?usp=sharing" },
+                    { t: "Aula 03 - Lesões Rupturas e Tendonite.mp4", u: "https://drive.google.com/file/d/1FrdoB2T4jXlZyqCWMynbdXhgPpUH1GRo/view?usp=sharing" },
+                    { t: "Aula 04 - Bainha Sinovial e Tenossinovites.mp4", u: "https://drive.google.com/file/d/1H13J_oKLE2syWQOj-7VJBDU-c3O2bpey/view?usp=sharing" },
+                    { t: "Aula 05 - Túneis Osteofibrosos (Retináculos, Polias, ..).mp4", u: "https://drive.google.com/file/d/1H445WNWeTyq6Ffvk-zxbF7X3xVK1_jXP/view?usp=sharing" },
+                    { t: "Aula 06 - Ossos Sesamoides.mp4", u: "https://drive.google.com/file/d/1FndGyjXRFyCdzeiI9kfBcLntzyaeeMyb/view?usp=sharing" },
+                    { t: "Aula 07 - Fáscia.mp4", u: "https://drive.google.com/file/d/1H2E41qdPDwFBCMm8aJsz17Apl3-pv6Dy/view?usp=sharing" },
+                    { t: "Aula 08 - Hérnias Musculares Parte 1.mp4", u: "https://drive.google.com/file/d/1H2Z6thzJ2xaCCo_bXY7gImo0CCJnATvg/view?usp=sharing" },
+                    { t: "Aula 09 - Hérnias Musculares Parte 2.mp4", u: "https://drive.google.com/file/d/1H1Uq1iBnCjqS8qIknOfn02DsxqnZAzRS/view?usp=sharing" },
+                    { t: "Aula 10 - Hérnias Musculares Parte 3.mp4", u: "https://drive.google.com/file/d/1H6oxbnml4Wf3aa-gpU1XWQGZZiuipmLm/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 12 - Patologias Tendões e Partes Moles",
+                description: "Síndromes do impacto, tendinites, rupturas musculares e fascite plantar.",
+                lessons: [
+                    { t: "Aula 01 - 🔮Síndrome do Impacto do Ombro e Manguito Rotador Parte 1.mp4", u: "https://drive.google.com/file/d/1CCZ1k-TStCZn2Rv-f6xJEp5bggPkQbV4/view?usp=sharing" },
+                    { t: "Aula 02 - 🔮Síndrome do Impacto do Ombro e Manguito Rotador Parte 2.mp4", u: "https://drive.google.com/file/d/1Evk58QuAr3vi_NUECKI-wSDBUhD8ygej/view?usp=sharing" },
+                    { t: "Aula 03 - 🏆Resumo Causa Mais Comum de Dor no Ombro.mp4", u: "https://drive.google.com/file/d/1CDScnoO750KCyWqgyokUUA-MXWNN0ZhQ/view?usp=sharing" },
+                    { t: "Aula 04 - 🔮 Tendinite Calcária.mp4", u: "https://drive.google.com/file/d/1BwD5HVFlqdeCrmkdRG7YZIEZ1kxQtZq7/view?usp=sharing" },
+                    { t: "Aula 05 - 🦾 Ruptura do Peitoral Maior.mp4", u: "https://drive.google.com/file/d/1CJ4yZR1razJdZ7rAWBmbauzpXVZ-E7_3/view?usp=sharing" },
+                    { t: "Aula 06 - 🦾 Ruptura do Tríceps.mp4", u: "https://drive.google.com/file/d/1F1DaN-bTI1F5YnKoLYo4qhu5oLAt4_-7/view?usp=sharing" },
+                    { t: "Aula 07 - 🦾 Bíceps Proximal - Tendonite, Ruptura e Subluxação.mp4", u: "https://drive.google.com/file/d/1CciFfoCT2G4ETpvwTHniZadNtX5ifbnq/view?usp=sharing" },
+                    { t: "Aula 08 - 🦾 Ruptura do Bíceps Distal Parte 1.mp4", u: "https://drive.google.com/file/d/1EeXtq-LfakVllNa7zA7U4OhpA-Ay-yoI/view?usp=sharing" },
+                    { t: "Aula 09 - 🦾 Ruptura do Bíceps Distal Parte 2.mp4", u: "https://drive.google.com/file/d/1CWaY0lC80iuxhdQ_pviFHvoUixJjEbu7/view?usp=sharing" },
+                    { t: "Aula 10 - 🦾 Ruptura do Bíceps Distal Parte 3.mp4", u: "https://drive.google.com/file/d/1CL-VaFNAlq9s2mmcFHVdg5R4y5ODZNcb/view?usp=sharing" },
+                    { t: "Aula 11 - ⚙️Link com Biomecânica Motivo de Tantas Lesões no Bíceps.mp4", u: "https://drive.google.com/file/d/1CacIGalhad6WSNuofaQ8xD2c2P3QhKic/view?usp=sharing" },
+                    { t: "Aula 12 - 🦾Epicondilite Lateral ( Cotovelo do Tenista ).mp4", u: "https://drive.google.com/file/d/1CCbOZPj65iPt4F_TaZgKn1gUUdBsOKE1/view?usp=sharing" },
+                    { t: "Aula 13 - 🦾Epicondilite Medial ( Cotovelo do Golfista ).mp4", u: "https://drive.google.com/file/d/1EusVM6HJGJ_vCWFqZJaZq81J9B4YX92J/view?usp=sharing" },
+                    { t: "Aula 14 - 🦾Bursite Olecraniana ( Cotovelo do Popeye do Estudante ).mp4", u: "https://drive.google.com/file/d/1BxzU8RiR6KEN_FGUUBhdnxdgrai8Xdwv/view?usp=sharing" },
+                    { t: "Aula 15 - ✋🏻 Retináculo dos Extensores e Tenossinovite de Quervain.mp4", u: "https://drive.google.com/file/d/1CMFpg2PvRKF60sxn92BEOTNTOVhlXI6O/view?usp=sharing" },
+                    { t: "Aula 16 - ✋🏻Ruptura da Banda Sagital Boxer´s Knuckle.mp4", u: "https://drive.google.com/file/d/1CJ8gKN-e0_P3lDVvqplr57v7Nije9YDP/view?usp=sharing" },
+                    { t: "Aula 17 - ✋🏻 Dedo em Gatilho 🔫 ( Trigger Finger ).mp4", u: "https://drive.google.com/file/d/1EZ5jWjFZ16B5yaDL8a19oif6c0rZBR5t/view?usp=sharing" },
+                    { t: "Aula 18 - ✋🏻 Dupuytren.mp4", u: "https://drive.google.com/file/d/1ETIUus5PxHL9gwoiDF1hNS7cuNyCVJew/view?usp=sharing" },
+                    { t: "Aula 19 - ✋🏻 Deformidades dos Dedos.mp4", u: "https://drive.google.com/file/d/1CRf4jiTVU81WK-u7idPMLKh9y8zBUF7-/view?usp=sharing" },
+                    { t: "Aula 20 - 🎮 Curiosidade Hipertrofia dos Dedos em Gamers.mp4", u: "https://drive.google.com/file/d/1C_mlTIkv2QU3yUMhFhKVY-P12Y4e_mWv/view?usp=sharing" },
+                    { t: "Aula 21 - 🍑Hip Pointer e Morel Lavallee Parte 1.mp4", u: "https://drive.google.com/file/d/1CP07qmJn8GeyRghhvkB2-3SKtzDGcr95/view?usp=sharing" },
+                    { t: "Aula 22 - 🍑Hip Pointer e Morel Lavallee Parte 2.mp4", u: "https://drive.google.com/file/d/1CIhZ2O_OllkpAgS-x-8jb3unPvQiBwas/view?usp=sharing" },
+                    { t: "Aula 23 - 🍑 Síndrome do Ressalto do Quadril Snapping Hip.mp4", u: "https://drive.google.com/file/d/1EX48gT4k6oTnShJvO1dmay4p3GycBABL/view?usp=sharing" },
+                    { t: "Aula 24 - 🍑 Bursite Trocantérica.mp4", u: "https://drive.google.com/file/d/1C9zwaZzkIsHsFIcack13ig9eQAmfSvwj/view?usp=sharing" },
+                    { t: "Aula 25 - 🦵Síndrome do Trato Iliotibial Joelho do Corredor.mp4", u: "https://drive.google.com/file/d/1EaFe_7Zk0NEsfHUHASDxHShtA6tSNyRj/view?usp=sharing" },
+                    { t: "Aula 26 - 🔋Curiosidade Economia Anatômica - Trato Iliotibial.mp4", u: "https://drive.google.com/file/d/1E_n8NxeJjqeSIsMtKZmJlZaZogpOiLiV/view?usp=sharing" },
+                    { t: "Aula 27 - 🏃Resumo Joelho do Corredor.mp4", u: "https://drive.google.com/file/d/1EmLrfTwK0vQVrLfRI51a97nPdoyVaqQ-/view?usp=sharing" },
+                    { t: "Aula 28 - 🦵Ruptura do Tendão Ligamento Patelar.mp4", u: "https://drive.google.com/file/d/1EaAKJ8t_Vb30hIVhQjF_Mj7LNDaj-8Cc/view?usp=sharing" },
+                    { t: "Aula 29 - ⛓Resumo Tendão ou Ligamento Patelar.mp4", u: "https://drive.google.com/file/d/1EhB-i2wBZ0vaPTWx-jmuKmBIluuOsyGU/view?usp=sharing" },
+                    { t: "Aula 30 - 🦵Tendão Quadricipital.mp4", u: "https://drive.google.com/file/d/1EvCcI7KG-mlg8Vh8ilP3PpIaOZf250nw/view?usp=sharing" },
+                    { t: "Aula 31 - 🦆 Bursite da Pata de Ganso.mp4", u: "https://drive.google.com/file/d/1By80HBSAFofQUx7FFfax2Kzw5fHK1Mr0/view?usp=sharing" },
+                    { t: "Aula 32 - 🦶🏻Síndrome Compartimental.mp4", u: "https://drive.google.com/file/d/1CJi3W7xLHvGpqSe_gjnmNm8-6gRgxmLz/view?usp=sharing" },
+                    { t: "Aula 33 - 🦶🏻 Canelite Shin Splints Sindrome do Estresse Tibial Medial.mp4", u: "https://drive.google.com/file/d/1CahGF0P-xbJ4P6wbfebOaolsuJ4h9See/view?usp=sharing" },
+                    { t: "Aula 34 - 🦶🏻Ruptura Subluxação Tendões Fibulares.mp4", u: "https://drive.google.com/file/d/1CCav5yWHTgox8yQRGRmoWBjBBFEltZ2_/view?usp=sharing" },
+                    { t: "Aula 35 - 🦶🏻 Disfunção do Tibial Posterior.mp4", u: "https://drive.google.com/file/d/1CSov5eNELeaKyRNyQcxQcbcO2uPSPNON/view?usp=sharing" },
+                    { t: "Aula 36 - 🦶🏻 Tendinopatias do Aquiles.mp4", u: "https://drive.google.com/file/d/1EVhSUWBN0A4aTv6F-cswZWsOWkWxm0yF/view?usp=sharing" },
+                    { t: "Aula 37 - 🦶🏻Ruptura do Tendão de Aquiles Parte 1.mp4", u: "https://drive.google.com/file/d/1CKa8FX6oHz2fuP23ZaFVZpHNdRGtP9rx/view?usp=sharing" },
+                    { t: "Aula 38 - 🦶🏻Ruptura do Tendão de Aquiles Parte 2.mp4", u: "https://drive.google.com/file/d/1EchJdiY0zQRKEgZmMoW0qDt5lABIERw4/view?usp=sharing" },
+                    { t: "Aula 39 - 🧬#ErrosAnatômicos Evolutiva Tendão de Aquiles.mp4", u: "https://drive.google.com/file/d/1CbWaxQ2YPFPjnWKv1xUMaVdUeeaBGAvE/view?usp=sharing" },
+                    { t: "Aula 40 - 🏀#Análise Ruptura do Tendão de Aquiles - Kevin Durant.mp4", u: "https://drive.google.com/file/d/1CGZUZYRf82-3H1ZQTDUMmfSfrIgLeiq_/view?usp=sharing" },
+                    { t: "Aula 41 - 🎾#Análise Ruptura da Fáscia Plantar - Gael Monfils.mp4", u: "https://drive.google.com/file/d/1Cc2oGHHTQFsSlKZp6WLrEcfks606f6TD/view?usp=sharing" },
+                    { t: "Aula 42 - 🦶🏻Fascite Plantar.mp4", u: "https://drive.google.com/file/d/1EotSxxX0-Kqze5fggcAutIZBeDmwHnqd/view?usp=sharing" },
+                    { t: "Aula 43 - 🦶🏻Sesamoidite.mp4", u: "https://drive.google.com/file/d/1BsnLAD9LDpkcqu--_3XOaTxyuZEJTabW/view?usp=sharing" },
+                    { t: "Aula 44 - 🦶🏻Deformidades Dedos Pés e Hallux Valgus.mp4", u: "https://drive.google.com/file/d/1EtqYFgSqdlORnKfs2M0GVa1E5FXbeUMd/view?usp=sharing" },
+                    { t: "Aula 45 - 🏀#Análise Deformidades dos Dedos do Pé - LeBron James.mp4", u: "https://drive.google.com/file/d/1E__vr_GwC6GTDc88XTq0ByICkKMjDQQr/view?usp=sharing" },
+                    { t: "Aula 36 - 🦶🏻 Tendinopatias do Aquiles (Material Completo).pdf", u: "https://drive.google.com/file/d/1Z7NJ2YbQR6uaOjLg48IqwcsSqZSChgJV/view?usp=sharing" },
+                    { t: "Aula 39 - 🧬#ErrosAnatômicos _ Anatomia Evolutiva_ Tendão de Aquiles.pdf", u: "https://drive.google.com/file/d/1UbLEv8vdKMBWu3VikuRpPey45ubNmz2I/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 13 - Bônus Estágio USA",
+                description: "Dicas de centro cirúrgico americano, equipamentos de ponta, anestésicos e networking.",
+                lessons: [
+                    { t: "Aula 01 - 🥢 Novo Equipamento - NanoScope®.mp4", u: "https://drive.google.com/file/d/1Czw1MIPQ2zS_sFNf9wZvzu7CTb4WXnA0/view?usp=sharing" },
+                    { t: "Aula 02 - 🩹 Band-Aid para Tendões - Tapestry.mp4", u: "https://drive.google.com/file/d/1D5WUCHGHaQ1mXLT5XL21xISIgfbmcOPm/view?usp=sharing" },
+                    { t: "Aula 03 - 🚫 Spray Anestésico Proibido no Brasil.mp4", u: "https://drive.google.com/file/d/1CuE9iKZbPQJsk3Voh0q-iwhhYjnRHUUT/view?usp=sharing" },
+                    { t: "Aula 04 - 🧊 Cold Compression Machine - Máquina de Gelo.mp4", u: "https://drive.google.com/file/d/1Cw4sq-BkCOlwBdLBhMyeKcEEnLVyRSX0/view?usp=sharing" },
+                    { t: "Aula 05 - 🎥 Câmera no CC e Equipamentos de Ponta.mp4", u: "https://drive.google.com/file/d/1CvXDOzh0H0P02-NIeVxY7WQCi8fIreDC/view?usp=sharing" },
+                    { t: "Aula 06 - 🩺 Descubra o Estetoscópio do Ortopedista.mp4", u: "https://drive.google.com/file/d/1Cw7CDjyWseLKkrluSPN4lov4shULgI1J/view?usp=sharing" },
+                    { t: "Aula 07 - 🩸 Plasma Rico em Plaquetas (PRP).mp4", u: "https://drive.google.com/file/d/1CjmeqBZN_FDw9TterkOlXKydcJtOKBqA/view?usp=sharing" },
+                    { t: "Aula 08 - 🥼 Scrub Machine e JFK North 🏥.mp4", u: "https://drive.google.com/file/d/1D-Yt0ZU2kYMqGCxnMWbXGpYaDBoQYAzM/view?usp=sharing" },
+                    { t: "Aula 09 - ✅ Checklists Processos.mp4", u: "https://drive.google.com/file/d/1D2IP4Nv2k0SC2ZmYeyPM1wvz4MAj1tGi/view?usp=sharing" },
+                    { t: "Aula 10 - 💉Dicas Práticas EUA.mp4", u: "https://drive.google.com/file/d/1D18I4ybhNfrBtoto5Q6JIiema-PqfBFO/view?usp=sharing" },
+                    { t: "Aula 11 - 🗝 Descubra o que você tem de Mais Valioso.mp4", u: "https://drive.google.com/file/d/1DAgn34PE87pR5ogRcnrdkkm4F5bbZPg7/view?usp=sharing" },
+                    { t: "Aula 12 - 🦾 Integridade Ética de Trabalho.mp4", u: "https://drive.google.com/file/d/1Cyv21Q-7Zf-IlbZ73YbPSmlJCX1WNPJv/view?usp=sharing" },
+                    { t: "Aula 13 - ⏱ Como ser Pontual [nível USA] 🇺🇸.mp4", u: "https://drive.google.com/file/d/1CyJZr2XEDDNsgw1dHUdlhL3MJqrLjv_D/view?usp=sharing" },
+                    { t: "Aula 14 - 📈 Prescrição Americana p Otimizar a Consolidação.mp4", u: "https://drive.google.com/file/d/1D1rGmdmGD3SPo9mvb-jhOjV9RqD4rf4Z/view?usp=sharing" },
+                    { t: "Aula 15 - 🪡 Proteja Tendões do Atrito com essa Técnica - Sutura Core Weave®.mp4", u: "https://drive.google.com/file/d/1Cml1UkHQKtFARA0FWHsjAiL_U9CSZmAl/view?usp=sharing" },
+                    { t: "Aula 16 - 🍑 Síndrome de Compartimento Glútea.mp4", u: "https://drive.google.com/file/d/1D0ck2JeH20-p3PbPKOBJTtIQMAI-CiVd/view?usp=sharing" },
+                    { t: "Aula 17 - 🔨 Reflexes - Macete de Harvard.mp4", u: "https://drive.google.com/file/d/1CsyjvDl_MzfYCltH7DILH0RnKOZZNSHi/view?usp=sharing" },
+                    { t: "Aula 18 - ⚡️ Hérnia de Disco - Macete Physical Exam USA.mp4", u: "https://drive.google.com/file/d/1CtvoT9uKxe4_OPG6Fb89E9eC75il8O9f/view?usp=sharing" },
+                    { t: "Aula 10 - 💉Dicas Práticas EUA.pdf", u: "https://drive.google.com/file/d/1ZOy3xYpHpgnFQh3yf_loUBp1btBQvzQz/view?usp=sharing" },
+                    { t: "Aula 11 - 🗝 Descubra o que você tem de Mais Valioso.pdf", u: "https://drive.google.com/file/d/1ZErAY3-6XBBGHm7otKInfmiwUyGzX3vF/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 14 - Bônus LIVES",
+                description: "Aulas especiais ao vivo sobre a carreira médica, alta performance e convidados especialistas.",
+                lessons: [
+                    { t: "Aula 01 - 🦴 🇺🇸 Ortopedia nos EUA O Caminho das Pedras 🧗.mp4", u: "https://drive.google.com/file/d/1FhEmBKZybkqel_8RJTK36xQ2khIB3LDl/view?usp=sharing" },
+                    { t: "Aula 02 - 🏃🏻‍♂️Tênis de Corrida e Evidências Dr. Eduardo Ávila.mp4", u: "https://drive.google.com/file/d/1FegkHvjlin_vfHr4IYrOkTVJ0-_lBsYU/view?usp=sharing" },
+                    { t: "Aula 03 - 🦶 Live Pé e Tornozelo c Dr. Paulo Nery - Parte 1.mp4", u: "https://drive.google.com/file/d/1F_e1Wg-1x90IuuliFm0td5ulNhWgqSOZ/view?usp=sharing" },
+                    { t: "Aula 04 - 🦶 Live Pé e Tornozelo c Dr. Paulo Nery - Parte 2.mp4", u: "https://drive.google.com/file/d/1Fcq4MKM711VUy3biPXwl1sPMjxRaG02-/view?usp=sharing" },
+                    { t: "Aula 05 - 📊 As 12 Lesões Mais Comuns nos Esportes.mp4", u: "https://drive.google.com/file/d/1Fj02mfp1_XzsAkaXj1Y2eftUlEfK1Cyv/view?usp=sharing" },
+                    { t: "Aula 06 - 🚀 4 Elementos do Estudante de Alta Performance.mp4", u: "https://drive.google.com/file/d/1Fb2FZNiOvK0eefDgPzqcZNOFRRey2l9k/view?usp=sharing" },
+                    { t: "Aula 07 - 🤯 Histórias e Lesões de um Atleta de Elite 🎯.mp4", u: "https://drive.google.com/file/d/1FhEXMZb_-OH4LvE5alTNmfhL5ONedCve/view?usp=sharing" },
+                    { t: "Aula 08 - 👨‍⚕️ O Médico Que Me Fez Escolher Medicina Dr. David Gusmão.mp4", u: "https://drive.google.com/file/d/1FnAvXeSsdANJEfULtiANZOHdqgSGcR1v/view?usp=sharing" },
+                    { t: "Aula 09 - 🩺 10 Macetes de Anatomia Para Todo Exame Físico Básico.mp4", u: "https://drive.google.com/file/d/1Fh2ghb9z5g5at0xmyPNdAXNbY96dm5O-/view?usp=sharing" },
+                    { t: "Aula 01 - 🦴 🇺🇸 Ortopedia nos EUA_ O Caminho das Pedras 🧗.pdf", u: "https://drive.google.com/file/d/1cPzbYIV8bXftXkhmEyHF9zqucWkWuUk5/view?usp=sharing" },
+                    { t: "Aula 07 - 🤯 Histórias e Lesões de um Atleta de Elite 🎯.pdf", u: "https://drive.google.com/file/d/1YAhL_-Pp1rDv2E7qr5YJrO2IOgNaCTzM/view?usp=sharing" }
+                ]
+            },
+            {
+                title: "Módulo 15 - Miscelânea",
+                description: "Tópicos diversos, luxações, anestésicos, anatomia evolutiva, coluna e curiosidades gerais.",
+                lessons: [
+                    { t: "Aula 01 - 💍 Como Retirar Anel Preso no Dedo - Técnica do Fio.mp4", u: "https://drive.google.com/file/d/1IPMDUJw_BHIwKbQ-M983rUEk0t4XRoEk/view?usp=sharing" },
+                    { t: "Aula 02 - 💀Fx Face - Gabriel de Jesus.mp4", u: "https://drive.google.com/file/d/1IJnSzYaKavWsExEkrvp4581_qsr76urI/view?usp=sharing" },
+                    { t: "Aula 03 - 🏧 Luxação Temporomandibular (ATM).mp4", u: "https://drive.google.com/file/d/1IZgeYdgZFhcPbwG5jYDi5jLoF-aIAFYe/view?usp=sharing" },
+                    { t: "Aula 04 - 🧠 Concussão Cerebral e Síndrome Pós-Concussional.mp4", u: "https://drive.google.com/file/d/1I8f_VqkKyJRKEnpdB50TV7t1L0z_0tZI/view?usp=sharing" },
+                    { t: "Aula 05 - ✊🏻 Botão ON OFF do Cérebro - Soco no Queixo Uppercut.mp4", u: "https://drive.google.com/file/d/1IR7qFv0SPVxxRvxnaOh0TuJBkF2Ha1M6/view?usp=sharing" },
+                    { t: "Aula 06 - 🥊 Liver Shot Soco no Fígado Plexo Solar.mp4", u: "https://drive.google.com/file/d/1IFwhyXRuWGSDdyw0-FDL_dPh_jN9r1WO/view?usp=sharing" },
+                    { t: "Aula 07 - 😴 Manobra Vagal Nervo Vago Valsava.mp4", u: "https://drive.google.com/file/d/1I78vnqlAWG9-1ut2SAGaJoTh8GUggM3k/view?usp=sharing" },
+                    { t: "Aula 08 - ⚡️ Fibular Head Kick - Neuropraxia do N. Fibular Comum.mp4", u: "https://drive.google.com/file/d/1IZ351OxRdwEkQI4b8OlAXqF2Nndw17CH/view?usp=sharing" },
+                    { t: "Aula 09 - 💔 Paralisia dos Amantes do Sábado à Noite 🍾 Nervo Radial.mp4", u: "https://drive.google.com/file/d/1I3N7wNZBzeAO_YF1O9eHov5VMGRtm8Zb/view?usp=sharing" },
+                    { t: "Aula 10 - ⚡ Síndrome de Wartenberg.mp4", u: "https://drive.google.com/file/d/1I_ZtxdhU8uadJ82VFHc4VvfQiKBb-ubU/view?usp=sharing" },
+                    { t: "Aula 11 - 💉 Bloqueios Anestésicos - Plexo Braquial.mp4", u: "https://drive.google.com/file/d/1I8KOrXxu8CSsgLmpD6ZuMQvm4R0ZsY2U/view?usp=sharing" },
+                    { t: "Aula 12 - 🏋🏻‍♀️ Espondilolistese.mp4", u: "https://drive.google.com/file/d/1ITjOARJHXZ4pCLczSihbJNhKa_hGM-2j/view?usp=sharing" },
+                    { t: "Aula 13 - Síndrome de Bertolotti Megapófise Transversa.mp4", u: "https://drive.google.com/file/d/1I6Ku2CNdHtkftp8yQeqwd2EgvYbD5Rvz/view?usp=sharing" },
+                    { t: "Aula 14 - ❌#ErrosAnatômicos - Coluna Vertebral 🏗️.mp4", u: "https://drive.google.com/file/d/1I2QTOEwmWjBVZs0RlGWQISmuGAt8gvnH/view?usp=sharing" },
+                    { t: "Aula 15 - 🎈Descubra o Motivo da Hérnia de Disco ser Posterolateral.mp4", u: "https://drive.google.com/file/d/1IJ8xdYMj0sPwA0oksZ71oTpsuTOwpLjq/view?usp=sharing" },
+                    { t: "Aula 16 - 🔹 Varizes - Nick Walker.mp4", u: "https://drive.google.com/file/d/1IM8_p_tfx2ty1QY_9RazcaUG-hyCdN0v/view?usp=sharing" },
+                    { t: "Aula 17 - 💪🏻 Veia Cefálica Drenagem Superficial MMSS.mp4", u: "https://drive.google.com/file/d/1ISjxYbCu1OsR364pO_t0LWuN8qkI5Q10/view?usp=sharing" },
+                    { t: "Aula 18 - ⚽ Curiosidade Anatomia e Física do Gol Mais Inacreditável.mp4", u: "https://drive.google.com/file/d/1I18CysrXOnjeSRopGHIvwq6Hk1I-lEEr/view?usp=sharing" }
+                ]
+            }
+        ];
+
+        // Mapeamento dos módulos
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const videoLoader = document.getElementById('videoLoader');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const moduleTitleDisplay = document.getElementById('moduleTitleDisplay');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const lessonCountBadge = document.getElementById('lessonCountBadge');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+
+        let selectedLessonId = null;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                // Seleciona um ícone baseado no título
+                let icon = 'fa-dumbbell';
+                let iconColor = 'text-orange-500';
+                
+                if(mod.title.includes('Boas-Vindas')) { icon = 'fa-handshake'; iconColor = 'text-indigo-400'; }
+                if(mod.title.includes('Biomecânica')) { icon = 'fa-cogs'; iconColor = 'text-blue-400'; }
+                if(mod.title.includes('Ossos')) { icon = 'fa-bone'; iconColor = 'text-stone-300'; }
+                if(mod.title.includes('Superiores')) { icon = 'fa-hand-paper'; iconColor = 'text-rose-500'; }
+                if(mod.title.includes('Inferiores')) { icon = 'fa-shoe-prints'; iconColor = 'text-emerald-500'; }
+                if(mod.title.includes('Tornozelo')) { icon = 'fa-shoe-prints'; iconColor = 'text-teal-400'; }
+                if(mod.title.includes('Articulações')) { icon = 'fa-link'; iconColor = 'text-fuchsia-500'; }
+                if(mod.title.includes('Musculares') || mod.title.includes('Músculos')) { icon = 'fa-child'; iconColor = 'text-amber-500'; }
+                if(mod.title.includes('Tendões') || mod.title.includes('Partes Moles')) { icon = 'fa-bezier-curve'; iconColor = 'text-pink-500'; }
+                if(mod.title.includes('USA')) { icon = 'fa-plane-departure'; iconColor = 'text-sky-500'; }
+                if(mod.title.includes('LIVES')) { icon = 'fa-satellite-dish'; iconColor = 'text-red-500'; }
+                if(mod.title.includes('Miscelânea')) { icon = 'fa-layer-group'; iconColor = 'text-violet-500'; }
+
+                // Separar materiais em vídeo vs PDF para exibir métricas se desejar, mas usaremos total
+                
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl p-7 cursor-pointer flex flex-col h-full group">
+                    <div class="flex items-start justify-between mb-5">
+                        <div class="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center text-2xl shadow-inner border border-white/5 group-hover:bg-orange-600/10 transition-colors">
+                            <i class="fas ${icon} ${iconColor}"></i>
+                        </div>
+                        <span class="bg-zinc-900 text-zinc-400 text-[10px] font-black px-2.5 py-1 rounded border border-zinc-800 uppercase tracking-widest shadow-sm">
+                            ${mod.lessons.length} Itens
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-black text-white mb-2 group-hover:text-orange-400 transition-colors font-display leading-tight">${mod.title}</h3>
+                    <p class="text-zinc-500 text-sm flex-grow leading-relaxed font-medium">${mod.description || 'Conteúdo de atualização médica.'}</p>
+                    <div class="mt-6 pt-5 border-t border-white/5 flex items-center justify-between text-xs font-bold">
+                        <span class="text-orange-500 group-hover:text-orange-400 transition-colors tracking-wide">ACESSAR MÓDULO</span>
+                        <div class="w-7 h-7 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-sm">
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            // Pausa o vídeo
+            contentPlayer.src = "";
+            document.title = "Anatomia de Lesões Esportivas | Plataforma";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            // Separar vídeos de PDFs automaticamente
+            const videoLessons = module.lessons.filter(l => !l.title.toLowerCase().includes('.pdf'));
+            const pdfMaterials = module.lessons.filter(l => l.title.toLowerCase().includes('.pdf'));
+
+            // Atualiza info da UI
+            moduleTitleDisplay.textContent = module.title;
+            lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            videoLessons.forEach((lesson, index) => {
+                const lessonNumber = (index + 1).toString().padStart(2, '0');
+                
+                const displayTitle = lesson.title.replace(/\.mp4$/i, ''); // Limpa extensão de vídeo
+                
+                html += `
+                <div class="lesson-item flex items-center gap-4 p-4 cursor-pointer text-zinc-400 hover:text-white rounded-lg mx-1 my-0.5" 
+                     onclick="loadVideo('${lesson.id}', '${displayTitle.replace(/'/g, "\\'")}', '${lesson.url}', false)" 
+                     data-id="${lesson.id}"
+                     data-type="video">
+                    
+                    <div class="flex-shrink-0 w-8 text-center">
+                        <span class="text-[10px] font-mono font-bold opacity-40 block mb-1">#${lessonNumber}</span>
+                        <i class="fas fa-play-circle text-lg lesson-icon transition-transform"></i>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <p class="text-sm font-semibold lesson-text leading-snug">${displayTitle}</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <span class="text-[9px] bg-white/5 text-zinc-500 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Videoaula</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+
+            // Renderizar Materiais Complementares Embaixo do Vídeo
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            
+            if (pdfMaterials.length > 0) {
+                materialsSection.classList.remove('hidden');
+                let htmlMaterials = '';
+                pdfMaterials.forEach((lesson) => {
+                    const displayTitle = lesson.title.replace(/\.pdf$/i, ''); // Limpa extensão de PDF
+                    htmlMaterials += `
+                    <div class="lesson-item flex items-center gap-3 p-3 bg-zinc-900/80 border border-zinc-800 rounded-lg cursor-pointer text-zinc-400 hover:text-white transition-all w-full sm:w-auto min-w-[220px]" 
+                         onclick="loadVideo('${lesson.id}', '${displayTitle.replace(/'/g, "\\'")}', '${lesson.url}', true)" 
+                         data-id="${lesson.id}"
+                         data-type="pdf">
+                        <div class="w-8 h-8 rounded bg-rose-500/10 flex items-center justify-center shrink-0">
+                            <i class="fas fa-file-pdf text-rose-500 lesson-icon transition-transform"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-zinc-200 lesson-text line-clamp-1">${displayTitle}</p>
+                            <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider">Material em PDF</span>
+                        </div>
+                    </div>`;
+                });
+                materialsContainer.innerHTML = htmlMaterials;
+            } else {
+                materialsSection.classList.add('hidden');
+                materialsContainer.innerHTML = '';
+            }
+            
+            // Reset player view state
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
+            selectedLessonId = null;
+        }
+
+        // Função para extrair o ID do Drive e gerar o link correto de preview
+        function getDriveEmbedUrl(url) {
+            if (!url) return null;
+            
+            let id = '';
+            const parts = url.split('/');
+            
+            const dIndex = parts.indexOf('d');
+            if (dIndex !== -1 && dIndex < parts.length - 1) {
+                id = parts[dIndex + 1];
+            } else {
+                const match = url.match(/[-\w]{25,}/);
+                if (match) id = match[0];
+            }
+
+            if (id.includes('?')) id = id.split('?')[0];
+            if (id.includes('/')) id = id.split('/')[0];
+
+            if (id) {
+                return `https://drive.google.com/file/d/${id}/preview`;
+            }
+            
+            return url;
+        }
+
+        function loadVideo(lessonId, title, url, isPdf) {
+            // UI Selection
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    const wasPdf = prev.getAttribute('data-type') === 'pdf';
+                    if (!wasPdf) {
+                        prev.querySelector('.lesson-icon').classList.remove('fa-pause-circle');
+                        prev.querySelector('.lesson-icon').classList.add('fa-play-circle');
+                    }
+                }
+            }
+            
+            selectedLessonId = lessonId;
+            const cur = document.querySelector(`[data-id="${lessonId}"]`);
+            if (cur) {
+                cur.classList.add('selected-lesson');
+                cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Muda ícone apenas para vídeo, o do PDF continua como clip/pdf
+                const isPdfType = cur.getAttribute('data-type') === 'pdf';
+                if (!isPdfType) {
+                    cur.querySelector('.lesson-icon').classList.remove('fa-play-circle');
+                    cur.querySelector('.lesson-icon').classList.add('fa-pause-circle');
+                }
+            }
+
+            // Title Update
+            lessonTitleEl.querySelector('span:last-child').textContent = title;
+
+            // Player Logic
+            if (url) {
+                emptyState.style.display = 'none';
+                videoLoader.style.display = 'flex'; // Mostra loading
+                contentPlayer.style.display = 'none'; // Esconde iframe enquanto carrega
+
+                const embedUrl = getDriveEmbedUrl(url);
+                contentPlayer.src = embedUrl;
+
+                contentPlayer.onload = () => {
+                    videoLoader.style.display = 'none';
+                    contentPlayer.style.display = 'block';
+                };
+            } else {
+                contentPlayer.style.display = 'none';
+                emptyState.style.display = 'flex';
+                videoLoader.style.display = 'none';
+            }
+        }
+
+        // --- Inicialização ---
+        
+        // Popula o select do header
+        modulesData.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.id;
+            option.textContent = m.title;
+            moduleSelector.appendChild(option);
+        });
+
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia na Home
+        renderHome();
+
+    </script>
+</body>
+</html>
