@@ -6,7 +6,6 @@
     <title>Anatomia de Lesões Esportivas | Plataforma</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -123,7 +122,6 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-zinc-300">
 
-    <!-- Header Glass -->
     <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative border-b border-white/5">
         <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
             <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg group-hover:shadow-orange-500/30 transition-shadow">
@@ -135,14 +133,12 @@
             </div>
         </div>
         
-        <!-- Controles do Header (Player) -->
         <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
             <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
             
             <div class="relative group">
                 <select id="moduleSelector" class="appearance-none bg-zinc-900/80 text-white text-xs font-semibold py-2 pl-3 pr-8 rounded-lg border border-zinc-700 focus:outline-none focus:border-orange-500 cursor-pointer min-w-[260px] truncate transition-colors hover:border-zinc-500">
-                    <!-- Opções via JS -->
-                </select>
+                    </select>
                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-400">
                     <i class="fas fa-chevron-down text-xs"></i>
                 </div>
@@ -154,10 +150,8 @@
         </div>
     </header>
 
-    <!-- VIEW 1: HOME (Galeria) -->
     <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative">
         <div class="max-w-7xl mx-auto pb-20">
-            <!-- Hero Section -->
             <div class="mb-14 relative mt-4">
                 <div class="absolute -top-10 -left-10 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl pointer-events-none"></div>
                 <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight">O Foco na <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-red-500">Performance</span></h2>
@@ -168,26 +162,20 @@
             </div>
             
             <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                <!-- Cards via JS -->
-            </div>
+                </div>
         </div>
     </main>
 
-    <!-- VIEW 2: PLAYER -->
     <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-[#000]">
         
-        <!-- Área do Vídeo/PDF -->
         <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group bg-zinc-950">
             <div class="w-full aspect-video max-h-[75vh] flex-shrink-0 relative bg-black flex items-center justify-center border-b border-white/5 shadow-xl">
-                <!-- Loading State -->
                 <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-zinc-950 z-0 hidden">
                     <div class="loading-spinner"></div>
                 </div>
 
-                <!-- IFRAME Otimizado -->
                 <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
                 
-                <!-- Estado Vazio -->
                 <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-zinc-900 to-zinc-950 w-full">
                     <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/10 shadow-[0_0_40px_rgba(234,88,12,0.1)]">
                         <i class="fas fa-play text-3xl text-orange-500 ml-2"></i>
@@ -199,7 +187,6 @@
                 </div>
             </div>
             
-            <!-- Barra de Info -->
             <div class="bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 p-5 border-t border-white/10 shrink-0 flex justify-between items-center z-20">
                 <div>
                     <h2 id="lessonTitle" class="text-lg font-bold text-white flex items-center gap-3">
@@ -210,18 +197,15 @@
                 </div>
             </div>
 
-            <!-- Área de Materiais Complementares (Nova Seção) -->
             <div id="materialsSection" class="bg-zinc-950 border-t border-white/5 p-4 shrink-0 hidden">
                 <h3 class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-3 flex items-center gap-2">
                     <i class="fas fa-paperclip text-zinc-400"></i> Materiais Complementares
                 </h3>
                 <div id="materialsContainer" class="flex flex-wrap gap-3">
-                    <!-- Materiais injetados via JS -->
-                </div>
+                    </div>
             </div>
         </section>
 
-        <!-- Sidebar Playlist -->
         <aside class="w-full lg:w-[420px] glass-panel border-l border-white/5 flex flex-col shrink-0 h-[40vh] lg:h-auto z-20 shadow-2xl">
             <div class="p-6 border-b border-white/5 bg-zinc-900/50 shrink-0 flex justify-between items-center">
                 <h3 class="font-black text-zinc-100 text-xs uppercase tracking-widest flex items-center gap-2">
@@ -231,8 +215,7 @@
             </div>
             
             <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1 pb-20 bg-zinc-950/80">
-                <!-- Aulas via JS -->
-            </div>
+                </div>
         </aside>
 
     </main>
@@ -245,6 +228,7 @@
             {
                 title: "Módulo 01 - Boas-Vindas e Instruções",
                 description: "Instruções iniciais, manual do curso e técnicas do cérebro para maior retenção.",
+                driveUrl: "https://drive.google.com/drive/folders/16VbCSC-t7w0QNds1egujqEzjOgV7Kv00?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 🎯 O que esperar de Anatomia de Lesões Esportivas.mp4", u: "https://drive.google.com/file/d/1HBD-QLzY-SOQxs0R028TWkGxD71KlsFl/view?usp=sharing" },
                     { t: "Aula 02 - 🛣️ A Jornada e O Curso Perfeito.mp4", u: "https://drive.google.com/file/d/1HKU7A7ymMiNwNSMmP30o7pwgyYV9RVMd/view?usp=sharing" },
@@ -259,6 +243,7 @@
             {
                 title: "Módulo 02 - Princípios de Lesões e Biomecânica",
                 description: "Física básica, vetores, momento, alavancas e biomecânica aplicada ao esporte.",
+                driveUrl: "https://drive.google.com/drive/folders/16fzVu0ttrL6n2jP7x6vGVMbjd54TDHPb?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Introdução.mp4", u: "https://drive.google.com/file/d/1IylUMNqhouyc9h6OT_2j9m7jfrL05lp_/view?usp=sharing" },
                     { t: "Aula 02 - O Mapa Classificações.mp4", u: "https://drive.google.com/file/d/1IeGCMRz3sneDN3XLgtd9O7Jn9X0dqGQl/view?usp=sharing" },
@@ -296,6 +281,7 @@
             {
                 title: "Módulo 03 - Ciência Básica Ossos",
                 description: "Funções, composição, vascularização e consolidação das fraturas ósseas.",
+                driveUrl: "https://drive.google.com/drive/folders/1FaPcJprqovCgsp6nsNjPqYPE0yCI5w7i?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Introdução.mp4", u: "https://drive.google.com/file/d/1GwRfF97B67W8i4pXITiXHXMU4e1uAZ_M/view?usp=sharing" },
                     { t: "Aula 02 - Funções e Composição.mp4", u: "https://drive.google.com/file/d/1G_Ol4euxvg_SdNA_INzbSVzec5DGESo6/view?usp=sharing" },
@@ -324,6 +310,7 @@
             {
                 title: "Módulo 04 - FXs Membros Superiores",
                 description: "Estudo detalhado de fraturas do ombro, braço, antebraço e mão.",
+                driveUrl: "https://drive.google.com/drive/folders/1BVR0b3VYZ5KUyl3T-iFIr05JH3Wr6eSE?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - FXs Clavícula.mp4", u: "https://drive.google.com/file/d/1DrXf4kCH6_KKB7U7LOHWsXyCjlrFSDF5/view?usp=sharing" },
                     { t: "Aula 02 - 🏛Apresentação Fratura Exposta de Clavícula.mp4", u: "https://drive.google.com/file/d/1DaneQdGlVaPpBR3ocjIytTjH_KSH5w3m/view?usp=sharing" },
@@ -353,6 +340,7 @@
             {
                 title: "Módulo 05 - FXs Membros Inferiores",
                 description: "Estudo detalhado de fraturas da pelve, fêmur e patela.",
+                driveUrl: "https://drive.google.com/drive/folders/1BU6XyXfIss89dNOezR7KPlpBNMe2fhP_?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - FXs MMIII Intro.mp4", u: "https://drive.google.com/file/d/1EK9MWJiDPwAwn8LQLkGPSwz6h1q23PrS/view?usp=sharing" },
                     { t: "Aula 02 - FXs Anel Pélvico.mp4", u: "https://drive.google.com/file/d/1ER865zEkmASXA7ONU0QAlDa4BEAXNsFn/view?usp=sharing" },
@@ -367,6 +355,7 @@
             {
                 title: "Módulo 06 - FXs Pé e Tornozelo",
                 description: "Fraturas da tíbia, fíbula, maléolos e ossos do pé.",
+                driveUrl: "https://drive.google.com/drive/folders/1HQj2x-OnWqHZxlX2JhPxxQtL8GKdFB88?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Fx Platô Tibial.mp4", u: "https://drive.google.com/file/d/1HgRacK37Qzamfvh19r_IAvFQd39OQiti/view?usp=sharing" },
                     { t: "Aula 02 - Fx Diáfise da Tíbia.mp4", u: "https://drive.google.com/file/d/1HrK5sKhUey2sYjOr4dTUPfAj7A9paF5a/view?usp=sharing" },
@@ -392,6 +381,7 @@
             {
                 title: "Módulo 07 - Ciência Básica Articulações",
                 description: "Conceitos fundamentais sobre cápsula articular, líquido sinovial e meniscos.",
+                driveUrl: "https://drive.google.com/drive/folders/17obDTGegWSctW4xmyIu3iiZn6m8UlJ0J?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Intro.mp4", u: "https://drive.google.com/file/d/1Ba8bso7zVZsTu0BaOZbGMz39yngIAJXf/view?usp=sharing" },
                     { t: "Aula 02 - Cápsula Articular, Membrana e Líquido Sinovial.mp4", u: "https://drive.google.com/file/d/1B_N0DM4jL_d_RfQ0Wteue_zc34VlxXIA/view?usp=sharing" },
@@ -408,6 +398,7 @@
             {
                 title: "Módulo 08 - Articulações (Entorses e Luxações)",
                 description: "Abordagem completa sobre entorses, ligamentos e luxações em todo o corpo.",
+                driveUrl: "https://drive.google.com/drive/folders/19WG7Gbw9WfBt-38oNvp3Q9wTpo71uf0I?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 🔮Luxação Esternoclavicular (LEC).mp4", u: "https://drive.google.com/file/d/19fkRk3Ixm0a2yKr_DcclBQDjBebFe7xS/view?usp=sharing" },
                     { t: "Aula 02 - 🔮 Luxação Acromioclavicular (LAC) Parte 1.mp4", u: "https://drive.google.com/file/d/1B346dIsgBLcfcWInOyeaQb-rjMSO_Gpk/view?usp=sharing" },
@@ -480,6 +471,7 @@
             {
                 title: "Módulo 09 - Ciência Básica Músculos",
                 description: "Estudo sobre tipos de fibras musculares, contrações e processo de lesão e reparo.",
+                driveUrl: "https://drive.google.com/drive/folders/17E7Pku2yJ_MKIHrfLI91V9s6OFWhFbUv?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Introdução [Músculos - Anatomia].mp4", u: "https://drive.google.com/file/d/1F1iJyWtLP_AF_6yrP-SSOpPPFTzzpJHy/view?usp=sharing" },
                     { t: "Aula 02 - Contração Excêntrica A Causa da Maioria das Lesões.mp4", u: "https://drive.google.com/file/d/1FS2LLgO8pRvUUojDjaMvdRVQgH5lEZr4/view?usp=sharing" },
@@ -500,6 +492,7 @@
             {
                 title: "Módulo 10 - Lesões Musculares",
                 description: "Análise aprofundada das lesões nos isquiotibiais, adutores e panturrilha.",
+                driveUrl: "https://drive.google.com/drive/folders/1FrTzu6Zb7XMTpvYwkC36Cugq8-qZ7Ctv?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Isquiotibiais Posterior de Coxa.mp4", u: "https://drive.google.com/file/d/1Fz7LekquWUnXBfPpU9o4o-x9M0ReGxiv/view?usp=sharing" },
                     { t: "Aula 02 - ✔️Resumo - Posterior de Coxa.mp4", u: "https://drive.google.com/file/d/1G-MR6cNszNx1ICOih0nIGS2SaDBxDTFv/view?usp=sharing" },
@@ -515,6 +508,7 @@
             {
                 title: "Módulo 11 - Ciência Básica Tendões e Partes Moles",
                 description: "Mecanismos de Apoio à Função Muscular, fáscia, bainha sinovial e túneis osteofibrosos.",
+                driveUrl: "https://drive.google.com/drive/folders/16g34yYuv3Xuto5Tm2aHj_VbWU24HLlAv?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - Introdução [Tendão - Anatomia].mp4", u: "https://drive.google.com/file/d/1FtD7AS5DMFkpgb-So9eVWpM9M0_qZUuP/view?usp=sharing" },
                     { t: "Aula 02 - ⛓️ Curiosidade Fraturas por Avulsão - Fibras de Sharpey.mp4", u: "https://drive.google.com/file/d/1FsplSxigslmSzBrEWQCtWKAAhkqE3jhz/view?usp=sharing" },
@@ -531,6 +525,7 @@
             {
                 title: "Módulo 12 - Patologias Tendões e Partes Moles",
                 description: "Síndromes do impacto, tendinites, rupturas musculares e fascite plantar.",
+                driveUrl: "https://drive.google.com/drive/folders/17gOouWfTkQ-u1OIInxM3263ZzgTmsooP?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 🔮Síndrome do Impacto do Ombro e Manguito Rotador Parte 1.mp4", u: "https://drive.google.com/file/d/1CCZ1k-TStCZn2Rv-f6xJEp5bggPkQbV4/view?usp=sharing" },
                     { t: "Aula 02 - 🔮Síndrome do Impacto do Ombro e Manguito Rotador Parte 2.mp4", u: "https://drive.google.com/file/d/1Evk58QuAr3vi_NUECKI-wSDBUhD8ygej/view?usp=sharing" },
@@ -584,6 +579,7 @@
             {
                 title: "Módulo 13 - Bônus Estágio USA",
                 description: "Dicas de centro cirúrgico americano, equipamentos de ponta, anestésicos e networking.",
+                driveUrl: "https://drive.google.com/drive/folders/1BX1nwLuWmYX6hM33qYFJcML-TKTeo2oJ?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 🥢 Novo Equipamento - NanoScope®.mp4", u: "https://drive.google.com/file/d/1Czw1MIPQ2zS_sFNf9wZvzu7CTb4WXnA0/view?usp=sharing" },
                     { t: "Aula 02 - 🩹 Band-Aid para Tendões - Tapestry.mp4", u: "https://drive.google.com/file/d/1D5WUCHGHaQ1mXLT5XL21xISIgfbmcOPm/view?usp=sharing" },
@@ -610,6 +606,7 @@
             {
                 title: "Módulo 14 - Bônus LIVES",
                 description: "Aulas especiais ao vivo sobre a carreira médica, alta performance e convidados especialistas.",
+                driveUrl: "https://drive.google.com/drive/folders/16yc56QIkJSuoSSMkKOyxyKohFf9PmBBz?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 🦴 🇺🇸 Ortopedia nos EUA O Caminho das Pedras 🧗.mp4", u: "https://drive.google.com/file/d/1FhEmBKZybkqel_8RJTK36xQ2khIB3LDl/view?usp=sharing" },
                     { t: "Aula 02 - 🏃🏻‍♂️Tênis de Corrida e Evidências Dr. Eduardo Ávila.mp4", u: "https://drive.google.com/file/d/1FegkHvjlin_vfHr4IYrOkTVJ0-_lBsYU/view?usp=sharing" },
@@ -627,6 +624,7 @@
             {
                 title: "Módulo 15 - Miscelânea",
                 description: "Tópicos diversos, luxações, anestésicos, anatomia evolutiva, coluna e curiosidades gerais.",
+                driveUrl: "https://drive.google.com/drive/folders/1HQc33VUIIqr_6ruoZ742fWmNBrUuSGBT?usp=sharing",
                 lessons: [
                     { t: "Aula 01 - 💍 Como Retirar Anel Preso no Dedo - Técnica do Fio.mp4", u: "https://drive.google.com/file/d/1IPMDUJw_BHIwKbQ-M983rUEk0t4XRoEk/view?usp=sharing" },
                     { t: "Aula 02 - 💀Fx Face - Gabriel de Jesus.mp4", u: "https://drive.google.com/file/d/1IJnSzYaKavWsExEkrvp4581_qsr76urI/view?usp=sharing" },
@@ -656,6 +654,7 @@
                 id: `mod_${index + 1}`,
                 title: mod.title,
                 description: mod.description,
+                driveUrl: mod.driveUrl,
                 lessons: mod.lessons.map((lesson, lIndex) => ({
                     id: `vid_${index + 1}_${lIndex + 1}`,
                     title: lesson.t,
@@ -705,8 +704,6 @@
                 if(mod.title.includes('LIVES')) { icon = 'fa-satellite-dish'; iconColor = 'text-red-500'; }
                 if(mod.title.includes('Miscelânea')) { icon = 'fa-layer-group'; iconColor = 'text-violet-500'; }
 
-                // Separar materiais em vídeo vs PDF para exibir métricas se desejar, mas usaremos total
-                
                 html += `
                 <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl p-7 cursor-pointer flex flex-col h-full group">
                     <div class="flex items-start justify-between mb-5">
@@ -719,10 +716,16 @@
                     </div>
                     <h3 class="text-xl font-black text-white mb-2 group-hover:text-orange-400 transition-colors font-display leading-tight">${mod.title}</h3>
                     <p class="text-zinc-500 text-sm flex-grow leading-relaxed font-medium">${mod.description || 'Conteúdo de atualização médica.'}</p>
-                    <div class="mt-6 pt-5 border-t border-white/5 flex items-center justify-between text-xs font-bold">
-                        <span class="text-orange-500 group-hover:text-orange-400 transition-colors tracking-wide">ACESSAR MÓDULO</span>
-                        <div class="w-7 h-7 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-sm">
-                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                    
+                    <div class="mt-6 pt-5 border-t border-white/5 flex items-center gap-3">
+                        <button onclick="event.stopPropagation(); window.open('${mod.driveUrl}', '_blank')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] font-bold rounded-lg transition-colors flex items-center gap-2 border border-zinc-700 shadow-sm z-10 relative" title="Acessar pasta no Drive">
+                            <i class="fab fa-google-drive text-zinc-400"></i> Drive
+                        </button>
+                        <div class="flex-1 flex justify-end items-center text-xs font-bold">
+                            <span class="text-orange-500 group-hover:text-orange-400 transition-colors tracking-wide mr-2">ACESSAR MÓDULO</span>
+                            <div class="w-7 h-7 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shadow-sm">
+                                <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                            </div>
                         </div>
                     </div>
                 </div>`;
