@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nefrologia Avançada | Plataforma Clínica</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            dark: '#020617',    /* Slate 950 */
+                            card: '#0f172a',    /* Slate 900 */
+                            primary: '#0284c7', /* Sky 600 */
+                            primaryLight: '#0ea5e9', /* Sky 500 */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            color: #e2e8f0; 
+            overflow: hidden;
+        }
+
+        /* Padrão de fundo médico sutil */
+        .bg-medical-pattern {
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(2, 132, 199, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(37, 99, 235, 0.06), transparent 25%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+        }
+        
+        h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar Premium Clássica */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; } 
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; } 
+
+        /* Estilos da Lista de Aulas */
+        .lesson-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+        }
+        .lesson-item:hover { 
+            background-color: rgba(2, 132, 199, 0.08); 
+            border-left-color: #475569;
+        }
+        .selected-lesson { 
+            background: linear-gradient(90deg, rgba(2, 132, 199, 0.15) 0%, transparent 100%);
+            border-left-color: #0ea5e9; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+        .selected-lesson .lesson-icon { color: #0ea5e9; transform: scale(1.1); }
+        .selected-lesson .lesson-text { color: #ffffff; font-weight: 600; }
+        
+        /* Cards de Módulos, Seções & Cursos */
+        .module-card, .course-card {
+            background: #0f172a; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .module-card:hover, .course-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(2, 132, 199, 0.25);
+            border-color: rgba(14, 165, 233, 0.4);
+        }
+        .module-card-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        
+        /* Brilho no hover do card */
+        .module-card::after, .course-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+        .module-card:hover::after, .course-card:hover::after { left: 150%; }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border-top: 3px solid #0ea5e9; 
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(14, 165, 233, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+        .active-indicator { animation: pulse-ring 2s infinite; }
+        .hidden { display: none !important; }
+
+        .material-btn:hover .pdf-icon {
+            transform: translateY(-2px);
+            color: #fff;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen bg-medical-pattern">
+
+    <!-- HEADER -->
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative">
+        <div class="flex items-center space-x-4 cursor-pointer group" onclick="goCourses()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center shadow-[0_0_15px_rgba(14,165,233,0.3)] group-hover:shadow-[0_0_25px_rgba(14,165,233,0.5)] transition-all duration-300">
+                <i class="fas fa-droplet text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-none uppercase">Nefrologia</h1>
+                <p id="headerSubtitle" class="text-[10px] text-sky-400 font-semibold uppercase tracking-widest mt-0.5">Visão Geral</p>
+            </div>
+        </div>
+        
+        <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
+            <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+            
+            <div class="relative group hidden sm:block">
+                <select id="moduleSelector" class="appearance-none bg-slate-900/80 text-white text-xs font-medium py-2.5 pl-4 pr-10 rounded-xl border border-slate-700 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 cursor-pointer min-w-[280px] max-w-[350px] truncate transition-all hover:bg-slate-800">
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <button id="btnBackToModules" onclick="goModules()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl items-center gap-2 text-xs font-semibold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Módulos</span>
+            </button>
+            <button id="btnBackToSections" onclick="goSections()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl items-center gap-2 text-xs font-semibold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar às Seções</span>
+            </button>
+            <button id="btnBackToCourses" onclick="goCourses()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl items-center gap-2 text-xs font-semibold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Cursos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- VIEW 1: CURSOS -->
+    <main id="courses-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 tracking-tight font-display">Sua Formação em <br class="hidden sm:block" /><span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">Nefrologia Avançada</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(14,165,233,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-normal">
+                    Selecione um dos grandes cursos abaixo para acessar a grade curricular completa, as aulas práticas e os materiais de apoio.
+                </p>
+            </div>
+            
+            <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Cursos injetados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 2: SEÇÕES (Apenas para cursos com seções, ex: Curso 5) -->
+    <main id="sections-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="flex items-center gap-4 mb-4">
+                    <button onclick="goCourses()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span class="text-sky-400 text-sm font-bold uppercase tracking-widest">Estrutura do Curso</span>
+                </div>
+                <h2 id="sectionsViewTitle" class="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight font-display">Título do Curso</h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-6 mt-6"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-normal">
+                    Este curso está dividido em grandes seções. Selecione uma abaixo para ver os seus módulos.
+                </p>
+            </div>
+            
+            <div id="sections-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Seções injetadas via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 3: MÓDULOS -->
+    <main id="modules-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="flex items-center gap-4 mb-4">
+                    <!-- Botão de voltar dinâmico (Volta pra Seções ou Cursos) -->
+                    <button id="btnModulesBack" onclick="goSectionsOrCourses()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span id="currentCourseOrSectionLabel" class="text-sky-400 text-sm font-bold uppercase tracking-widest">Curso Selecionado</span>
+                </div>
+                <h2 id="modulesViewTitle" class="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight font-display">Título do Curso / Seção</h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-sky-500 to-blue-600 rounded-full mb-6 mt-6"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-normal">
+                    Selecione o módulo que deseja estudar agora.
+                </p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                <!-- Módulos injetados via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- VIEW 4: PLAYER -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-slate-950 z-10 relative">
+        
+        <!-- Área Esquerda (Vídeo + Controles + Materiais) -->
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group">
+            
+            <div class="w-full aspect-video max-h-[70vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
+                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-0 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
+                
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-slate-900 to-[#050505] w-full">
+                    <div class="w-24 h-24 bg-slate-900/80 rounded-2xl flex items-center justify-center mb-8 border border-white/5 shadow-[0_0_50px_rgba(2,132,199,0.15)] transform rotate-3">
+                        <i class="fas fa-stethoscope text-4xl text-sky-500 -rotate-3"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3 font-display">Ambiente Clínico</h2>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+                        Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Barra de Título da Aula + Navegação Prática -->
+            <div class="bg-slate-900 p-5 border-b border-white/5 shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 z-20">
+                <div class="flex-1">
+                    <h2 id="lessonTitle" class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-sky-500 active-indicator hidden" id="pulseIndicator"></span>
+                        <span class="line-clamp-1">Nenhuma aula selecionada</span>
+                    </h2>
+                    <p id="moduleTitleDisplay" class="text-xs text-sky-400 mt-1.5 font-bold uppercase tracking-wider pl-5 hidden sm:block">Módulo</p>
+                </div>
+                
+                <!-- Botões de Navegação de Vídeo -->
+                <div class="flex items-center gap-2" id="videoNavControls" style="display: none;">
+                    <button onclick="playPrevious()" id="btnPrev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border border-slate-700">
+                        <i class="fas fa-step-backward"></i> Anterior
+                    </button>
+                    <button onclick="playNext()" id="btnNext" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-sky-600/20">
+                        Próxima <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Seção de Materiais -->
+            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-book-medical text-sky-500"></i> Materiais Complementares & E-Books
+                </h3>
+                <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Materiais injetados via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Área Direita (Sidebar Cronograma) -->
+        <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
+            <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
+                <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ul text-sky-500"></i> Programa do Módulo
+                </h3>
+                <span id="lessonCountBadge" class="bg-sky-500/10 text-sky-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-sky-500/20">0 Aulas</span>
+            </div>
+            
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5 pb-20">
+                <!-- Aulas injetadas via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // BASE DE DADOS HIERÁRQUICA: CURSOS -> (SEÇÕES) -> MÓDULOS -> AULAS
+        // ==================================================================================
+        const platformData = [
+            {
+                id: 'course_1',
+                title: 'Distúrbios Hidroeletrolíticos e Ácido-Base',
+                description: 'Domine a gasometria, acidoses, alcaloses e os principais distúrbios de sódio, potássio, cálcio, fósforo e magnésio.',
+                icon: 'fa-vial', color: 'from-cyan-500 to-blue-600', shadow: 'shadow-cyan-500/20',
+                modules: [
+                    { title: "Módulo 01 - Seja Bem Vindo", lessons: [{ t: "Aula 01 - Comece por Aqui.mp4", u: "https://drive.google.com/file/d/1AAI3y5DR_AHIfz4u27I0yi7t2oX4YkiZ/view?usp=sharing" }] },
+                    { title: "Módulo 02 - Introdução aos Distúrbios Ácido-Base e Gasometria", lessons: [
+                        { t: "Aula 01 - Introdução aos Distúrbios Ácido-Base.mp4", u: "https://drive.google.com/file/d/1rMYpb1derC7a3Wl_BiWc2YDQ-yWeFboL/view?usp=sharing" },
+                        { t: "Aula 02 - Parâmetros Gasométricos Iniciais.mp4", u: "https://drive.google.com/file/d/1wSW8EhT62ki3yGTX6CgpEE4PA6hRZAZC/view?usp=sharing" },
+                        { t: "Aula 03 - Como Coletar a Gasometria e Interpretar os Distúrbios Simples.mp4", u: "https://drive.google.com/file/d/14Wobzre9nOL7NGGIOeHb5Ae1bCaEKsrl/view?usp=sharing" },
+                        { t: "Aula 04 - Errata, Conceito de Ânion GAP e Delta Delta.mp4", u: "https://drive.google.com/file/d/1BBsFQIshb85KV-rQq-IEiWz02csnnFBm/view?usp=sharing" },
+                        { t: "Aula 05 - Passo a Passo Diagnóstico e Casos Clínicos.mp4", u: "https://drive.google.com/file/d/1SrYfpJs3Q_4DHREY34Xu8RiFinPOWLoF/view?usp=sharing" },
+                        { t: "Aula 06 - Resolução das Questões.mp4", u: "https://drive.google.com/file/d/1HX8tnf-enm1QC_8teQMlcHjhGuQR97J4/view?usp=sharing" },
+                        { t: "PDF - Questões - Introdução os Distúrbios Ácido-Base e Gasometria.pdf", u: "https://drive.google.com/file/d/1uLwE9QizOyDsAaFXhACptPyh1C5E2_5g/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 03 - Acidose Metabólica", lessons: [
+                        { t: "Aula 01 - Raciocínio Clínico nas Acidoses.mp4", u: "https://drive.google.com/file/d/1mukL3_3fPyeX97KjIilB_7MHSH2F6RZc/view?usp=sharing" },
+                        { t: "Aula 02 - Consequências da Acidose e Porque Não Usar Bicarbonato em Todos.mp4", u: "https://drive.google.com/file/d/1kOu8su08TdQeIKOSrJ72ZyVJ-sYXDAXZ/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento Geral da Acidose Metabólica.mp4", u: "https://drive.google.com/file/d/1K6kRJylzjvHpaiOgmAFsidktgclLIHGn/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento Específico das Acidoses com AG Elevado.mp4", u: "https://drive.google.com/file/d/1PNSOmfST41yLyDv9uvNnege34fjA8RC0/view?usp=sharing" },
+                        { t: "Aula 05 - Acidose Tubular Renal Introdução.mp4", u: "https://drive.google.com/file/d/1mjD1upnsI1fQiiHScQLC0mLRzHs-aGdV/view?usp=sharing" },
+                        { t: "Aula 06 - Acidose Tubular Renal Diagnóstico e Tratamento.mp4", u: "https://drive.google.com/file/d/1JSSrR_465P9-qHuVMj6zRdR2SYMTCKLg/view?usp=sharing" },
+                        { t: "Aula 07 - Vídeo de Correção das Questões de Acidose.mp4", u: "https://drive.google.com/file/d/11Ha7DI3vtz2dzwgmlFfi1TmHcYdgPnc5/view?usp=sharing" },
+                        { t: "PDF - Questões - Acidose Metabólica.pdf", u: "https://drive.google.com/file/d/1VCHfnF18wnr7zoKz021OnqVX6D3lJetK/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 04 - Alcalose Metabólica", lessons: [
+                        { t: "Aula 01 - Alcalose Parte I.mp4", u: "https://drive.google.com/file/d/1Orup2kym1aMOvBBd31X3MC09asf44kOG/view?usp=sharing" },
+                        { t: "Aula 02 - Alcalose Parte II.mp4", u: "https://drive.google.com/file/d/1S8POPjM8uvjCqs0V6LG4wGsFfHfqgxBg/view?usp=sharing" },
+                        { t: "Aula 03 - Video de Correção das Questões de Alcalose Metabólica.mp4", u: "https://drive.google.com/file/d/1JZDqJSx6HbpFftgbcDjdIk6zeHW9XAdd/view?usp=sharing" },
+                        { t: "PDF - Questões - Alcalose Metabólica.pdf", u: "https://drive.google.com/file/d/17dXMaIv2CefNL7LdrEXI2CBwAgshjHSo/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 05 - Distúrbios Respiratórios", lessons: [
+                        { t: "Aula 01 - Acidose Respiratória.mp4", u: "https://drive.google.com/file/d/12WTM1nliu2-HGGHCoQay-VJtGVHFp6JU/view?usp=sharing" },
+                        { t: "Aula 02 - Alcalose Respiratória.mp4", u: "https://drive.google.com/file/d/1AM_qwUMc1Cp14B85n8F2HrgbO0NYQZK_/view?usp=sharing" },
+                        { t: "Aula 03 - Vídeo das Questões Comentadas.mp4", u: "https://drive.google.com/file/d/1t6P0XiB7E_Uve4CFb8Txbfg4AfUaks0J/view?usp=sharing" },
+                        { t: "PDF - Questões - Distúrbios Respiratórios.pdf", u: "https://drive.google.com/file/d/1f3cwkjyYL-fWR0nAkwCFh6HNvMr2e2uX/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 06 - Avaliação, Monitorização e Tratamento dos Distúrbios Volêmicos", lessons: [
+                        { t: "Aula 01 - Conceitos Gerais de Volemia.mp4", u: "https://drive.google.com/file/d/1xbr95rtVnOY-aFfGbK5pYEF-wIE4rQSm/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico Clínico e Laboratorial da Hipovolemia.mp4", u: "https://drive.google.com/file/d/10tzg4aNlfYZzvSAjDztfbtRGPfMtMtCW/view?usp=sharing" },
+                        { t: "Aula 03 - Monitorização Hemodinâmica e Tratamento da Hipovolemia.mp4", u: "https://drive.google.com/file/d/1wKhVDAusnqzkeNhFXcTqH9beWVSakwL3/view?usp=sharing" },
+                        { t: "Aula 04 - Questões Corrigidas.mp4", u: "https://drive.google.com/file/d/1sZUjH4Mgs553_cu-6qey7J-nOzwzBDYk/view?usp=sharing" },
+                        { t: "PDF - Questões - Avaliação, Monitorização e Tratamento dos Distúrbios Volêmicos.pdf", u: "https://drive.google.com/file/d/1r2hO_0d8W_rY8-9HuA3ViF1U7T6UQo9t/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 07 - Hiponatremia", lessons: [
+                        { t: "Aula 01 - Conceitos Gerais e Fisiologia.mp4", u: "https://drive.google.com/file/d/19w_zE-bKZXY8lbtot5sAWaU9Y19Bh39e/view?usp=sharing" },
+                        { t: "Aula 02 - Osmolaridade, Tonicidade e Pseudohiponatremia.mp4", u: "https://drive.google.com/file/d/1MGp0Syzs4Xj06kbp190DSV4us07-QS1w/view?usp=sharing" },
+                        { t: "Aula 03 - Classificação da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1Hgp9Q2_nbQTyD8m9EGY7tNbIrJ-xQtHe/view?usp=sharing" },
+                        { t: "Aula 04 - Raciocínio Clinico e Diagnóstico das Hiponatremias.mp4", u: "https://drive.google.com/file/d/1oQ7X4T4ltp11YIN4t9S-OYoqoQkYe-V1/view?usp=sharing" },
+                        { t: "Aula 05 - Bases do Tratamento da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1w4N3V_xsqo1jUAbekNY3kWq7DGS3pG8Q/view?usp=sharing" },
+                        { t: "Aula 06 - Tratamento da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1RJ_Hm29NgQHBb2_5tJsl-omNoDHW8zHb/view?usp=sharing" },
+                        { t: "Aula 07 - Desmielinização Osmótica e Casos Práticos.mp4", u: "https://drive.google.com/file/d/1WmZNeqAElTuvwySM_Fb7Qm8qCsCxD4s_/view?usp=sharing" },
+                        { t: "Aula 08 - Resolução das Questões.mp4", u: "https://drive.google.com/file/d/1LZl6Q4m1s9KuuOIJYHd0ZvOWotuxItAI/view?usp=sharing" },
+                        { t: "PDF - Questões - Hiponatremia.pdf", u: "https://drive.google.com/file/d/178D7xqryICVd4rcIB9Syh1YYJA4qffaN/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 08 - Hipernatremia", lessons: [
+                        { t: "Aula 01 - Conceitos Básicos de Hipernatremia.mp4", u: "https://drive.google.com/file/d/19_YYbvWbPNDluWlxXuqMWa56fRoxLbOI/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico Diferencial e Causas de Hipernatremia.mp4", u: "https://drive.google.com/file/d/1w3VEQydCg93g8bpCwDWB8fEmCwo6EQue/view?usp=sharing" },
+                        { t: "Aula 03 - Diagnóstico e Tratamento da Hipernatremia.mp4", u: "https://drive.google.com/file/d/1E7GdeW3AjH1HgtMxqSaFf4jnVhkKm4ai/view?usp=sharing" },
+                        { t: "Aula 04 - Resolução das Questões de Hipernatremia.mp4", u: "https://drive.google.com/file/d/1TbVDXSzat1lc_-oTHyHBea05GbND-x4D/view?usp=sharing" },
+                        { t: "PDF - Questões - Hipernatremia.pdf", u: "https://drive.google.com/file/d/1Xr2g2kiasRsI1VRaveKnAXEK4yW34h-p/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 09 - Hiperpotassemia", lessons: [
+                        { t: "Aula 01 - Mecanismos e Causas da Hiperpotassemia.mp4", u: "https://drive.google.com/file/d/1Ugk91ylPt8HMmv8YWmKMlhJWYk1YrUUJ/view?usp=sharing" },
+                        { t: "Aula 02 - Nova Lógica no Tratamento da Hiperpotassemia.mp4", u: "https://drive.google.com/file/d/166yubwQS2_C_UmZTgkvBX-bSLsqx9NY4/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento da Hiperpotassemia Aguda.mp4", u: "https://drive.google.com/file/d/1RftlEO84ik63O6vpmRSsa9NAeT5XNvfo/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento da Hipercalemia Crônica.mp4", u: "https://drive.google.com/file/d/1-MWJe3RFtQLB_jjPSZhQT54oo6gH_Q4d/view?usp=sharing" },
+                        { t: "Aula 05 - Correção Questões de Hiperpotassemia.mp4", u: "https://drive.google.com/file/d/1fUTKwrsGLHC7jLRArXNWS560b0dqW6rh/view?usp=sharing" },
+                        { t: "PDF - Questões - Hiperpotassemia.pdf", u: "https://drive.google.com/file/d/1NxqgxOCp1j9mas7qqPWJWuJeN_ZwKFRX/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 10 - Hipopotassemia", lessons: [
+                        { t: "Aula 01 - Causas e Sintomas.mp4", u: "https://drive.google.com/file/d/1kl1sL04U-J3ZSBbgaz7-hAZoNyZ3lvYW/view?usp=sharing" },
+                        { t: "Aula 02 - Princípios do Tratamento da Hipopotassemia.mp4", u: "https://drive.google.com/file/d/1fKeYVzXrygJlZDQ3PfTFn3gKipSaakFd/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento da Hipopotassemia.mp4", u: "https://drive.google.com/file/d/1Ejzr2rHRlevpd9OTKWqrRBnJqW1zFp56/view?usp=sharing" },
+                        { t: "Aula 04 - Correção das Questões de Hipopotassemia.mp4", u: "https://drive.google.com/file/d/1DIl5GaosDDmYaxwD4SR01vVL5UT99z1T/view?usp=sharing" },
+                        { t: "PDF - Questões - Hipopotassemia.pdf", u: "https://drive.google.com/file/d/1Ao0qY8QEZpJ3UGf9rwBtLJA6I8GfSQ3z/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 11 - Distúrbios do Cálcio", lessons: [
+                        { t: "Aula 01 - Fisiologia do Cálcio Parte I.mp4", u: "https://drive.google.com/file/d/1HXysiHELNDfbdB9FlhDlQq7MdwdSodG8/view?usp=sharing" },
+                        { t: "Aula 02 - Fisiologia do Cálcio Parte II.mp4", u: "https://drive.google.com/file/d/1ockN0OvlxqlbgxtVgD29ScETucA7Wj9z/view?usp=sharing" },
+                        { t: "Aula 03 - Hipercalcemia Causas e Bases do Tratamento.mp4", u: "https://drive.google.com/file/d/1xU9yhfTQ6tJq2mU3TPrRCDU5f1WSIS33/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento da Hipercalcemia.mp4", u: "https://drive.google.com/file/d/18KGeotPo84sy84JsCk59l7KiCw96Auxr/view?usp=sharing" },
+                        { t: "Aula 05 - Hipocalcemia.mp4", u: "https://drive.google.com/file/d/1jqrKmFNxfMPF0IVEyUTTa0ZbnXXY_e8J/view?usp=sharing" },
+                        { t: "Aula 06 - Correção das Questões dos Distúrbios de Cálcio.mp4", u: "https://drive.google.com/file/d/1G5iBJcMRIoxwKh5v04H-OHeYkY6wJq4D/view?usp=sharing" },
+                        { t: "PDF - Questões - Distúrbios do Cálcio.pdf", u: "https://drive.google.com/file/d/1Zvd21Aa5fcwdL0o-ye203h5GwfTSj3_k/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 12 - Distúrbios do Fósforo", lessons: [
+                        { t: "Aula 01 - Fisiologia do Fosfato e Hiperfosfatemia.mp4", u: "https://drive.google.com/file/d/1c-v50OM1nomsNkp1YfKVk8ldyOqCDgEE/view?usp=sharing" },
+                        { t: "Aula 02 - Hipofosfatemia.mp4", u: "https://drive.google.com/file/d/16G_l841tclj4CKRXgxxDerooTX25nlcL/view?usp=sharing" },
+                        { t: "Aula 03 - Correção das Questões.mp4", u: "https://drive.google.com/file/d/1US8Qnv39to2PIa6HFu68Z5Y-o8Ywlnd6/view?usp=sharing" },
+                        { t: "PDF - Questões - Distúrbios do Fósforo.pdf", u: "https://drive.google.com/file/d/1JvZkwRfK0suzhmEmtd28ME1NDeIQ87h8/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 13 - Distúrbios do Magnésio", lessons: [
+                        { t: "Aula 01 - Distúrbios do Magnésio.mp4", u: "https://drive.google.com/file/d/121a07lm6SyLZanehQMmlQkNsE1j4QYzg/view?usp=sharing" },
+                        { t: "Aula 02 - Correção das Questões de Magnésio.mp4", u: "https://drive.google.com/file/d/1gPTqdh3jXwtR9z5-7b_lsfwktIjPFG18/view?usp=sharing" },
+                        { t: "PDF - Questões - Distúrbios do Magnésio.pdf", u: "https://drive.google.com/file/d/1OzK_3tOkHXD_2Mca2OHaUmcXH4oakG2N/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 14 - Bônus E-Book - Ácido-Bases", lessons: [
+                        { t: "PDF - E-Book - Ácido-Bases.pdf", u: "https://drive.google.com/file/d/1OUISwUfOoDwXonb5gSLZ2FIAjJrEfUSj/view?usp=sharing" }
+                    ]}
+                ]
+            },
+            {
+                id: 'course_2',
+                title: 'Doença Renal Crônica 3.0',
+                description: 'Abordagem prática da DRC: estadiamento, os "Big Fours", complicações, diálise e terapia de substituição.',
+                icon: 'fa-kidneys', color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20',
+                modules: [
+                    { title: "Módulo 01 - Seja Muito Bem Vindo", lessons: [{ t: "Aula 01 - Asssitam Aqui Primeiro!.mp4", u: "https://drive.google.com/file/d/19X_37SQHvTKA1oz_5es9fZG3utoBMslE/view?usp=sharing" }] },
+                    { title: "Módulo 02 - KDIGO (2024)", lessons: [
+                        { t: "Aula 01 - Diagnóstico da DRC.mp4", u: "https://drive.google.com/file/d/1R1BNKo7NOvUz6eU2tfxFZA5DC8qPxH3A/view?usp=sharing" },
+                        { t: "Aula 02 - Creatinina, Cistatina ou os Dois.mp4", u: "https://drive.google.com/file/d/1gbgiQCbLdPfgGceTenElKqUmplkShLJo/view?usp=sharing" },
+                        { t: "Aula 03 - Avaliando o Risco (Use o KFRE).mp4", u: "https://drive.google.com/file/d/1rJSXcWWK6O6M7I-qjcb41190_MOWxxzN/view?usp=sharing" },
+                        { t: "Aula 04 - Retardando a Progressão Parte I.mp4", u: "https://drive.google.com/file/d/19zCepORYV-SCUDiWcMEr56aT-V6ST9xi/view?usp=sharing" },
+                        { t: "Aula 05 - Retardando a Progressão Parte II.mp4", u: "https://drive.google.com/file/d/17-RHHPvMmn4TvKthNwSvAxT4dFgnBtLD/view?usp=sharing" },
+                        { t: "Aula 06 - Como Manejar os Medicamentos.mp4", u: "https://drive.google.com/file/d/1S1FmOHrghYznnm80uq31Jf7TeBBcxLPo/view?usp=sharing" },
+                        { t: "Aula 07 - Modelos de Cuidado na DRC.mp4", u: "https://drive.google.com/file/d/1BdDGhGNKkMmbugG7Kw0jEek4HK3jAQGN/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 03 - Definicão e Importância da DRC", lessons: [
+                        { t: "Aula 01 - O Que é a DRC e Qual a sua Importância.mp4", u: "https://drive.google.com/file/d/15s1VOBDRH8uE4pvHJnZScG2oFrVQtPuA/view?usp=sharing" },
+                        { t: "Aula 02 - Definição de DRC.mp4", u: "https://drive.google.com/file/d/1QLkD8WjA-AcLOClAqFmJ6p6tGJNgFyd8/view?usp=sharing" },
+                        { t: "Aula 03 - Impacto da DRC na Mortalidade.mp4", u: "https://drive.google.com/file/d/1G6LldPLNlFSr_gkSYgrctc69ZwU3nSer/view?usp=sharing" },
+                        { t: "PDF - Questões - Definição e Importância da DRC.pdf", u: "https://drive.google.com/file/d/171pHp39C_44AAH_JD46Dn0fkP0Noqn9C/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 04 - Estadiamento e Investigação da Doença Renal Crônica", lessons: [
+                        { t: "Aula 01 - Classificação, Etiologias e Investigação.mp4", u: "https://drive.google.com/file/d/1C3TGQUEN2TQnaz6xpsHqM1oIt_kqxq2P/view?usp=sharing" },
+                        { t: "Aula 02 - Quais as Causas Mais Comuns de DRC.mp4", u: "https://drive.google.com/file/d/19cxcaoISvZUKA1HnUKp0f1EQB-DZFU7Q/view?usp=sharing" },
+                        { t: "Aula 03 - Investigação Etiológica.mp4", u: "https://drive.google.com/file/d/1R7YpJFp4cvp_Km2E4xXK08peqoB0U1pp/view?usp=sharing" },
+                        { t: "PDF - Questões - Estadiamento e Investigação da Doença Renal Crônica.pdf", u: "https://drive.google.com/file/d/1FMuvuMDIjAhD8KqcS8gL_bQdBFkG6UsR/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 05 - Os Big Fours", lessons: [
+                        { t: "Aula 01 - Nefropatia Hipertensiva Parte I.mp4", u: "https://drive.google.com/file/d/1zN0OxG4sSPpyydxmECPGzHKR-dyTl8cX/view?usp=sharing" },
+                        { t: "Aula 02 - Nefropatia Hipertensiva Parte II.mp4", u: "https://drive.google.com/file/d/1IrVe_HeYaOwOnxN4kxX-Dhu3r8MQa0nj/view?usp=sharing" },
+                        { t: "Aula 03 - Nefropatia Hipertensiva Parte III.mp4", u: "https://drive.google.com/file/d/1DxguQUA-kXPKQPIlI-kzSQ2Egk4NOUd4/view?usp=sharing" },
+                        { t: "Aula 04 - Nefropatia Hipertensiva Parte IV.mp4", u: "https://drive.google.com/file/d/1yhQm1wDNrnGDi3SststRlfn2CVPaxeo5/view?usp=sharing" },
+                        { t: "Aula 05 - Nefropatia Hipertensiva Parte V.mp4", u: "https://drive.google.com/file/d/1aCdi1N83JYBre3qVFJVwCrWI45P9RlZR/view?usp=sharing" },
+                        { t: "Aula 06 - Nefropatia Hipertensiva Parte VI.mp4", u: "https://drive.google.com/file/d/1yf82ku3-0v6jnZzS-Mvh0bq80qDYTgO2/view?usp=sharing" },
+                        { t: "Aula 07 - Doença Renal do Diabetes Parte I.mp4", u: "https://drive.google.com/file/d/13mlf4kYB6A31Cf3Hj7YOafOhUtAzwUqB/view?usp=sharing" },
+                        { t: "Aula 08 - Doença Renal do Diabetes Parte II.mp4", u: "https://drive.google.com/file/d/1G_pRYEFe7sAfAQ_cXQtSFo1-ZA-kiPEN/view?usp=sharing" },
+                        { t: "Aula 09 - Doença Renal do Diabetes Parte III.mp4", u: "https://drive.google.com/file/d/1tPrNg7_xtJV7zpp3BkG75bY2ZOKPVRN8/view?usp=sharing" },
+                        { t: "Aula 10 - Doença Renal do Diabetes Parte IV.mp4", u: "https://drive.google.com/file/d/1RRXgbH1Xaicg3b7GivpElSIPRA8O1rL7/view?usp=sharing" },
+                        { t: "Aula 11 - Doença Renal do Diabetes Parte V.mp4", u: "https://drive.google.com/file/d/1Cynuk3mHfYVA0aDw_Gty_d2IyRnjDxv0/view?usp=sharing" },
+                        { t: "Aula 12 - Doença Renal do Diabetes Parte VI.mp4", u: "https://drive.google.com/file/d/1UbrGIvOpEquOCV5pYHSKyEpOb2DTiqwj/view?usp=sharing" },
+                        { t: "Aula 13 - Doença Renal Policística Autossômica Dominante Parte I.mp4", u: "https://drive.google.com/file/d/1qQZxJKBCg3P51Cc9hu9HHkfhsbjZFq5g/view?usp=sharing" },
+                        { t: "Aula 14 - Doença Renal Policística Autossômica Dominante Parte II.mp4", u: "https://drive.google.com/file/d/1jVAlt09y2hFs9t55pmATJGLhmy5vfq75/view?usp=sharing" },
+                        { t: "Aula 15 - Doença Renal Policística Autossômica Dominante Parte III.mp4", u: "https://drive.google.com/file/d/15ujRjIxJ8GpkcmitLT_3pTSyzirEsxRW/view?usp=sharing" },
+                        { t: "Aula 16 - Glomerulopatias Parte I.mp4", u: "https://drive.google.com/file/d/1A3JqChcONr88WHqyK2i7Qc8Pzj1nM33n/view?usp=sharing" },
+                        { t: "Aula 17 - Glomerulopatias Parte II.mp4", u: "https://drive.google.com/file/d/1CJRMXhIehI-VgvxcB_5jFmdDA2ogVktY/view?usp=sharing" },
+                        { t: "PDF - Questões - Os Big Fours.pdf", u: "https://drive.google.com/file/d/1E6Bsci-o-H74mXdZ01cAed426ZFkbZrm/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 06 - Retardando a Progressão da Doença Renal Crônica", lessons: [
+                        { t: "Aula 01 - Retardando a Progressão da Doença Renal Crônica Parte I.mp4", u: "https://drive.google.com/file/d/19UHYkJPdwkahSzYGGpuKx2qQKcI7CGE1/view?usp=sharing" },
+                        { t: "Aula 02 - Retardando a Progressão da Doença Renal Crônica Parte II.mp4", u: "https://drive.google.com/file/d/1v6bnjdB_tJSkfqdy49tOczn4AH3r2FNE/view?usp=sharing" },
+                        { t: "Aula 03 - Retardando a Progressão da Doença Renal Crônica Parte III.mp4", u: "https://drive.google.com/file/d/1PvcNKurUDZxw_sG3t2jnKrZc_cEbpIOq/view?usp=sharing" },
+                        { t: "Aula 04 - Retardando a Progressão da Doença Renal Crônica Parte IV.mp4", u: "https://drive.google.com/file/d/183IsSe8mOTjDnMzIfmAlqf0L5dbLjT3T/view?usp=sharing" },
+                        { t: "PDF - Questões - Retardando a Progressão da Doença Renal Crônica.pdf", u: "https://drive.google.com/file/d/1ZygILuNcaBmcMErmiITIRDDint346-EV/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 07 - Complicações da DRC", lessons: [
+                        { t: "Aula 01 - Anemia Parte I.mp4", u: "https://drive.google.com/file/d/1k_BRYL3_P-HrLZhsVQmiH9umcCRQL7v1/view?usp=sharing" },
+                        { t: "Aula 02 - Anemia Parte II.mp4", u: "https://drive.google.com/file/d/1MebP_ZrEBS4AM4Dc4pQQdbrYN1RZ_5Tw/view?usp=sharing" },
+                        { t: "Aula 03 - Anemia Parte III.mp4", u: "https://drive.google.com/file/d/1tRXlhcJE0UyQ_JL4k1QV51Eae9fpiH50/view?usp=sharing" },
+                        { t: "Aula 04 - Doença Mineral Óssea Parte I.mp4", u: "https://drive.google.com/file/d/19eUPslCKVHExcGQ6o8EImHVvw4vOpiNv/view?usp=sharing" },
+                        { t: "Aula 05 - Doença Mineral Óssea Parte II.mp4", u: "https://drive.google.com/file/d/1-9TH3Ab5xVQfRF2uvGh665uTiRK6hTEI/view?usp=sharing" },
+                        { t: "Aula 06 - Doença Mineral Óssea Parte III.mp4", u: "https://drive.google.com/file/d/1qyK0OqYq1f810OPIgrPecEhBOo2kRQlT/view?usp=sharing" },
+                        { t: "Aula 07 - Doença Mineral Óssea Parte IV.mp4", u: "https://drive.google.com/file/d/1yXPMOGawFT2dpOyJmaBHdEhQ2lNp4wMq/view?usp=sharing" },
+                        { t: "Aula 08 - Doença Cardiovascular na DRC Parte I.mp4", u: "https://drive.google.com/file/d/19bdbkshyKMCb9X1StQIs27qVLcyNidWB/view?usp=sharing" },
+                        { t: "Aula 09 - Doença Cardiovascular na DRC Parte II.mp4", u: "https://drive.google.com/file/d/1Xhnfaukx60nDk7bazV8TF7yXTHRi0ucS/view?usp=sharing" },
+                        { t: "Aula 10 - Hipercalemia Parte I.mp4", u: "https://drive.google.com/file/d/1pRc07rNEmNuTef8bcs5ZSjccYn8JXESH/view?usp=sharing" },
+                        { t: "Aula 11 - Hipercalemia Parte II.mp4", u: "https://drive.google.com/file/d/192gPXkks-aGTxxpJjFVWMz26ov7eNQEZ/view?usp=sharing" },
+                        { t: "PDF - Questões - Complicações da DRC.pdf", u: "https://drive.google.com/file/d/1ZZ3f4HkivNMf4kgPMEQtL-lTk8b8OKWc/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 08 - Prevenção da Injúria Renal Aguda", lessons: [
+                        { t: "Aula 01 - Lesão Renal Aguda Medicamentosa.mp4", u: "https://drive.google.com/file/d/1c38L5GaYc8UKCxlTffPDkNh-Q_2G3y-f/view?usp=sharing" },
+                        { t: "Aula 02 - Lesão Renal por Contraste.mp4", u: "https://drive.google.com/file/d/1U0Jd0D1PfsqommZMyco6vf_t8lJmDjeE/view?usp=sharing" },
+                        { t: "Aula 03 - Lesão Renal Aguda Perioperatória.mp4", u: "https://drive.google.com/file/d/1tDDVNwEcmPuJWt8QcrO2eZEnuGGsCGm8/view?usp=sharing" },
+                        { t: "Aula 04 - Imunização em DRC.mp4", u: "https://drive.google.com/file/d/1n5ug3tQU2jYhOmkNGbPmP5YIqqxHhcvT/view?usp=sharing" },
+                        { t: "PDF - Questões - Prevenção da Injúria Renal Aguda.pdf", u: "https://drive.google.com/file/d/1FLIGHcZJ2hUYiRa0OdNhtQjkEKsmqOSo/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 09 - Quando e Porque Encaminhar Para o Nefrologista", lessons: [
+                        { t: "Aula 01 - Quando e Porque Encaminhar Para o Nefrologista.mp4", u: "https://drive.google.com/file/d/1q_yaneZjIwJuCKLBUc0yWTd5Y5rGmX9-/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 10 - Preparando o Paciente Para a TRS", lessons: [
+                        { t: "Aula 01 - Preparando o Paciente Para a TRS Parte I.mp4", u: "https://drive.google.com/file/d/1l76ra6YIBklo7Dubl5PzPilgnxixGkJZ/view?usp=sharing" },
+                        { t: "Aula 02 - Preparando o Paciente Para a TRS Parte II.mp4", u: "https://drive.google.com/file/d/1qTQmg0vccw5_UNTp9mFp3fs-IXEEP2gs/view?usp=sharing" },
+                        { t: "Aula 03 - Preparando o Paciente Para a TRS Parte III.mp4", u: "https://drive.google.com/file/d/1fUhxUoLI9eRdJLnErZN1o7c22_KM5sat/view?usp=sharing" },
+                        { t: "PDF - Questões - Preparando o Paciente Para a TRS.pdf", u: "https://drive.google.com/file/d/1mRdiQtlvI_WkcyfPTx9EZ0OfJ-4J5zrZ/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 11 - Terapia Renal Substitutiva", lessons: [
+                        { t: "Aula 01 - Hemodiálise Parte I.mp4", u: "https://drive.google.com/file/d/1CzjQMIghTSo5xxR1tLbouz27iekO05EJ/view?usp=sharing" },
+                        { t: "Aula 02 - Hemodiálise Parte II.mp4", u: "https://drive.google.com/file/d/1_nBUBw9OGIHGyNHxqnmHPepR-pCJZPvM/view?usp=sharing" },
+                        { t: "Aula 03 - Hemodiálise Parte III.mp4", u: "https://drive.google.com/file/d/1RNVaY1hyA7oWf-cc_MLSBoAZHl2nTCxx/view?usp=sharing" },
+                        { t: "Aula 04 - Acesso Para Diálise.mp4", u: "https://drive.google.com/file/d/1kOeIugh034rH9Iva7cacXvSblzFkN5wS/view?usp=sharing" },
+                        { t: "Aula 05 - Acesso Para Hemodiálise e Suas Complicações Parte I.mp4", u: "https://drive.google.com/file/d/1M6sdlVWu2BU2WUkEY-iIdMLUGLgSNBwD/view?usp=sharing" },
+                        { t: "Aula 06 - Acesso Para Hemodiálise e Suas Complicações Parte II.mp4", u: "https://drive.google.com/file/d/1zLwcMow7fXxARQMDi_DJ4-zqYVn9gjTa/view?usp=sharing" },
+                        { t: "Aula 07 - Diálise Peritoneal Parte I.mp4", u: "https://drive.google.com/file/d/1vVVvUbgJPm6GfZckqJxWnor9PdqmT1lN/view?usp=sharing" },
+                        { t: "Aula 08 - Diálise Peritoneal Parte II.mp4", u: "https://drive.google.com/file/d/1mpXs7X0rjVLQuWjvMP9pvzET7L3FCRuV/view?usp=sharing" },
+                        { t: "Aula 09 - Peritonites Definição e Prevenção.mp4", u: "https://drive.google.com/file/d/1hTzo3mPcXuVphS9WlM_llC3cVqi2ugVz/view?usp=sharing" },
+                        { t: "Aula 10 - Peritonites Tratamento, Infecção de Óstio e Tunelite.mp4", u: "https://drive.google.com/file/d/16vSFSZpByM1Y0J9Yv5QazEm6HDlxXvL8/view?usp=sharing" },
+                        { t: "Aula 11 - Peritonite Complicações Mecânicas e Peritonite Esclerosante.mp4", u: "https://drive.google.com/file/d/1H9uHG0uXFy95Ti8VW_D1csga1ddbCtw5/view?usp=sharing" },
+                        { t: "Aula 12 - Transplante Renal Parte I.mp4", u: "https://drive.google.com/file/d/1IRI-xaQXbenmPQGYlhN3FSVh3gJyX_Ap/view?usp=sharing" },
+                        { t: "Aula 13 - Transplante Renal Parte II.mp4", u: "https://drive.google.com/file/d/1sHLp-4MDHMu67xYfMSJswTJ-0bvoHsfu/view?usp=sharing" },
+                        { t: "Aula 14 - Drogas Imunossupressoras Parte I.mp4", u: "https://drive.google.com/file/d/1_nXwOfZDHT2vFct9hbFSRWk5GOMNYOJk/view?usp=sharing" },
+                        { t: "Aula 15 - Drogas Imunossupressoras Parte II.mp4", u: "https://drive.google.com/file/d/1Huzp9OJlBYkKVn-dWBbFctbTJ-u6DINF/view?usp=sharing" },
+                        { t: "Aula 16 - Hepatite C e DRC.mp4", u: "https://drive.google.com/file/d/1OIvPgRcSwfb-yqz20p62VkSv1MNdmHa9/view?usp=sharing" },
+                        { t: "PDF - Questões - Terapia Renal Substitutiva.pdf", u: "https://drive.google.com/file/d/1YYb_EL4ou6RUGZyMuRavOUDkVjzfWRVd/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 12 - Legislação na Terapia Renal Substitutiva e Tratamento de Água", lessons: [
+                        { t: "Aula 01 - Legislação na Diálise.mp4", u: "https://drive.google.com/file/d/1kNENnNzLgIIkV4mryRUOAl9G3ccClNDV/view?usp=sharing" },
+                        { t: "Aula 02 - Legislação RDC 1675.mp4", u: "https://drive.google.com/file/d/1bsjY1D8bhVkJ10fen5YHYaXErP3tRd0J/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento da Água para Hemodiálise.mp4", u: "https://drive.google.com/file/d/1sVyf3_z9iD9RhK5gMx81JLZGwNWQEcYy/view?usp=sharing" },
+                        { t: "Aula 04 - Legislação no Trasplante Renal.mp4", u: "https://drive.google.com/file/d/1D_4VTYNAPBGNLt4tAGMnVK-hBi3AUjuU/view?usp=sharing" },
+                        { t: "Aula 05 - Critérios de Alocação no Transplante Renal.mp4", u: "https://drive.google.com/file/d/1sZOY_Pq3XCRphtkMhgzW4bRwHgFiMo18/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 13 - Cuidados Paliativos e Manejo Conservador", lessons: [
+                        { t: "Aula 01 - Cuidados Paliativos e Manejo Conservador Parte I.mp4", u: "https://drive.google.com/file/d/11PBZWtZja2Uwa-OD5qdnJqOTxLll1cjS/view?usp=sharing" },
+                        { t: "Aula 02 - Cuidados Paliativos e Manejo Conservador Parte II.mp4", u: "https://drive.google.com/file/d/1mk7VUROdNDFJWBr4zC-OiihD3KkfmgoU/view?usp=sharing" },
+                        { t: "PDF - Questões - Cuidados Paliativos e Manejo Conservador.pdf", u: "https://drive.google.com/file/d/14302XVVmClo_-649PlBRDRTQNgozFWrA/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 14 - DRC na Gestação", lessons: [
+                        { t: "Aula 01 - Fisiologia Renal na Gestação.mp4", u: "https://drive.google.com/file/d/1cxlrrt0xAH7b_pvDX58xXrTAVsKhvGmd/view?usp=sharing" },
+                        { t: "Aula 02 - Complicações Renais na Gestação Normal.mp4", u: "https://drive.google.com/file/d/12R-n1mSvG9jRWUfkkBlO5GGy216hDva7/view?usp=sharing" },
+                        { t: "Aula 03 - Hipertensão na Gestação.mp4", u: "https://drive.google.com/file/d/1SH6dOAtehGskCL5NKRcF1xIxOIEy82jj/view?usp=sharing" },
+                        { t: "Aula 04 - DRC na Gestação.mp4", u: "https://drive.google.com/file/d/1xzJgeO5Wu5ruXWoj__xmeOFPQpX2m8qr/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 15 - Bônus I E-Book", lessons: [
+                        { t: "PDF - E-Book - 10 Dicas Essenciais Para Você Abrir o Seu Consultório.pdf", u: "https://drive.google.com/file/d/1UD_m-0ZHsJQWIANtWNnqESj_OuldLD5E/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 16 - Bônus II Lives Gravadas da Jornada da DRC (2021)", lessons: [
+                        { t: "Aula 01 - Diagnóstico e Classificação da DRC.mp4", u: "https://drive.google.com/file/d/182HpwTc_UBdHM_0BuWNS7ZPCTqtSWnlU/view?usp=sharing" },
+                        { t: "Aula 02 - Manejo Prático HAS, DM, DRPAD e GN.mp4", u: "https://drive.google.com/file/d/1x-7rgPDtHLUDkHLNEPdvA5swWv4UthnH/view?usp=sharing" },
+                        { t: "Aula 03 - Como Retardar a Progressão da DRC.mp4", u: "https://drive.google.com/file/d/1FBQmWV5qJelPdWVPWCd03xNQe-_99mhc/view?usp=sharing" },
+                        { t: "Aula 04 - Anticoagulação na Doença Renal Crônica Parte I.mp4", u: "https://drive.google.com/file/d/1pT6mTZ4yGU30vPfDOKqR2j6lIIojAbDU/view?usp=sharing" },
+                        { t: "Aula 05 - Anticoagulação na Doença Renal Crônica Parte II.mp4", u: "https://drive.google.com/file/d/1fNTehqekbH9diUTrits-4hRYm4qw07ic/view?usp=sharing" },
+                        { t: "Aula 06 - Revisão Final da Jornada da Doença Renal Crônica.mp4", u: "https://drive.google.com/file/d/19s9gnu54bhqJHfeAs6i8aDY3RMTCcwqX/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 17 - Bônus III PDF Orientações Pacientes", lessons: [
+                        { t: "PDF - Folder DRC.pdf", u: "https://drive.google.com/file/d/1vQfO7yFNqH9yAesPFi0M6HCqypfAn5QL/view?usp=sharing" },
+                        { t: "PDF - Cartão Acompanhamento.pdf", u: "https://drive.google.com/file/d/1AJvL6mFHuHwjkP0ayH_nHYZuRbPrVMYb/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 18 - Bônus IV Curso de Hipertensão Arterial Sistêmica", lessons: [
+                        { t: "Aula 01 - Importância Prática da Hipertensão.mp4", u: "https://drive.google.com/file/d/1JOf0SE7jSemV7JyuYR6qh2jGLCZQB8RB/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico e Classificação da Hipertensão.mp4", u: "https://drive.google.com/file/d/1eW5svCzyD7L1sWIOuofKTZpFMemt9wL8/view?usp=sharing" },
+                        { t: "Aula 03 - Metas Terapêuticas, Tratamento Não-Medicamentoso e Equipe Multidisciplinar.mp4", u: "https://drive.google.com/file/d/108axz49OX0ouBu8i8214EIX7E-GdC8dy/view?usp=sharing" },
+                        { t: "Aula 04 - Estratificação de Risco, Tratamento Não-Farmacológico e Tratamento Farmacológico Parte I.mp4", u: "https://drive.google.com/file/d/1EdM0UBFEvhu3T8gH63LVFB5KaNnROSRW/view?usp=sharing" },
+                        { t: "Aula 05 - Estratificação de Risco, Tratamento Não-Farmacológico e Tratamento Farmacológico Parte II.mp4", u: "https://drive.google.com/file/d/1NKJRa4ZuiYIcBysxkkB-jaA4GQ3yAGDw/view?usp=sharing" },
+                        { t: "Aula 06 - Manejo Prático da Hipertensão em Condições Clínicas Específicas.mp4", u: "https://drive.google.com/file/d/1Cjo-lPaB6lIg7gUUQsCij18xLU_m2t87/view?usp=sharing" },
+                        { t: "Aula 07 - Crise Hipertensiva.mp4", u: "https://drive.google.com/file/d/1XPq8y-VHTRuJfXQZg1wcKdSwMLM9IWlm/view?usp=sharing" },
+                        { t: "Aula 08 - Hipertensão Secundária Parte I.mp4", u: "https://drive.google.com/file/d/1QHO9IsO_SXtOqMeK9dA_hO5y2bIBSBhE/view?usp=sharing" },
+                        { t: "Aula 09 - Hipertensão Secundária Parte II.mp4", u: "https://drive.google.com/file/d/17pHz6kWueFWDTR5v9NGyLV2u5dSFFvCZ/view?usp=sharing" },
+                        { t: "Aula 10 - Hipertensão Resistente e Adesão ao Tratamento Anti-Hipertensivo.mp4", u: "https://drive.google.com/file/d/160AxBNpp9WhSoLcOw6-OObA4f1-fZW5H/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 19 - Bônus V Manual de Doença Renal Crônica", lessons: [
+                        { t: "PDF - E-Book - Manual de Doença Renal Crônica na Prática Clínica.pdf", u: "https://drive.google.com/file/d/1LV_9N4oHXN3VtD5dR9Mr5lHd19VKxjGj/view?usp=sharing" }
+                    ]}
+                ]
+            },
+            {
+                id: 'course_3',
+                title: 'GlomeruloAtual 2.0',
+                description: 'Explore o fascinante e complexo mundo das doenças glomerulares, desde a histologia até a conduta terapêutica atualizada.',
+                icon: 'fa-microscope', color: 'from-violet-500 to-purple-600', shadow: 'shadow-violet-500/20',
+                modules: [
+                    { title: "Módulo 01 - Comece por Aqui", lessons: [{ t: "Aula 01 - Introdução ao Curso.mp4", u: "https://drive.google.com/file/d/1InpzZa0yr8thQc74Qa77nUOBog2V8lgs/view?usp=sharing" }] },
+                    { title: "Módulo 02 - Introdução às Glomerulopatias e Histologia Renal Aplicada", lessons: [
+                        { t: "Aula 01 - Quando e Como Biopsiar.mp4", u: "https://drive.google.com/file/d/17SqH9AjDbkPuGbOUZLS_IwowF8HYipOg/view?usp=sharing" },
+                        { t: "Aula 02 - Histologia Glomerular Normal.mp4", u: "https://drive.google.com/file/d/1bPt5IngPz5t62R9AnebuQV4quPZ5Ulrc/view?usp=sharing" },
+                        { t: "Aula 03 - Microscopia Óptica.mp4", u: "https://drive.google.com/file/d/1hjpqJWLOW9aKH1AkipQMJcub_bXxG0hA/view?usp=sharing" },
+                        { t: "Aula 04 - Imunofluorescência e Microscopia Eletrônica.mp4", u: "https://drive.google.com/file/d/1XXyIScAngpXGcaX7xq2acO9ltVR0DZA-/view?usp=sharing" },
+                        { t: "Aula 05 - Padrões de Lesão Glomerular.mp4", u: "https://drive.google.com/file/d/16lduu0ebj8VHwUfFfraDBzuCn5ZjBICn/view?usp=sharing" },
+                        { t: "Aula 06 - Padrões de Lesão na IF e na ME.mp4", u: "https://drive.google.com/file/d/1P5j3AVXaMEzZhAKCMcjpx-8Vr17qlvrU/view?usp=sharing" },
+                        { t: "PDF - Introdução às Glomerulopatias.pdf", u: "https://drive.google.com/file/d/1hfkYJFKmbS-Ridlx7NDv3plPrtC6ZIyU/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 03 - Manejo Prático e Raciocínio Clínico", lessons: [
+                        { t: "Aula 01 - Semiologia nas Glomerulopatias.mp4", u: "https://drive.google.com/file/d/1Ztm6EIQV35f6GBkXSLy7QJUOwdtIkWAH/view?usp=sharing" },
+                        { t: "Aula 02 - Raciocínio Clínico das Glomerulopatias.mp4", u: "https://drive.google.com/file/d/1BZthRzFxQSh2aF3zCSiBH9s-G4n8F4vU/view?usp=sharing" },
+                        { t: "Aula 03 - Uso dos Diuréticos nas Glomerulopatias.mp4", u: "https://drive.google.com/file/d/1fgzKCDGUf6dU2nKc-ypc8IKggYUwhfS6/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento Adjuvante das Glomerulopatias.mp4", u: "https://drive.google.com/file/d/1KAaoXmDHoM2X_cZ7JaDQrjrvBG3DeNXh/view?usp=sharing" },
+                        { t: "PDF - Manejo Prático e Raciocínio Clínico.pdf", u: "https://drive.google.com/file/d/1l6cIpAfnzFLegW8HiblqfM9ySeuc85eh/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 04 - Doença de Lesões Mínimas do Adulto", lessons: [
+                        { t: "Aula 01 - Introdução às Podocitopatias e Fisiopatologia da DLM.mp4", u: "https://drive.google.com/file/d/1V0OzQKT7S-h98n0tDuo9qmkQyu72qpRg/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico e Tratamento da DLM.mp4", u: "https://drive.google.com/file/d/1YpF9x20YqwWlDO1dNVrUA4pWwB7iE3cL/view?usp=sharing" },
+                        { t: "Aula 03 - Casos Clínicos de DLM.mp4", u: "https://drive.google.com/file/d/1CdJr_rETjlyGHL7GYmoX7oYi13LXguRy/view?usp=sharing" },
+                        { t: "PDF - GESF.pdf", u: "https://drive.google.com/file/d/15Rz3E-jAdwPjGq2gql3cc2TTL58YunN6/view?usp=sharing" },
+                        { t: "PDF - Doença de Lesão Mínima do Adulto.pdf", u: "https://drive.google.com/file/d/13lejn9D9fEfwiRu8ZlmS3vdJf5OMYahL/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 05 - GESF", lessons: [
+                        { t: "Aula 01 - Causas e Fisiopatologia.mp4", u: "https://drive.google.com/file/d/1KZLy-y3AlDO3EqNZdoK0rnrJT2YQtSEh/view?usp=sharing" },
+                        { t: "Aula 02 - Classificação e Investigação Etiológica.mp4", u: "https://drive.google.com/file/d/16lk1ynQ7QUvrISibh3Lul_VkYRFWzP-_/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento da GESF.mp4", u: "https://drive.google.com/file/d/1dDiNCMHL9oWXO8k5sBs5yzYqxm6bBygP/view?usp=sharing" },
+                        { t: "Aula 04 - Prognóstico e Colapsante.mp4", u: "https://drive.google.com/file/d/1p5RFl90H5PPpoT9d6FDRkz5_BP_1nOLY/view?usp=sharing" },
+                        { t: "PDF - Doença de Lesão Mínima do Adulto_2.pdf", u: "https://drive.google.com/file/d/19ibHHwLs30IMyQeQbWCi4xnoMeh1_JkZ/view?usp=sharing" },
+                        { t: "PDF - GESF_2.pdf", u: "https://drive.google.com/file/d/1gdi3upeFkN4Qfk1T4hVSTDY6lTzgrW7I/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 06 - Nefropatia Membranosa", lessons: [
+                        { t: "Aula 01 - Introdução e Fisiopatologia.mp4", u: "https://drive.google.com/file/d/1TUrhQ7nthbuVl5J_ER1jHRhFvA5P8C8Q/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico e Investigação Prática.mp4", u: "https://drive.google.com/file/d/11iA2JlsAoePqttP936JikzhG0hf7vRK6/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento Estudos Clínicos.mp4", u: "https://drive.google.com/file/d/1RXTCFmojj4gCfujtxrSx47ZClvrS7pf7/view?usp=sharing" },
+                        { t: "Aula 04 - Esquemas Terapêuticos.mp4", u: "https://drive.google.com/file/d/131qKKq7Qx4wgKs0FkOfKYGQYt7oy7LKv/view?usp=sharing" },
+                        { t: "Aula 05 - Caso Clínico Vida Real.mp4", u: "https://drive.google.com/file/d/1dWinWVjVHBhe1yHi_0y9IkuN1tzi9Zns/view?usp=sharing" },
+                        { t: "PDF - Nefropatia Membranosa.pdf", u: "https://drive.google.com/file/d/1ENfKfnkySTYtIjIm3R_zlF1gqVfU4wCJ/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 07 - Hematúria Assintomática (IgA e Colágeno Tipo IV)", lessons: [
+                        { t: "Aula 01 - Definição, Fisiopatologia e Histologia da IgA.mp4", u: "https://drive.google.com/file/d/1q1niUlGlzZtJo_3oiux-Noa6JjARu2tD/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico e Estratificação de Risco da IgA.mp4", u: "https://drive.google.com/file/d/1syFu6jA9brlK3LDyx6y_kNEj5v-MohTS/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento Não-Imunossupressor da IgA.mp4", u: "https://drive.google.com/file/d/1aDxry6way4GGy2-o0Z1iCPZJcX1tIjGo/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento Imunossupressor da IgA e Fluxograma Atual.mp4", u: "https://drive.google.com/file/d/172v1v5shbpxmtT8M-9upsFq1LCjvMtJw/view?usp=sharing" },
+                        { t: "Aula 05 - IgA com Vasculite.mp4", u: "https://drive.google.com/file/d/1LYRK-wcbYBxIj1N1IQikmd_PXrpyMWEj/view?usp=sharing" },
+                        { t: "Aula 06 - Doença do Colágeno Tipo IV (Síndrome de Alport e Membrana Fina).mp4", u: "https://drive.google.com/file/d/1pMocAvJlPLc0zzGTMtfoCeR7wWuYNtXH/view?usp=sharing" },
+                        { t: "Aula 07 - Novidades do KDIGO de IgA (2024) Parte I.mp4", u: "https://drive.google.com/file/d/1sgdk89c0dMNZVViQ3KIxOBVYFEL6HFoD/view?usp=sharing" },
+                        { t: "Aula 08 - Novidades do KDIGO de IgA (2024) Parte II.mp4", u: "https://drive.google.com/file/d/1bPV6Hy4do6w-XZJfPfZqph8LvHdehVG7/view?usp=sharing" },
+                        { t: "Aula 09 - KDIGO (2024) O Que Esperar no Tratamento.mp4", u: "https://drive.google.com/file/d/1Oo8bAVETef6CSfH062rqqF8RcuJ6Od2p/view?usp=sharing" },
+                        { t: "PDF - Hematúria Assintomática.pdf", u: "https://drive.google.com/file/d/1T9RBuDvBV2z5wr5SlMCptNlXJDNDu_xx/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 08 - Nefrite Lúpica", lessons: [
+                        { t: "Aula 01 - Introdução e Diagnóstico do LES.mp4", u: "https://drive.google.com/file/d/1-YfEkXZnukmzPfLH8o49pq5E7uGvJEED/view?usp=sharing" },
+                        { t: "Aula 02 - Biópsia Renal na Nefrite Lúpica.mp4", u: "https://drive.google.com/file/d/1PU0eYnDGzoPDC4Zu-20m47MiuW2m6m9q/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento Não-Imunossupressor.mp4", u: "https://drive.google.com/file/d/1EsPeCbibxbH1YibuggSdHmr0jYmQfdSy/view?usp=sharing" },
+                        { t: "Aula 04 - Terapia de Indução.mp4", u: "https://drive.google.com/file/d/162ptkKTX83MBPCxk1T6W-NYBA_-zj50d/view?usp=sharing" },
+                        { t: "Aula 05 - Terapia de Manutenção, Recidiva e Rebiópsia.mp4", u: "https://drive.google.com/file/d/1slNTGN2EdswCzw4V0iJmC8ePz6LKjJ4A/view?usp=sharing" },
+                        { t: "PDF - Nefrite Lúpica.pdf", u: "https://drive.google.com/file/d/1azqg9-uYflP6yXc83yr1dcFFgt9DStSa/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 09 - Glomerulonefrite Rapidamente Progressiva e Vasculites", lessons: [
+                        { t: "Aula 01 - Glomerulonefrite Rapidamente Progressiva.mp4", u: "https://drive.google.com/file/d/1BE3rckXiH25BS6sPfRhdc3HW1udK0HgA/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico Laboratorial das Vasculites.mp4", u: "https://drive.google.com/file/d/1ous27dkwOlfHSyW84PlmpDtewiktBbsx/view?usp=sharing" },
+                        { t: "Aula 03 - Diagnóstico Diferencial das Vasculites ANCA Relacionadas.mp4", u: "https://drive.google.com/file/d/1lRhkUazvQdCvCzj25KJqSzVBNyAuTFQI/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento da Vasculite ANCA Relacionada.mp4", u: "https://drive.google.com/file/d/1-OhVlbuf7GnWnTGD9nOfiRQ8T1KihPGQ/view?usp=sharing" },
+                        { t: "Aula 05 - Doença do Anticorpo Anti-MBG.mp4", u: "https://drive.google.com/file/d/1uWK8GyECD7O5Bo5ISRs6mblj7NepE8xd/view?usp=sharing" },
+                        { t: "PDF - Glomerulonefrite Rapidamente Progressiva.pdf", u: "https://drive.google.com/file/d/13VW0-j4aglcDICJ6jTn3FJHzaPoMDorD/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 10 - Glomerulonefrite de Padrão Membranoproliferativo", lessons: [
+                        { t: "Aula 01 - Glomerulonefrite de Padrão Membranoproliferativo.mp4", u: "https://drive.google.com/file/d/14utrTt14M0shhmeF99UJM5-6onGuCXJt/view?usp=sharing" },
+                        { t: "Aula 02 - Gamopatia Monoclonal de Significado Renal.mp4", u: "https://drive.google.com/file/d/1WgN8Sl1CI5_vlJy5ylf7l6nVcOzfwKVl/view?usp=sharing" },
+                        { t: "Aula 03 - Glomerulopatias Associadas aos Distúrbios do Complemento.mp4", u: "https://drive.google.com/file/d/1PF3L5FwxGxqVH5mNPcKwLsFDej-El-Oc/view?usp=sharing" },
+                        { t: "Aula 04 - Crioglobulinemia.mp4", u: "https://drive.google.com/file/d/1mNedhB-Sr962wfw-Ds3lQku41GiQec5G/view?usp=sharing" },
+                        { t: "PDF - Glomerulonefrite de Padrão Membranoproliferativo.pdf", u: "https://drive.google.com/file/d/1ICMoY9gqdNzoEsPSVLvgJaTvnLHy6Mdt/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 11 - Amiloidose Renal e Glomerulopatias Raras", lessons: [
+                        { t: "Aula 01 - Amiloidose Renal Parte I.mp4", u: "https://drive.google.com/file/d/1TS7GUNntWF69wY3hEYTk5t0wQIg3bygM/view?usp=sharing" },
+                        { t: "Aula 02 - Amiloidose Renal Parte II.mp4", u: "https://drive.google.com/file/d/1GaOn4xof8j_GRoaIv-PMObIEdT80E1IW/view?usp=sharing" },
+                        { t: "Aula 03 - GN Mesangial, Nefropatia por IgM e C1q.mp4", u: "https://drive.google.com/file/d/1c6d10G21iVjHAJIvP3NOL4J8gnNtxlxz/view?usp=sharing" },
+                        { t: "Aula 04 - Rim da SAF.mp4", u: "https://drive.google.com/file/d/1Y1KhcbBYzmCecYk6hIIo4JuCk11XUt1_/view?usp=sharing" },
+                        { t: "Aula 05 - Imunotactoide e Fibrilar.mp4", u: "https://drive.google.com/file/d/122bmXvrHk2HcvEFFFeDQ1DDcVBvEmyIo/view?usp=sharing" },
+                        { t: "Aula 06 - Rim do Mieloma.mp4", u: "https://drive.google.com/file/d/1-V4_3mBqVbhpKc0uu_3_ncmSl4yv0FT3/view?usp=sharing" },
+                        { t: "PDF - Amiloidose Renal e Doenças Raras.pdf", u: "https://drive.google.com/file/d/1x__z6Heulux9gOL-S_uRvA-kjFM_WuZM/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 12 - Microangiopatia Trombótica (SHU e PTT)", lessons: [
+                        { t: "Aula 01 - Microangiopatia Trombótica Parte I.mp4", u: "https://drive.google.com/file/d/1NgCaDtL8lGg29YTxGSsC6Y-yILW8cZVy/view?usp=sharing" },
+                        { t: "Aula 02 - Microangiopatia Trombótica Parte II.mp4", u: "https://drive.google.com/file/d/1WAGemNo7fgKS9_UJGB7fX2ifQ-2Dmdq4/view?usp=sharing" },
+                        { t: "PDF - Microangiopatia Trombótica.pdf", u: "https://drive.google.com/file/d/1HDXg9TlH8mtoFvouaLr51dcgOBdBANFN/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 13 - Glomerulopatias Associadas às Infecções", lessons: [
+                        { t: "Aula 01 - Nefropatia Associada a Infecção Pelo HIV Parte I.mp4", u: "https://drive.google.com/file/d/1Xj8J_Evm-QknI__49MO6np6DyoEDkyDx/view?usp=sharing" },
+                        { t: "Aula 02 - Nefropatia Associada a Infecção Pelo HIV Parte II.mp4", u: "https://drive.google.com/file/d/1xcjQPwFio2X5zjofo5Z_ODQbeqPvCjnz/view?usp=sharing" },
+                        { t: "Aula 03 - GN Associada a Infecção Bacteriana.mp4", u: "https://drive.google.com/file/d/13LijqpjbmXeSysknJaPYbPcvtLJ6fvRq/view?usp=sharing" },
+                        { t: "PDF - Glomerulopatia Associada à Infecção.pdf", u: "https://drive.google.com/file/d/1VL1NKkurtrOOy26W0PzRlt7da9pvY-WW/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 14 - Glomerulopatias Pós Transplante Renal", lessons: [
+                        { t: "Aula 01 - GN Pós Transplante Renal Parte I.mp4", u: "https://drive.google.com/file/d/1q-L7H-Y2TdzT_yNqGe6ZPVSOVzog-4zf/view?usp=sharing" },
+                        { t: "Aula 02 - GN Pós Transplante Renal Parte II.mp4", u: "https://drive.google.com/file/d/1DA5pqLMtz2nKFlyS16Cqhc1xAFXrHaiy/view?usp=sharing" },
+                        { t: "PDF - Glomerulopatia Pós Transplante Renal.pdf", u: "https://drive.google.com/file/d/1-pqCWUXXu6JzZFkuXvQNYla82L8Q3TEY/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 15 - Glomerulopatia na Gestação", lessons: [
+                        { t: "Aula 01 - Alterações Fisiológicas, Hematúria e Proteinúria.mp4", u: "https://drive.google.com/file/d/1z08Y4kb3F_PB-UteYnQmvbeWo2oKlCnf/view?usp=sharing" },
+                        { t: "Aula 02 - Hipertensão na Gestação e Pré-Eclâmpsia.mp4", u: "https://drive.google.com/file/d/1vX9JOAaWNL33hx9LqqjAlNNbRjwTWZhy/view?usp=sharing" },
+                        { t: "Aula 03 - Glomerulopatias e Farmacologia na Gestação.mp4", u: "https://drive.google.com/file/d/16appRToKkq0hixSb2GR3yodi_RXngXxq/view?usp=sharing" },
+                        { t: "PDF - Glomerulopatia na Gestação.pdf", u: "https://drive.google.com/file/d/1T8q4qf0HP4VEZJ8AIhb6rKfXK3ppp_Zh/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 16 - Doença Renal do Diabetes", lessons: [
+                        { t: "Aula 01 - DRD Definição, Diagnóstico e Quando Biopsiar.mp4", u: "https://drive.google.com/file/d/16SE8jRP8GJ4K_UCC33PE04v5UN-L4RoL/view?usp=sharing" },
+                        { t: "Aula 02 - Tratamento da DRD.mp4", u: "https://drive.google.com/file/d/1FMS9jTvFJOmakaPVN617sqNrLek_Txzf/view?usp=sharing" },
+                        { t: "PDF - Doença Renal do Diabetes.pdf", u: "https://drive.google.com/file/d/1X_aVwLf44a8R-XfwiyQQzCUaBQGV8Bss/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 17 - Casos Clínicos Reais (I-IV)", lessons: [
+                        { t: "Aula 01 - Casos Clínicos.mp4", u: "https://drive.google.com/file/d/1Ea0On-yUMeOXmKWJTTtdPzwpqiLPYK2l/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 18 - Casos Clínicos Reais (V-VIII)", lessons: [
+                        { t: "Aula 01 - Caso V Síndrome Nefrótica em Médica Jovem.mp4", u: "https://drive.google.com/file/d/1uTOzA7p25vmKJi2IEpyb6CgDpYsL92bx/view?usp=sharing" },
+                        { t: "Aula 02 - Caso VI Artrite Reumatóide e Síndrome Nefrótica.mp4", u: "https://drive.google.com/file/d/1fMlEPBccBS5NZqergWOo2LZS8jLIG8bS/view?usp=sharing" },
+                        { t: "Aula 03 - 2 Casos Desafiadores de Síndrome Nefrótica.mp4", u: "https://drive.google.com/file/d/1DclFZl3wozUw25DorF-WNvRlyVdfC-SN/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 19 - Masterclass (Patologia Renal)", lessons: [
+                        { t: "Aula 01 - Masterclass.mp4", u: "https://drive.google.com/file/d/1rRaoToe_5Tc5zMLttIMFP0Clvs-SLjjC/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 20 - Manual Terapêutico (2025)", lessons: [
+                        { t: "PDF - Manual Terapêutico (2025).pdf", u: "https://drive.google.com/file/d/10QLrr40MrubqCcBg06qLLLxfmItkbOyE/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 21 - Aulas do Mapa das Glomerulopatias", lessons: [
+                        { t: "Aula 01 - Mapa das Glomerulopatias Parte I.mp4", u: "https://drive.google.com/file/d/1-FcJCUzkxAiRqL6m6tUW_NwoqA0fk9LQ/view?usp=sharing" },
+                        { t: "Aula 02 - Mapa das Glomerulopatias Parte II.mp4", u: "https://drive.google.com/file/d/1jAsDwNHSbbKMa-HsRLYkharW1hB9KkN0/view?usp=sharing" },
+                        { t: "Aula 03 - Mapa das Glomerulopatias Parte III.mp4", u: "https://drive.google.com/file/d/1CfZkFx9IjLDZjnwtqD2EqS1meiH9BiZE/view?usp=sharing" },
+                        { t: "PDF - Mapa das Glomerulopatias - Parte I.pdf", u: "https://drive.google.com/file/d/17NS33Qb0xT1a7_vD89UZh4F0KjvwSBX2/view?usp=sharing" },
+                        { t: "PDF - Mapa das Glomerulopatias - Parte II.pdf", u: "https://drive.google.com/file/d/1lWpEBsQuyf_0_ExlPrdkLRHMhdndibib/view?usp=sharing" },
+                        { t: "PDF - Mapa das Glomerulopatias - Parte III.pdf", u: "https://drive.google.com/file/d/1LjYah7GzARdd6wX6mVp4Edit8hTl3FbS/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 22 - Atualizações dos Congressos", lessons: [
+                        { t: "Aula 01 - Congresso Americano (2023).mp4", u: "https://drive.google.com/file/d/1fLZymR5da-pcU25qaM_4yiXAmdXPrs5i/view?usp=sharing" },
+                        { t: "Aula 02 - Resumo do Congresso Europeu (2024).mp4", u: "https://drive.google.com/file/d/1sMHzfKXBIdzFggoBFRKx7TdMog6dVlWQ/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 23 - Curso Pré-Congresso Glomerulo (2024)", lessons: [
+                        { t: "Aula 01 - Pré-Congresso Glomerulo (2024) Parte I.mp4", u: "https://drive.google.com/file/d/1ig2S7IcjYIKXKSkkbpF7hGxUgLvdZ7wh/view?usp=sharing" },
+                        { t: "Aula 02 - Pré-Congresso Glomerulo (2024) Parte II.mp4", u: "https://drive.google.com/file/d/1rQLl32HHx1a6wil6PiSN7IvH-Qwn1nBC/view?usp=sharing" }
+                    ]}
+                ]
+            },
+            {
+                id: 'course_4',
+                title: 'Injúria Renal Aguda',
+                description: 'Critérios KDIGO, diferenciação clínica, suporte artificial, hemodiálise e manejo do paciente crítico com IRA.',
+                icon: 'fa-heartbeat', color: 'from-rose-500 to-red-600', shadow: 'shadow-rose-500/20',
+                modules: [
+                    { title: "Módulo 01 - Seja Bem Vindo", lessons: [{ t: "Aula 01 - Boas Vindas.mp4", u: "https://drive.google.com/file/d/1SVNvzWueNXrMZKVAr0ywGuf5rMlV2HZJ/view?usp=sharing" }] },
+                    { title: "Módulo 02 - Novas Definições e Critérios Diagnósticos da IRA", lessons: [
+                        { t: "Aula 01 - Definição e Critérios Diagnósticos da IRA Parte I.mp4", u: "https://drive.google.com/file/d/1cxr3MCAnGlPq5b7wJ0qGEw3hFd6KnR27/view?usp=sharing" },
+                        { t: "Aula 02 - Definição e Critérios Diagnósticos da IRA Parte II.mp4", u: "https://drive.google.com/file/d/1Hl8tA6vaJ-eH7AJH0YaqvCw5OhMOt9lV/view?usp=sharing" },
+                        { t: "PDF - Questões - Novas Definições e Critérios Diagnósticos da IRA.pdf", u: "https://drive.google.com/file/d/1HRYW1aa5yX8sSoLwugLq_SS_5TQ_1uqE/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 03 - Epidemiologia da IRA no Brasil e no Mundo", lessons: [
+                        { t: "Aula 01 - Epidemiologia da IRA.mp4", u: "https://drive.google.com/file/d/1ZBpwRyrhjZzokSxkANOZzQTl7u-61ri6/view?usp=sharing" },
+                        { t: "PDF - Questões - Epidemiologia da IRA.pdf", u: "https://drive.google.com/file/d/1SrOCWHb83y9JxGqio9muZCbKE78gW7hY/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 04 - Fisiopatologia e Etiologias da IRA", lessons: [
+                        { t: "Aula 01 - Etiologias.mp4", u: "https://drive.google.com/file/d/1-rdnJ8x7e1utr3WcqDW8178uNht34sTq/view?usp=sharing" },
+                        { t: "Aula 02 - Fisiopatologia Parte I.mp4", u: "https://drive.google.com/file/d/1GITwsPMZPIQAGkYQ0UN5t-m4EV_ywU9P/view?usp=sharing" },
+                        { t: "Aula 03 - Fisiopatologia Parte II.mp4", u: "https://drive.google.com/file/d/1FtuEUHjmVBra1zxhs8s-ijxVDtYViMRS/view?usp=sharing" },
+                        { t: "PDF - Questões - Fisiopatologia e Etiologias da IRA.pdf", u: "https://drive.google.com/file/d/1ADUbKExmN3PCEssttL-BWDn0_O25so3y/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 05 - Avaliação Clínica e Laboratorial da IRA", lessons: [
+                        { t: "Aula 01 - Avaliação Clínica Parte I.mp4", u: "https://drive.google.com/file/d/1Jn56O6lHP5_LGex99_61_oP0LRoC7Rn8/view?usp=sharing" },
+                        { t: "Aula 02 - Avaliação Clínica Parte II.mp4", u: "https://drive.google.com/file/d/1FWKw3e9OAWNTJSewzSWePsYmpebpMMPK/view?usp=sharing" },
+                        { t: "Aula 03 - Avaliação Laboratorial da IRA.mp4", u: "https://drive.google.com/file/d/1DHx_3_VW5XxFgiwSnqEy7pW_nf64kV7-/view?usp=sharing" },
+                        { t: "PDF - Questões - Avaliação Clínica e Laboratorial da IRA.pdf", u: "https://drive.google.com/file/d/1CASND0_ceWOTEYd6ZzMEhS6Oe0iUb5BU/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 06 - Diagnóstico Diferencial da IRA", lessons: [
+                        { t: "Aula 01 - Diagnóstico Diferencial da IRA Caso I.mp4", u: "https://drive.google.com/file/d/146DEhsB6ihu-aIE1WKAUv74Gi0KmhcTZ/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico Diferencial da IRA Caso II.mp4", u: "https://drive.google.com/file/d/1uE2r5yBSMY2ZGBKtGX1yjBl7CZHh3eRh/view?usp=sharing" },
+                        { t: "Aula 03 - Diagnóstico Diferencial da IRA Caso III.mp4", u: "https://drive.google.com/file/d/1X-QBavxYcsPZdD0ZwsdGvldNIuy_o99x/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 07 - Tratamento Não-Dialítico e Prevenção da IRA", lessons: [
+                        { t: "Aula 01 - Tratamento Não-Dialítico da IRA Parte I.mp4", u: "https://drive.google.com/file/d/1Jh8iNqRXGxwDYj3xx7lyFFC9o1yvR_dH/view?usp=sharing" },
+                        { t: "Aula 02 - Tratamento Não-Dialítico da IRA Parte II.mp4", u: "https://drive.google.com/file/d/1PBMhZh2icois66yr-GH1KTCI6zVEpJao/view?usp=sharing" },
+                        { t: "Aula 03 - Tratamento Não-Dialítico da IRA Parte III.mp4", u: "https://drive.google.com/file/d/1ZOtkrt98eLfsh2EMAfc8tON5QNxqhh_n/view?usp=sharing" },
+                        { t: "Aula 04 - Prevenção da IRA e Resumo.mp4", u: "https://drive.google.com/file/d/1Sdkd4tOZbxcZA6QaJ4UIA8POGmtHWDk9/view?usp=sharing" },
+                        { t: "PDF - Questões - Tratamento Não-Dialítico e Prevenção da IRA.pdf", u: "https://drive.google.com/file/d/16fDW76cyejxqlUCZoTpXn8FWJ0-JqL_4/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 08 - Suporte Renal Artificial na IRA", lessons: [
+                        { t: "Aula 01 - Suporte Renal Artificial Parte I.mp4", u: "https://drive.google.com/file/d/1yxX6bATnpBJdAFlObwNGvTAZmwhABDzY/view?usp=sharing" },
+                        { t: "Aula 02 - Suporte Renal Artificial Parte II.mp4", u: "https://drive.google.com/file/d/1edRA4F41kky6WWm-AK8ehawAIx5BDGil/view?usp=sharing" },
+                        { t: "Aula 03 - Acesso Vascular na IRA.mp4", u: "https://drive.google.com/file/d/1qPSgwpYSYBd1sD1u5UpLn8uXiqWu-g33/view?usp=sharing" },
+                        { t: "Aula 04 - Hemodiálise Intermitente Parte I.mp4", u: "https://drive.google.com/file/d/11Casm5yD5D41yVFgHs7yzHqhzDW38N1Q/view?usp=sharing" },
+                        { t: "Aula 05 - Hemodiálise Intermitente Parte II.mp4", u: "https://drive.google.com/file/d/1gR8F_UAeFRjIF6B476kBGh2sgkZmkGID/view?usp=sharing" },
+                        { t: "Aula 06 - Hemodiálise Contínua Parte I.mp4", u: "https://drive.google.com/file/d/1uuci0r02jK-cxIphE3-rmL7J7NkYUBu2/view?usp=sharing" },
+                        { t: "Aula 07 - Hemodiálise Contínua Parte II.mp4", u: "https://drive.google.com/file/d/1sAqWyaDoZIguc8wvYzITnN7dw0Sh-hJZ/view?usp=sharing" },
+                        { t: "PDF - Questões - Suporte Renal Artificial na IRA.pdf", u: "https://drive.google.com/file/d/1Lrb5xeC801j1IEkU1uZYgZnbUtvm3uCF/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 09 - Prognóstico na IRA", lessons: [
+                        { t: "Aula 01 - Como Prognosticar a IRA.mp4", u: "https://drive.google.com/file/d/1m_pj1fMPOY3C8lgcJeRMufCFZSMRoKgV/view?usp=sharing" },
+                        { t: "Aula 02 - Orientações e Avaliação Pós Alta na IRA.mp4", u: "https://drive.google.com/file/d/1fbg8KRYmAg1jz2HhJA7w-BjE7HS_rPeJ/view?usp=sharing" },
+                        { t: "PDF - Questões - Prognóstico na IRA.pdf", u: "https://drive.google.com/file/d/1Ip3kF6_OXMgcOQsyWG90k35lhqtF6Myh/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 10 - Distúrbios Ácido-Básicos na IRA", lessons: [
+                        { t: "Aula 01 - Introdução aos Distúrbios Ácido Básicos.mp4", u: "https://drive.google.com/file/d/1hpR8twu5DQS0v2RpUtG7Ri5V1TQ4uWp-/view?usp=sharing" },
+                        { t: "Aula 02 - Terminologia, Coleta Interpretação da Gasometria e Distúrbios Simples.mp4", u: "https://drive.google.com/file/d/1S0TgM1F_2xTms1Q0yFUEKzhWFYMMZHGI/view?usp=sharing" },
+                        { t: "Aula 03 - Conceito de Ânion Gap, Distúrbios Duplos e Triplos.mp4", u: "https://drive.google.com/file/d/1skS9mahZB02MWyOwd1WC4QP79SN3yE5s/view?usp=sharing" },
+                        { t: "Aula 04 - Acidose Metabólica Bases do Tratamento.mp4", u: "https://drive.google.com/file/d/1mYUi_YtX8L3jvWjPQk0h2EiEmTgwgT4D/view?usp=sharing" },
+                        { t: "Aula 05 - Tratamento Específico das Acidoses.mp4", u: "https://drive.google.com/file/d/137mAZ6CtGR3Akec_-fOmUOtKe4cN1R0E/view?usp=sharing" },
+                        { t: "Aula 06 - Alcalose Metabólica.mp4", u: "https://drive.google.com/file/d/1sPGuA5lx6ZndlRbDLkywinGHInv2cbCj/view?usp=sharing" },
+                        { t: "Aula 07 - Distúrbios Respiratórios.mp4", u: "https://drive.google.com/file/d/1aT1cCX_o9kwRyTDfSYcswvGKIigvLrkE/view?usp=sharing" },
+                        { t: "PDF - Questões - Distúrbios Ácidos Básicos na IRA.pdf", u: "https://drive.google.com/file/d/1G9DnyAdiFGuB_T-XweF4FB9UePkZWGCD/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 11 - Diagnóstico e Tratamento dos Distúrbios Hidroeletrolíticos na IRA", lessons: [
+                        { t: "Aula 01 - Introdução às Disnatremias.mp4", u: "https://drive.google.com/file/d/1LIi_RDJIWlO5R-d7901OKZl8ibuKcDmA/view?usp=sharing" },
+                        { t: "Aula 02 - Classificação das Disnatremias.mp4", u: "https://drive.google.com/file/d/1-jiMja9lpyTRhhgieAsfLrlMVGMV6WUo/view?usp=sharing" },
+                        { t: "Aula 03 - Causas e Diagnóstico da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1rXVVXbtlgLX-jzvioJKmlp3v7wPI8vOc/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1Z99N7akncgjAOYJJZif8iSowWhrW8T0G/view?usp=sharing" },
+                        { t: "Aula 05 - Tratamento da Hiponatremia e Casos Clínicos.mp4", u: "https://drive.google.com/file/d/1fqGXGDVF5saNe1sppfGPlx1XVq3os17h/view?usp=sharing" },
+                        { t: "Aula 06 - Hipernatremia Etiologias e Diagnóstico Diferencial.mp4", u: "https://drive.google.com/file/d/1yPyc-gaUKPIeoQX7njCXP1dApOSo_Ko1/view?usp=sharing" },
+                        { t: "Aula 07 - Hipernatremia Diabetes Insipidus e Diagnóstico.mp4", u: "https://drive.google.com/file/d/1V79F7SepPo_kcSfx9dCcsiNH4wIBfOcL/view?usp=sharing" },
+                        { t: "Aula 08 - Hipernatremia Tratamento.mp4", u: "https://drive.google.com/file/d/1FfKo_evFWc3A7NNJMvbtrKTqFjkq44Xc/view?usp=sharing" },
+                        { t: "Aula 09 - Hiperkalemia Introdução e Diagnóstico.mp4", u: "https://drive.google.com/file/d/1qU_g7lNiemm-4-M2owgAFqlxJUr5VMAl/view?usp=sharing" },
+                        { t: "Aula 10 - Hiperkalemia Tratamento.mp4", u: "https://drive.google.com/file/d/1OiPlxmj2mZzYrLfNd7wlyoX5HZlRtf_9/view?usp=sharing" },
+                        { t: "Aula 11 - Hipokalemia Introdução e Diagnóstico.mp4", u: "https://drive.google.com/file/d/1pItm6TZ48FwOhLZODsstiSNHgyJavaX1/view?usp=sharing" },
+                        { t: "Aula 12 - Hipokalemia Tratamento.mp4", u: "https://drive.google.com/file/d/1AaUGvcj400BhiXvtNMg0EdRvxrcOUAGY/view?usp=sharing" },
+                        { t: "Aula 13 - Introdução aos Distúrbios do Cálcio.mp4", u: "https://drive.google.com/file/d/1LIdwP0JsuuY_h1MbOL20hex3Ju7ImsDQ/view?usp=sharing" },
+                        { t: "Aula 14 - Hipercalcemia.mp4", u: "https://drive.google.com/file/d/1uhB-K8KoDhFeEHyYGSV3ljBlj_iFysbT/view?usp=sharing" },
+                        { t: "Aula 15 - Hipocalcemia.mp4", u: "https://drive.google.com/file/d/1jqrKmFNxfMPF0IVEyUTTa0ZbnXXY_e8J/view?usp=sharing" },
+                        { t: "Aula 16 - Distúrbios do Fósforo.mp4", u: "https://drive.google.com/file/d/1vM90_LPpAdAUZueYex0Rem4csXbtCQbh/view?usp=sharing" },
+                        { t: "Aula 17 - Distúrbios do Magnésio.mp4", u: "https://drive.google.com/file/d/1ZIaxa3zf1gaRQIGGkJBmm_dRvuVlmLNZ/view?usp=sharing" },
+                        { t: "PDF - Questões - Diagnóstico e Tratamento dos Distúrbios Hidroeletrolíticos na IRA.pdf", u: "https://drive.google.com/file/d/1id8uHjxXNar5-xvxuEWKACQIEj0yuwK6/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 12 - IRA no Paciente com Doença Hepática Crônica", lessons: [
+                        { t: "Aula 01 - IRA na Doença Hepática Crônica Parte I.mp4", u: "https://drive.google.com/file/d/13uQw9zKE7L_hB75HNuy8KZa0fbGXIEoM/view?usp=sharing" },
+                        { t: "Aula 02 - IRA na Doença Hepática Crônica Parte II.mp4", u: "https://drive.google.com/file/d/1jgwbeqq7ACCbzp4_5WOktZAfI_cJhMkZ/view?usp=sharing" },
+                        { t: "Aula 03 - IRA na Doença Hepática Crônica Parte III.mp4", u: "https://drive.google.com/file/d/1zxXv8iI9vjoTGkMok76rEDko7hKDXnCM/view?usp=sharing" },
+                        { t: "PDF - Questões - IRA no Paciente com Doença Hepática Crônica.pdf", u: "https://drive.google.com/file/d/10oTrlqbM1QLyLZG0Ct-EQ7yg8J2FbAXX/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 13 - Rabdomiólise", lessons: [
+                        { t: "Aula 01 - Rabdomiólise Parte I.mp4", u: "https://drive.google.com/file/d/1MVnPpheLsFaZh4NkqfNCszueJraB_D3D/view?usp=sharing" },
+                        { t: "Aula 02 - Rabdomiólise Parte II.mp4", u: "https://drive.google.com/file/d/1LByUo8qpxQ6EouFXxnirQTvmAMSAdVBC/view?usp=sharing" },
+                        { t: "PDF - Questões - Rabdomiólise.pdf", u: "https://drive.google.com/file/d/1_ingMD0BpNSwAly6kS-MgPirVAZGmzdk/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 14 - IRA na Oncologia", lessons: [
+                        { t: "Aula 01 - Visão Geral da IRA na Oncologia.mp4", u: "https://drive.google.com/file/d/1H2VdaRMZuC01wzxRmtN-YbZKmXA58CF4/view?usp=sharing" },
+                        { t: "Aula 02 - Síndrome de Lise Tumoral Parte I.mp4", u: "https://drive.google.com/file/d/16MYLogHRS5RT0kyncbn-knh-xiEFV2ga/view?usp=sharing" },
+                        { t: "Aula 03 - Síndrome de Lise Tumoral Parte II.mp4", u: "https://drive.google.com/file/d/1eam4PAq1LVWCw1x8nmgwGb2SktWu09a6/view?usp=sharing" },
+                        { t: "Aula 04 - Nefrotoxidade por Quimioterápicos Parte I.mp4", u: "https://drive.google.com/file/d/1ym1z852dbDvUdb2YJ09j-MLJG1owYAey/view?usp=sharing" },
+                        { t: "Aula 05 - Nefrotoxidade por Quimioterápicos Parte II.mp4", u: "https://drive.google.com/file/d/163Ydidsdo0fzfRMppgtWnILRIWrZ1W45/view?usp=sharing" },
+                        { t: "Aula 06 - Distúrbios Hidroeletrolíticos na Oncologia.mp4", u: "https://drive.google.com/file/d/190jCAroinIuNmL2BtCA92XIlLqwsQ7TC/view?usp=sharing" },
+                        { t: "PDF - Questões - IRA na Oncologia.pdf", u: "https://drive.google.com/file/d/1GRmZMumzuwx4_L9eO2H2w8DcYYc88OwF/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 15 - IRA Nefrotóxica", lessons: [
+                        { t: "Aula 01 - IRA Nefrotóxica Conceitos Gerais.mp4", u: "https://drive.google.com/file/d/1hloOQCgxPZ573z7fNeMlsL6NXB3eaQja/view?usp=sharing" },
+                        { t: "Aula 02 - Nefrite Intersticial Aguda.mp4", u: "https://drive.google.com/file/d/16hfcuENUnAlNvTk2y2uacs07nWOxNadc/view?usp=sharing" },
+                        { t: "Aula 03 - IRA Pós Contraste.mp4", u: "https://drive.google.com/file/d/1nVGa_nlKfsH6MIN0IST2q9RrZrTGj13O/view?usp=sharing" },
+                        { t: "PDF - Questões - IRA Nefrotóxica.pdf", u: "https://drive.google.com/file/d/1APEW9SGJ4q0OU7Gln840TJ9Za_sUBPV_/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 16 - IRA nas Doenças Glomerulares", lessons: [
+                        { t: "Aula 01 - Raciocínio Clínico nas Glomerulopatias.mp4", u: "https://drive.google.com/file/d/1KrsvVokJFgPUpcwksHTt2bAm0drtgdUa/view?usp=sharing" },
+                        { t: "Aula 02 - Manejo Clínico da Glomerulonefrite Rapidamente Progressiva.mp4", u: "https://drive.google.com/file/d/1wEpNUpgyj6P2oeJVPv8cvWI71-C0AD9r/view?usp=sharing" },
+                        { t: "Aula 03 - IRA Relacionada à Lúpus e HIV.mp4", u: "https://drive.google.com/file/d/1QXJR1deltWGqfmCk9TtOz21aNBt7pux1/view?usp=sharing" },
+                        { t: "Aula 04 - IRA nas Doenças Infeciosas, no Mieloma e na MAT.mp4", u: "https://drive.google.com/file/d/1xPbiB46Q8NzdYWQBsUFDIyeh_eWn58h4/view?usp=sharing" },
+                        { t: "PDF - Questões - IRA nas Doenças Glomerulares.pdf", u: "https://drive.google.com/file/d/1OS0MX2ozG2xk-wDEBeU7fVgGk0Q6kzyR/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 17 - IRA nas Doença Tropicais", lessons: [
+                        { t: "Aula 01 - Introdução da IRA nas Doenças Tropicais.mp4", u: "https://drive.google.com/file/d/1_4MG1QxE-5-Xd8TyEvIavXmvK2uEICEK/view?usp=sharing" },
+                        { t: "Aula 02 - IRA por Acidentes Ofídicos, por Artrópodes e por Fitoterápicos.mp4", u: "https://drive.google.com/file/d/1jFBDRvKrHl0MBsPXQ2c3V-HXZ7-gRRL_/view?usp=sharing" },
+                        { t: "Aula 03 - IRA na Malária, Leptospirose, Dengue e Febre Amarela.mp4", u: "https://drive.google.com/file/d/1LF-vtKWj1YW1BpOtuuCyyBmeuFCsDed2/view?usp=sharing" },
+                        { t: "PDF - Questões - IRA nas Doença Tropicais.pdf", u: "https://drive.google.com/file/d/1dJE2bUBrnOJb6R5tAslDfQGbIC_Bo9QV/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 18 - IRA Obstrutiva", lessons: [
+                        { t: "Aula 01 - IRA Obstrutiva Parte I.mp4", u: "https://drive.google.com/file/d/1A5tZh1gfWVBlLSVJWE7d6TZzBRX7WqeL/view?usp=sharing" },
+                        { t: "Aula 02 - IRA Obstrutiva Parte II.mp4", u: "https://drive.google.com/file/d/1FZBJV7gtgCEjF7NanIeECC_RB0UGyEUM/view?usp=sharing" },
+                        { t: "Aula 03 - IRA Obstrutiva Parte III.mp4", u: "https://drive.google.com/file/d/10_kTpQKqfuoLthdk6c7iCFacI-bIKF7h/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 19 - Síndrome Cardiorenal", lessons: [
+                        { t: "Aula 01 - IRA Cardiorenal Parte I.mp4", u: "https://drive.google.com/file/d/1ATQXao-4QbnzBdjFKc4sOF_l1hwKtJE4/view?usp=sharing" },
+                        { t: "Aula 02 - IRA Cardiorenal Parte II.mp4", u: "https://drive.google.com/file/d/1GH48avLYJRxC02IOhk2101PIKaYH-WMb/view?usp=sharing" },
+                        { t: "Aula 03 - IRA Cardiorenal Parte III.mp4", u: "https://drive.google.com/file/d/1FdI4yRsmG6rop0L10cbl7tCqCyIRyKqa/view?usp=sharing" },
+                        { t: "PDF - Questões - Síndrome Cardiorenal.pdf", u: "https://drive.google.com/file/d/1PyNVOa1zVnEJpbWn-OJINvjfs84QOCzU/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 20 - Manejo Prático do Doente Crítico com IRA", lessons: [
+                        { t: "Aula 01 - Manejo Prático do Doente Crítico com IRA Visão Geral.mp4", u: "https://drive.google.com/file/d/1smE3waNmsj4li9mDDD3k2RZqxTnVxB0O/view?usp=sharing" },
+                        { t: "Aula 02 - A Visão do Nefrologista no Cuidado do Paciente Crítico.mp4", u: "https://drive.google.com/file/d/1sn9VINWw3mKZPnCfOVqeuwSYoTnEGFrF/view?usp=sharing" },
+                        { t: "PDF - Questões - Manejo Prático do Doente Crítico com IRA.pdf", u: "https://drive.google.com/file/d/1ltvx9ap5eU561z7z-9BVU7S6c01rgEAh/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 21 - IRA na Gestação", lessons: [
+                        { t: "Aula 01 - IRA na Gestação.mp4", u: "https://drive.google.com/file/d/1UE0lpmaiMCYWPeVwrbeNabsIE2-AZZ5f/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 22 - Casos Clínicos em IRA", lessons: [
+                        { t: "Aula 01 - Casos Clínicos em IRA Casos I e II.mp4", u: "https://drive.google.com/file/d/1AKUrsWhIIFvGmRW4TqMtOY0bE-xUxStz/view?usp=sharing" },
+                        { t: "Aula 02 - Casos Clínicos em IRA Casos III e IV.mp4", u: "https://drive.google.com/file/d/1b4OimPIJxCvK_A93nl3LEWCdu5cQzK6m/view?usp=sharing" },
+                        { t: "Aula 03 - Casos Clínicos em IRA Casos V, VI e VII.mp4", u: "https://drive.google.com/file/d/1zgGA2JRDXz5-6hFXqGNYbKMNephRPKS2/view?usp=sharing" },
+                        { t: "Aula 04 - Casos Clínicos em IRA Casos VIII, IX e X.mp4", u: "https://drive.google.com/file/d/1AAHRyJhIJRSfUOHDIH2MbIBhaLPyNQ8H/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 23 - Semana da IRA", lessons: [
+                        { t: "Aula 01 - Semana da IRA Aula I.mp4", u: "https://drive.google.com/file/d/1eY9TYjPRKHEP-6vphkLJcL7fspZEZmrU/view?usp=sharing" },
+                        { t: "Aula 02 - Semana da IRA Aula II.mp4", u: "https://drive.google.com/file/d/1gPg_4WUFieiO5zpwB3u1hCPmz7mrCvXw/view?usp=sharing" },
+                        { t: "Aula 03 - Semana da IRA Aula III.mp4", u: "https://drive.google.com/file/d/1E6eYB5rv1YQ0u4zvV8Zk4QCD5O7a6-lV/view?usp=sharing" },
+                        { t: "Aula 04 - Semana da IRA Aula IV.mp4", u: "https://drive.google.com/file/d/1jvG_P5kYW2Cd_KsX_b_tnqBzSesyG0iI/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 24 - Semana da IRA (2023)", lessons: [
+                        { t: "Aula 01 - Semana da IRA (2023) Aula I.mp4", u: "https://drive.google.com/file/d/18T2YYYPoTfn4J53OmtuNBtw1Tn_uc83G/view?usp=sharing" },
+                        { t: "Aula 02 - Semana da IRA (2023) Aula II.mp4", u: "https://drive.google.com/file/d/1MjoTmvM_ZszFF8DEzBBTddNy0V1IqK0f/view?usp=sharing" },
+                        { t: "Aula 03 - Semana da IRA (2023) Aula III.mp4", u: "https://drive.google.com/file/d/1dVxds05T8m0RbSYpPzWYEEnmcj16gMrg/view?usp=sharing" },
+                        { t: "Aula 04 - Semana da IRA (2023) Aula IV.mp4", u: "https://drive.google.com/file/d/1trZpX8d90EI8GVwqzzlV6lara0LQyMTh/view?usp=sharing" }
+                    ]},
+                    { title: "Módulo 25 - Bônus E-Book", lessons: [
+                        { t: "PDF - E-Book - Tudo Que Você Precisa Saber Para Manejar a IRA na Beira do Leito.pdf", u: "https://drive.google.com/file/d/1Gb5RKABzi_L3CpFt9XzIqdC_rDHyvlO-/view?usp=sharing" }
+                    ]}
+                ]
+            },
+            {
+                id: 'course_5',
+                title: 'Nefrologia para Consultório',
+                description: 'Tudo o que precisa para iniciar e otimizar o seu consultório, desde o marketing até ao atendimento seguro e fidelização de pacientes.',
+                icon: 'fa-user-md', color: 'from-amber-500 to-orange-600', shadow: 'shadow-amber-500/20',
+                sections: [
+                    {
+                        title: "Seção 01 - Iniciando e Otimizando o Consultório",
+                        modules: [
+                            { title: "Módulo 01 - Comece por Aqui", lessons: [{ t: "Aula 01 - Comece por Aqui.mp4", u: "https://drive.google.com/file/d/1AAI3y5DR_AHIfz4u27I0yi7t2oX4YkiZ/view?usp=sharing" }] },
+                            { title: "Módulo 02 - Instagram para Nefrologistas", lessons: [{ t: "Aula 01 - Instagram para Nefrologistas.mp4", u: "https://drive.google.com/file/d/1S0HYnLVHZuZkBNPOiXWHZ-4wTek_lATU/view?usp=sharing" }] },
+                            { title: "Módulo 03 - Como Ter Mais Indicações de Outros Médicos", lessons: [{ t: "Aula 01 - Como Ter Mais Indicações de Outros Médicos.mp4", u: "https://drive.google.com/file/d/10H2aFAHBMhVDeW_8_1mm9HpAynZVLVmM/view?usp=sharing" }] },
+                            { title: "Módulo 04 - Como Ter Uma Consulta que Encanta e Fideliza", lessons: [{ t: "Aula 01 - Como Fazer Uma Consulta que Encanta e Fideliza Pacientes na Nefrologia.mp4", u: "https://drive.google.com/file/d/13tl0v9TouwmzE9H3TJMBG_vpt7g8sjoH/view?usp=sharing" }] },
+                            { title: "Módulo 05 - O Pré e Pós-Consulta Como Transformar Seu Atendimento", lessons: [{ t: "Aula 01 - O Pré e Pós-Consulta Como Transformar Seu Atendimento e Fidelizar Pacientes.mp4", u: "https://drive.google.com/file/d/1QxsnDCvSXceO0QP319KrbDtw0PcgfbqJ/view?usp=sharing" }] },
+                            { title: "Módulo 06 - Como Sair do Convênio Para Atender Apenas Particular", lessons: [{ t: "Aula 01 - Como Sair do Convênio Para Atender Apenas Particular.mp4", u: "https://drive.google.com/file/d/10HKivmxu7nX2vrSv__3xpurowW3Pvfcg/view?usp=sharing" }] },
+                            { title: "Módulo 07 - Como Fazer o seu Tráfego Pago", lessons: [
+                                { t: "Aula 01 - Princípios.mp4", u: "https://drive.google.com/file/d/1sCNGZNTMCXf4Tjudys449dX5HjCXq73i/view?usp=sharing" },
+                                { t: "Aula 02 - Pesquisa de Palavras Chave.mp4", u: "https://drive.google.com/file/d/17BRjkdvV2x9By_bnSaVyqBrHJMB4ibiV/view?usp=sharing" },
+                                { t: "Aula 03 - Subindo Campanha.mp4", u: "https://drive.google.com/file/d/1wEaUIvWuWqkeeiUnqxXp2UlLCDGvgcIk/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 08 - Dicas da Minha Secretária Para Ajudar a Sua", lessons: [{ t: "Aula 01 - Dicas da Minha Secretária Para Ajudar a Sua.mp4", u: "https://drive.google.com/file/d/11UL7jd1r1b3i7Hpbgmy87uxKACNqzecI/view?usp=sharing" }] },
+                            { title: "Módulo 09 - PDF com Dicas Para Você Montar seu Consultório", lessons: [{ t: "PDF - Principais Dicas para Você Montar seu Consultório.pdf", u: "https://drive.google.com/file/d/1xdcUPrgdmsixLqUTzg0tMy81rwfmwMeQ/view?usp=sharing" }] }
+                        ]
+                    },
+                    {
+                        title: "Seção 02 - Atenda seu Paciente com Segurança",
+                        modules: [
+                            { title: "Módulo 01 - Estrutura do Curso", lessons: [{ t: "Aula 01 - Estrutura do Curso.mp4", u: "https://drive.google.com/file/d/1JYigcP_tknIgC8acaVnLxKaWPTgImWEz/view?usp=sharing" }] },
+                            { title: "Módulo 02 - Semiologia na Nefrologia", lessons: [
+                                { t: "Aula 01 - Boas Vindas ao Curso de Nefrologia Ambulatorial.mp4", u: "https://drive.google.com/file/d/1-dWp3lCSudo0LgdHD7pysTXrp-fF40Ws/view?usp=sharing" },
+                                { t: "Aula 02 - Anamnese.mp4", u: "https://drive.google.com/file/d/1s0p52ub8eZPj13gl36ONK8FNZnfwynkK/view?usp=sharing" },
+                                { t: "Aula 03 - Exame Físico.mp4", u: "https://drive.google.com/file/d/1VvHjMVC7Isxzm_-NgDuj1y8iK7S42W27/view?usp=sharing" },
+                                { t: "PDF - Semiologia em Nefrologia.pdf", u: "https://drive.google.com/file/d/1R0q2wwfLKli2XBP5XZLQuFZ8GYokAfsA/view?usp=sharing" },
+                                { t: "PDF - Check-List: Exame Físico.pdf", u: "https://drive.google.com/file/d/1FT0D4yvYxuQC38lYCnLU8UU4QhcajtT1/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 03 - Avaliação da TFG e Urinálise", lessons: [
+                                { t: "Aula 01 - Taxa de Filtração Glomerular Parte I.mp4", u: "https://drive.google.com/file/d/17bitf4dxHxcb9wj4KuYo6APc5eKAfKWB/view?usp=sharing" },
+                                { t: "Aula 02 - Taxa de Filtração Glomerular Parte II.mp4", u: "https://drive.google.com/file/d/1IXIV0iijaoA8PDlChrssFHlrsyO2GOGj/view?usp=sharing" },
+                                { t: "Aula 03 - Taxa de Filtração Glomerular Parte III.mp4", u: "https://drive.google.com/file/d/15-Z90yYgb_uAsibPUK2LQDiHl8OlXAmj/view?usp=sharing" },
+                                { t: "Aula 04 - Errata Filtração Glomerular.mp4", u: "https://drive.google.com/file/d/1u7uJzvekiVSc1cZuczPNVNKEswDMCnJx/view?usp=sharing" },
+                                { t: "Aula 05 - Urinálise Parte I.mp4", u: "https://drive.google.com/file/d/14IK3bfgna2J3-txt5J6d3Pf0P7JlpMH7/view?usp=sharing" },
+                                { t: "Aula 06 - Urinálise Parte II.mp4", u: "https://drive.google.com/file/d/18zX0Brte9aJEK_XjFS9PXrt1er9fbL7S/view?usp=sharing" },
+                                { t: "Aula 07 - Urinálise Parte III.mp4", u: "https://drive.google.com/file/d/1j4pigdoVjKSZesGgCuTyN4-Sn8NS8i8c/view?usp=sharing" },
+                                { t: "Aula 08 - Urinálise Parte IV.mp4", u: "https://drive.google.com/file/d/1N_iI9CgrhrlWyBeuvNXPxns5loBRaDqs/view?usp=sharing" },
+                                { t: "Aula 09 - Errata Urinálise.mp4", u: "https://drive.google.com/file/d/1SHlkkZ8_hxKOuGyZj6BaT55FfRSPnNvR/view?usp=sharing" },
+                                { t: "PDF - Referências: Avaliação da TFG e Urinálise.pdf", u: "https://drive.google.com/file/d/1lrQkr7xuYwXeNYC-vcx5kXllHDll-LQ5/view?usp=sharing" },
+                                { t: "PDF - Questões: Taxa de Filtração Glomerular.pdf", u: "https://drive.google.com/file/d/1pl7CGZf5b7Gwp4z0RchJtZWF2TNgiiSA/view?usp=sharing" },
+                                { t: "PDF - Exame de Urina e Proteinúria.pdf", u: "https://drive.google.com/file/d/18V_3vMEO-LYGLW3QV-cQZ_OvGolN3xB5/view?usp=sharing" },
+                                { t: "PDF - Avaliação da TFG.pdf", u: "https://drive.google.com/file/d/1B_bXsqM1MYzr2TWvEQWsSjKLJ7aB16v6/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 04 - Métodos de Imagem em Nefrologia", lessons: [
+                                { t: "Aula 01 - Métodos de Imagem em Nefrologia Parte I.mp4", u: "https://drive.google.com/file/d/1JuvQXLE-Jdvg0pE69j-pLaZp4tgCItdj/view?usp=sharing" },
+                                { t: "Aula 02 - Métodos de Imagem em Nefrologia Parte II.mp4", u: "https://drive.google.com/file/d/1ktyAwQuJDhMrZnCPlN5AeTlPCZGOsJYO/view?usp=sharing" },
+                                { t: "Aula 03 - Errata Cintilografia.mp4", u: "https://drive.google.com/file/d/1cr5qS2RGHUuSOYXNaWCETowe7vU61CAR/view?usp=sharing" },
+                                { t: "Aula 04 - Métodos de Imagem em Nefrologia Parte III.mp4", u: "https://drive.google.com/file/d/1q7KNQltNRHaxYxB2ajvkf_KbA2bbFPGh/view?usp=sharing" },
+                                { t: "PDF - Métodos de Imagem em Nefrologia.pdf", u: "https://drive.google.com/file/d/1Yl5IsHVkJ6RZPSYUUNoLbQYcN9zgIJ7z/view?usp=sharing" },
+                                { t: "PDF - Referências: Métodos de Imagem em Nefrologia.pdf", u: "https://drive.google.com/file/d/1OoQN50Y9l4GsTueBQ9HsRY60ejn6oZQf/view?usp=sharing" },
+                                { t: "PDF - Questões: Métodos de Imagem em Nefrologia.pdf", u: "https://drive.google.com/file/d/16FbLazqgpCnVCxr8zh2bbvNygWUPktgR/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 05 - Doença Cística Renal", lessons: [
+                                { t: "Aula 01 - Cistos Parte I.mp4", u: "https://drive.google.com/file/d/1rDzJlfY87AUFAlV4ZppJnr9YXdrhAfUU/view?usp=sharing" },
+                                { t: "Aula 02 - Cistos Parte II.mp4", u: "https://drive.google.com/file/d/1YUgdqtymZHhvtfjNrvNNTonNDDcW0nUD/view?usp=sharing" },
+                                { t: "Aula 03 - Cistos Parte III.mp4", u: "https://drive.google.com/file/d/1Yj13F0DKPPGlUpLDrTL9-WaoU150WB3R/view?usp=sharing" },
+                                { t: "Aula 04 - DRPAD Parte I.mp4", u: "https://drive.google.com/file/d/1pqyy-YEkMscLODIj9qjgKKwFKSQrJOIE/view?usp=sharing" },
+                                { t: "Aula 05 - DRPAD Parte II.mp4", u: "https://drive.google.com/file/d/1O-i6eUGAe3QIBSRY0_1ijMZ7PFOxu-eX/view?usp=sharing" },
+                                { t: "Aula 06 - DRPAD Parte III.mp4", u: "https://drive.google.com/file/d/1Touf2rHJ4tE47nQVZPJ4kIkZZ9H5vdPc/view?usp=sharing" },
+                                { t: "PDF - Referências: Doença Cística Renal.pdf", u: "https://drive.google.com/file/d/1NOCOVCFDae98rJStJaIs4RyBlgLfF_Fy/view?usp=sharing" },
+                                { t: "PDF - Questões: Doença Cística Renal.pdf", u: "https://drive.google.com/file/d/1MT8CrsmnEoFB3RbvMoS1R2x3H9HlfPMs/view?usp=sharing" },
+                                { t: "PDF - Doença Cistica Renal.pdf", u: "https://drive.google.com/file/d/1adPO3POH7b1uFh4dvahLOasdxF7bFxfv/view?usp=sharing" },
+                                { t: "PDF - Apresentação: DRPAD.pdf", u: "https://drive.google.com/file/d/1Vq_cOuee9DZI0sr_ZD3nUCM-CBtomBLJ/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 06 - Nefrolitíase", lessons: [
+                                { t: "Aula 01 - Nefrolitíase Parte I.mp4", u: "https://drive.google.com/file/d/1MOKndXAbfNnHM3i0WvQBy_sl0HsvRwlR/view?usp=sharing" },
+                                { t: "Aula 02 - Nefrolitíase Parte II.mp4", u: "https://drive.google.com/file/d/13YmApqenKQ3WJscKf-XBMMLPLzb2VElY/view?usp=sharing" },
+                                { t: "Aula 03 - Nefrolitíase Parte III.mp4", u: "https://drive.google.com/file/d/15ppdTtO3mnoos1kjUSSG2QNROEJiacT8/view?usp=sharing" },
+                                { t: "Aula 04 - Nefrolitíase Parte IV.mp4", u: "https://drive.google.com/file/d/1ngkJpCkXhQt7x-9qFwvmgYEVywla2k1X/view?usp=sharing" },
+                                { t: "Aula 05 - Nefrolitíase Parte V.mp4", u: "https://drive.google.com/file/d/154dUw_-wptdwnng1f_sA-X9c3Sz4wKJS/view?usp=sharing" },
+                                { t: "Aula 06 - Nefrolitíase Parte VI.mp4", u: "https://drive.google.com/file/d/1Z-AMH6vFDiOyMBQAoQJa5V5DcaORs_pr/view?usp=sharing" },
+                                { t: "Aula 07 - Nefrolitíase Parte VII.mp4", u: "https://drive.google.com/file/d/1dxNMcCSibqcbOElJj_yYS3cH9WBM51pD/view?usp=sharing" },
+                                { t: "PDF - Referências: Nefrolitíase.pdf", u: "https://drive.google.com/file/d/1k7fyjXO4B2iode1Vz7jvwAG8sZHWaKwf/view?usp=sharing" },
+                                { t: "PDF - Questões: Nefrolitíase.pdf", u: "https://drive.google.com/file/d/1nGD4g2Utwg2CzXg03yb0EbqRVFsyXmwE/view?usp=sharing" },
+                                { t: "PDF - Nefrolitíase.pdf", u: "https://drive.google.com/file/d/1J5jjdlxXRTZZ8gy9Q1xW8JdjiEFSrQiz/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 07 - Infecção do Trato Urinário", lessons: [
+                                { t: "Aula 01 - Infecção do Trato Urinário Parte I.mp4", u: "https://drive.google.com/file/d/1kAa3H9Yt68Kzlga1AJwe-eviH2O2GV8L/view?usp=sharing" },
+                                { t: "Aula 02 - Infecção do Trato Urinário Parte II.mp4", u: "https://drive.google.com/file/d/1K-YP-flEl2IFHYQA04YH8Cw1GFUocajk/view?usp=sharing" },
+                                { t: "Aula 03 - Infecção do Trato Urinário Parte III.mp4", u: "https://drive.google.com/file/d/1em0G2_-qSKA35_LznsloXF5txmtREyE2/view?usp=sharing" },
+                                { t: "Aula 04 - Infecção do Trato Urinário Parte IV.mp4", u: "https://drive.google.com/file/d/1eWlsm9DJEiVwd8R3Owhkm1NRpyD0JusS/view?usp=sharing" },
+                                { t: "Aula 05 - Infecção do Trato Urinário Parte V.mp4", u: "https://drive.google.com/file/d/1tGBMk2GOzlf2JRtgTED991Gs6RAyKUBE/view?usp=sharing" },
+                                { t: "PDF - Infecção do Trato Urinário.pdf", u: "https://drive.google.com/file/d/1FwfETlOtj5JjXYRYDI4BXBHOFeuzCZx5/view?usp=sharing" },
+                                { t: "PDF - Referências: Infecção do Trato Urinário.pdf", u: "https://drive.google.com/file/d/18QmupWF-f6KOTBPh9E1DI8LxE16N-VPA/view?usp=sharing" },
+                                { t: "PDF - Questões: Infecção do Trato Urinário.pdf", u: "https://drive.google.com/file/d/1Enhj197NArtTPVjlR70GM8weIc-k9pAb/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 08 - Nefrocalcionose", lessons: [
+                                { t: "Aula 01 - Nefrocalcionose Parte I.mp4", u: "https://drive.google.com/file/d/1jLAs28RvMSoSPYGxezXrW89_xVqRRVml/view?usp=sharing" },
+                                { t: "Aula 02 - Nefrocalcionose Parte II.mp4", u: "https://drive.google.com/file/d/12MeF1U-igImLK3I5F6mbOyV2VFgFsxDf/view?usp=sharing" },
+                                { t: "PDF - Referências: Nefrocalcinose.pdf", u: "https://drive.google.com/file/d/10gRZpGkxvjksN_qiM4ZKVW1EUiDlF1Ag/view?usp=sharing" },
+                                { t: "PDF - Questões: Nefrocalcinose.pdf", u: "https://drive.google.com/file/d/1Au-2-hBOdPnAkv_Tt3UU2EDX_crSdBd2/view?usp=sharing" },
+                                { t: "PDF - Nefrocalcinose.pdf", u: "https://drive.google.com/file/d/1RW_AoTJqOJ-iDk9vIWvnFyj9ZLtx6g1S/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 09 - Doença Renal Crônica", lessons: [
+                                { t: "Aula 01 - Doença Renal Crônica Parte I.mp4", u: "https://drive.google.com/file/d/1hws3tmq3dolSvsU2CjgqRAfyRDB5Sq50/view?usp=sharing" },
+                                { t: "Aula 02 - Doença Renal Crônica Parte II.mp4", u: "https://drive.google.com/file/d/190pROKI6-w0cdKdU5AugkH77a4hrF932/view?usp=sharing" },
+                                { t: "Aula 03 - Doença Renal Crônica Parte III.mp4", u: "https://drive.google.com/file/d/1Zez07Uw_HxB25fFxYyzcoF_ZlK95Zago/view?usp=sharing" },
+                                { t: "Aula 04 - Doença Renal Crônica Parte IV.mp4", u: "https://drive.google.com/file/d/1DuWo7SNPlFx_SJoXjtlr4WVha89uos6w/view?usp=sharing" },
+                                { t: "Aula 05 - Doença Renal Crônica Parte V.mp4", u: "https://drive.google.com/file/d/1lwA2kCZ39wYG_2Bb5R__snUYZzO-ulEp/view?usp=sharing" },
+                                { t: "Aula 06 - Doença Renal Crônica Parte VI.mp4", u: "https://drive.google.com/file/d/1v_R8WrodRhxGID_CSoOjVo6eycZESRjH/view?usp=sharing" },
+                                { t: "Aula 07 - Doença Renal Crônica Parte VII.mp4", u: "https://drive.google.com/file/d/1oRSut02-yEF3ooyhWezY6I2xAXnDyfpV/view?usp=sharing" },
+                                { t: "PDF - Referências: Doença Renal Crônica.pdf", u: "https://drive.google.com/file/d/1SE_jjqh9JNab8t6cj_YWDDq6u58LPv15/view?usp=sharing" },
+                                { t: "PDF - Questões: Doença Renal Crônica.pdf", u: "https://drive.google.com/file/d/1Zqs7SXG4AkdP5HhAudnHlzRID9LiJJBr/view?usp=sharing" },
+                                { t: "PDF - DRC.pdf", u: "https://drive.google.com/file/d/1fcVVcYJ0BL5XM6-1JQPHGr5oRlRTBbUa/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 10 - Investigação das Doenças Glomerulares", lessons: [
+                                { t: "Aula 01 - Investigação das Doenças Glomerulares Parte I.mp4", u: "https://drive.google.com/file/d/1RyUnyNIjY2YP6uoMqxOrCeXzF8Kxi3aq/view?usp=sharing" },
+                                { t: "Aula 02 - Investigação das Doenças Glomerulares Parte II.mp4", u: "https://drive.google.com/file/d/1emoNGN56Cxf9tvP87xsfNB0_0LPDKYFx/view?usp=sharing" },
+                                { t: "Aula 03 - Investigação das Doenças Glomerulares Parte III.mp4", u: "https://drive.google.com/file/d/1Nl3M4tnbY6lF5wJLFQgCRh569r14eQWD/view?usp=sharing" },
+                                { t: "Aula 04 - Investigação das Doenças Glomerulares Parte IV.mp4", u: "https://drive.google.com/file/d/19Joo585j567aYEtGeJLI1Xeb5yPJlk60/view?usp=sharing" },
+                                { t: "PDF - Questões: Investigação das Doenças Glomerulares.pdf", u: "https://drive.google.com/file/d/1hsq5teDNoKXyyn_ajDLl4pJ8s7beaxJW/view?usp=sharing" },
+                                { t: "PDF - Investigação das Doença Glomerulares e Biópisa Renal.pdf", u: "https://drive.google.com/file/d/1VJzj3a1kgJJD0-FACfeL6oF4roR-Utto/view?usp=sharing" },
+                                { t: "PDF - Referências: Investigação das Doenças Glomerulares.pdf", u: "https://drive.google.com/file/d/1YSXOG14yMekTnwHNxUbsR2AdgOfqJWtm/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 11 - Doença Renal do Diabetes", lessons: [
+                                { t: "Aula 01 - Doença Renal do Diabetes Parte I.mp4", u: "https://drive.google.com/file/d/1oZhqfk6HnnaAQNNWGFDdFg3sLGK_a0Gr/view?usp=sharing" },
+                                { t: "Aula 02 - Doença Renal do Diabetes Parte II.mp4", u: "https://drive.google.com/file/d/12gpVexG6h6ozETKRnGACZfcLeJlYrzVR/view?usp=sharing" },
+                                { t: "Aula 03 - Doença Renal do Diabetes Parte III.mp4", u: "https://drive.google.com/file/d/1cVbMrDFfFajjSmylSQw20oqILb_e7UuI/view?usp=sharing" },
+                                { t: "Aula 04 - Doença Renal do Diabetes Parte IV.mp4", u: "https://drive.google.com/file/d/1HD_UoHO5eKcpkz4BfpuPQO6AcTyef7Cx/view?usp=sharing" },
+                                { t: "Aula 05 - Doença Renal do Diabetes Parte V.mp4", u: "https://drive.google.com/file/d/1fUtgegl7n6Tx3If_HuHX2DrWtzgxJUo2/view?usp=sharing" },
+                                { t: "PDF - Referências: Doença Renal do Diabetes.pdf", u: "https://drive.google.com/file/d/1p5iOfJ19AhwFCeoLaBhXfmyzgO0trLHl/view?usp=sharing" },
+                                { t: "PDF - Questões: Doença Renal do Diabetes.pdf", u: "https://drive.google.com/file/d/1PbR9U1vHCIPU5-HwvsUYzS2cp716p968/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 12 - Doença Renal na Gestação", lessons: [
+                                { t: "Aula 01 - Doença Renal na Gestação Parte I.mp4", u: "https://drive.google.com/file/d/11AhuWnGAoQyMSgWKpuI4lq-U9znFzX1E/view?usp=sharing" },
+                                { t: "Aula 02 - Doença Renal na Gestação Parte II.mp4", u: "https://drive.google.com/file/d/1-RIo9Vc0pQvNsxNE6cv5efizUA5xngGB/view?usp=sharing" },
+                                { t: "Aula 03 - Doença Renal na Gestação Parte III.mp4", u: "https://drive.google.com/file/d/1-Glbny9So-a2sT0_CVa0jpglQz3ncQCu/view?usp=sharing" },
+                                { t: "Aula 04 - Doença Renal na Gestação Parte IV.mp4", u: "https://drive.google.com/file/d/17llokJrzBpGxjubwkw8UgoS6ywccxKF3/view?usp=sharing" },
+                                { t: "PDF - Rim na Gestação.pdf", u: "https://drive.google.com/file/d/1Se1E8AfCgXY7mZnBziez8sqz19Q6p0lk/view?usp=sharing" },
+                                { t: "PDF - Referências: Doença Renal na Gestação.pdf", u: "https://drive.google.com/file/d/1EdkWryUBaifoY8mGSeWNSjIwqYLtCFYm/view?usp=sharing" },
+                                { t: "PDF - Questões: Doença Renal na Gestação.pdf", u: "https://drive.google.com/file/d/1vxoY8NAOpHrnbC_8kFblGsLRlIcctjz7/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 13 - Investigação e Diagnóstico Diferencial das Tubulopatias", lessons: [
+                                { t: "Aula 01 - Tubulopatias Parte I.mp4", u: "https://drive.google.com/file/d/1W1gq5620yHeZCEZ-r00wf70pEJVVXLl7/view?usp=sharing" },
+                                { t: "Aula 02 - Tubulopatias Parte II.mp4", u: "https://drive.google.com/file/d/1tm97QRvYd0P8ubK50p3zaQF_EVhRYbni/view?usp=sharing" },
+                                { t: "Aula 03 - Tubulopatias Parte III.mp4", u: "https://drive.google.com/file/d/17SUu6D3HV34r9A5TXqV0yR_mXjaCamYO/view?usp=sharing" },
+                                { t: "Aula 04 - Tubulopatias Parte IV.mp4", u: "https://drive.google.com/file/d/1lINFWSLCy7lJDiIb0hhG9K11eygk5SKd/view?usp=sharing" },
+                                { t: "Aula 05 - Tubulopatias Parte V.mp4", u: "https://drive.google.com/file/d/1PZHr9ksv6CuosbratUBCeBlQf8JRNfCN/view?usp=sharing" },
+                                { t: "Aula 06 - Tubulopatias Parte VI.mp4", u: "https://drive.google.com/file/d/1MgADvzcsq5A7hQwuBPV2lg3RDQxaeADA/view?usp=sharing" },
+                                { t: "PDF - Referências: Tubulopatias.pdf", u: "https://drive.google.com/file/d/1ygeAH4f_ie5Yo1iOF_6zTHW-LzdkciIc/view?usp=sharing" },
+                                { t: "PDF - Questões: Tubulopatias.pdf", u: "https://drive.google.com/file/d/1EUk-y1t8zfoGPMMh5tkaWBSojdjv7yy3/view?usp=sharing" },
+                                { t: "PDF - Investigação das Tubulopatias.pdf", u: "https://drive.google.com/file/d/1k_TCE6EYtERSJRVWvApi-Mtkhk45WhEE/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 14 - Terapêutica em Nefrologia", lessons: [
+                                { t: "Aula 01 - IECA BRA.mp4", u: "https://drive.google.com/file/d/1Zz4oRy72b3NN8EcR6apP3c0OiuIDttGQ/view?usp=sharing" },
+                                { t: "Aula 02 - Diuréticos.mp4", u: "https://drive.google.com/file/d/1sagV7pcb3pWxhYxvormStDaJmBjV_LMH/view?usp=sharing" },
+                                { t: "Aula 03 - Anti-Diabéticos.mp4", u: "https://drive.google.com/file/d/1O47bN64FBQztJT_n7boTi2l87ppFu7Y2/view?usp=sharing" },
+                                { t: "Aula 04 - Imunosupressores.mp4", u: "https://drive.google.com/file/d/1yBQm_2_tWKOai0SS2_0Zwct5ZdjRwq71/view?usp=sharing" },
+                                { t: "Aula 05 - Miscelânia.mp4", u: "https://drive.google.com/file/d/1ftH8O7abKPJcJY07Q_O0ICDKQkH-_vZT/view?usp=sharing" },
+                                { t: "PDF - Referências: Terapêutica.pdf", u: "https://drive.google.com/file/d/1zRsbBE6-Qc8KxqSBbv077liEaVRklgcv/view?usp=sharing" },
+                                { t: "PDF - Questões: Terapêutica.pdf", u: "https://drive.google.com/file/d/1UelgccxULllE5jZS7C5YQV8vJbs4rXnG/view?usp=sharing" },
+                                { t: "PDF - Terapêutica em Nefrologia.pdf", u: "https://drive.google.com/file/d/1wdIgByDjRS4lfirz2IYq3pWKw6WHKRMV/view?usp=sharing" }
+                            ]}
+                        ]
+                    },
+                    {
+                        title: "Seção 03 - Hipertensão",
+                        modules: [
+                            { title: "Módulo Único - Aulas de Hipertensão", lessons: [
+                                { t: "Aula 01 - Importância Prática da Hipertensão.mp4", u: "https://drive.google.com/file/d/1JOf0SE7jSemV7JyuYR6qh2jGLCZQB8RB/view?usp=sharing" },
+                                { t: "Aula 02 - Diagnóstico e Classificação da Hipertensão.mp4", u: "https://drive.google.com/file/d/1eW5svCzyD7L1sWIOuofKTZpFMemt9wL8/view?usp=sharing" },
+                                { t: "Aula 03 - Metas Terapêuticas, Tratamento Não-Medicamentoso e Equipe Multidisciplinar.mp4", u: "https://drive.google.com/file/d/108axz49OX0ouBu8i8214EIX7E-GdC8dy/view?usp=sharing" },
+                                { t: "Aula 04 - Estratificação de Risco, Tratamento Não-Farmacológico e Tratamento Farmacológico Parte I.mp4", u: "https://drive.google.com/file/d/1EdM0UBFEvhu3T8gH63LVFB5KaNnROSRW/view?usp=sharing" },
+                                { t: "Aula 05 - Estratificação de Risco, Tratamento Não-Farmacológico e Tratamento Farmacológico Parte II.mp4", u: "https://drive.google.com/file/d/1NKJRa4ZuiYIcBysxkkB-jaA4GQ3yAGDw/view?usp=sharing" },
+                                { t: "Aula 06 - Manejo Prático da Hipertensão em Condições Clínicas Específicas.mp4", u: "https://drive.google.com/file/d/1Cjo-lPaB6lIg7gUUQsCij18xLU_m2t87/view?usp=sharing" },
+                                { t: "Aula 07 - Crise Hipertensiva.mp4", u: "https://drive.google.com/file/d/1XPq8y-VHTRuJfXQZg1wcKdSwMLM9IWlm/view?usp=sharing" },
+                                { t: "Aula 08 - Hipertensão Secundária Parte I.mp4", u: "https://drive.google.com/file/d/1QHO9IsO_SXtOqMeK9dA_hO5y2bIBSBhE/view?usp=sharing" },
+                                { t: "Aula 09 - Hipertensão Secundária Parte II.mp4", u: "https://drive.google.com/file/d/17pHz6kWueFWDTR5v9NGyLV2u5dSFFvCZ/view?usp=sharing" },
+                                { t: "Aula 10 - Hipertensão de Resistente e Adesão ao Tratamento Anti-Hipertensivo.mp4", u: "https://drive.google.com/file/d/160AxBNpp9WhSoLcOw6-OObA4f1-fZW5H/view?usp=sharing" }
+                            ]}
+                        ]
+                    },
+                    {
+                        title: "Seção 04 - Disturbios Hidroeletrolíticos e Ácido-Base",
+                        modules: [
+                            { title: "Módulo 01 - Seja Bem Vindo", lessons: [{ t: "Aula 01 - Comece por Aqui.mp4", u: "https://drive.google.com/file/d/1AAI3y5DR_AHIfz4u27I0yi7t2oX4YkiZ/view?usp=sharing" }] },
+                            { title: "Módulo 02 - Introdução aos Distúrbios Ácido-Base e Gasometria", lessons: [
+                                { t: "Aula 01 - Introdução aos Distúrbios Ácido-Base.mp4", u: "https://drive.google.com/file/d/1rMYpb1derC7a3Wl_BiWc2YDQ-yWeFboL/view?usp=sharing" },
+                                { t: "Aula 02 - Parâmetros Gasométricos Iniciais.mp4", u: "https://drive.google.com/file/d/1wSW8EhT62ki3yGTX6CgpEE4PA6hRZAZC/view?usp=sharing" },
+                                { t: "Aula 03 - Como Coletar a Gasometria e Interpretar os Distúrbios Simples.mp4", u: "https://drive.google.com/file/d/14Wobzre9nOL7NGGIOeHb5Ae1bCaEKsrl/view?usp=sharing" },
+                                { t: "Aula 04 - Errata, Conceito de Ânion GAP e Delta Delta.mp4", u: "https://drive.google.com/file/d/1BBsFQIshb85KV-rQq-IEiWz02csnnFBm/view?usp=sharing" },
+                                { t: "Aula 05 - Passo a Passo Diagnóstico e Casos Clínicos.mp4", u: "https://drive.google.com/file/d/1SrYfpJs3Q_4DHREY34Xu8RiFinPOWLoF/view?usp=sharing" },
+                                { t: "Aula 06 - Resolução das Questões.mp4", u: "https://drive.google.com/file/d/1HX8tnf-enm1QC_8teQMlcHjhGuQR97J4/view?usp=sharing" },
+                                { t: "PDF - Questões: Introdução os Distúrbios Ácido-Base e Gasometria.pdf", u: "https://drive.google.com/file/d/1uLwE9QizOyDsAaFXhACptPyh1C5E2_5g/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 03 - Acidose Metabólica", lessons: [
+                                { t: "Aula 01 - Raciocínio Clínico nas Acidoses.mp4", u: "https://drive.google.com/file/d/1mukL3_3fPyeX97KjIilB_7MHSH2F6RZc/view?usp=sharing" },
+                                { t: "Aula 02 - Consequências da Acidose e Porque Não Usar Bicarbonato.mp4", u: "https://drive.google.com/file/d/1kOu8su08TdQeIKOSrJ72ZyVJ-sYXDAXZ/view?usp=sharing" },
+                                { t: "Aula 03 - Tratamento Geral da Acidose Metabólica.mp4", u: "https://drive.google.com/file/d/1K6kRJylzjvHpaiOgmAFsidktgclLIHGn/view?usp=sharing" },
+                                { t: "Aula 04 - Tratamento Específico das Acidoses com AG Elevado.mp4", u: "https://drive.google.com/file/d/1PNSOmfST41yLyDv9uvNnege34fjA8RC0/view?usp=sharing" },
+                                { t: "Aula 05 - Acidose Tubular Renal Introdução.mp4", u: "https://drive.google.com/file/d/1mjD1upnsI1fQiiHScQLC0mLRzHs-aGdV/view?usp=sharing" },
+                                { t: "Aula 06 - Acidose Tubular Renal Diagnóstico e Tratamento.mp4", u: "https://drive.google.com/file/d/1JSSrR_465P9-qHuVMj6zRdR2SYMTCKLg/view?usp=sharing" },
+                                { t: "Aula 07 - Vídeo de Correção das Questões de Acidose.mp4", u: "https://drive.google.com/file/d/11Ha7DI3vtz2dzwgmlFfi1TmHcYdgPnc5/view?usp=sharing" },
+                                { t: "PDF - Questões: Acidose Metabólica.pdf", u: "https://drive.google.com/file/d/1VCHfnF18wnr7zoKz021OnqVX6D3lJetK/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 04 - Alcalose Metabólica", lessons: [
+                                { t: "Aula 01 - Alcalose Parte I.mp4", u: "https://drive.google.com/file/d/1Orup2kym1aMOvBBd31X3MC09asf44kOG/view?usp=sharing" },
+                                { t: "Aula 02 - Alcalose Parte II.mp4", u: "https://drive.google.com/file/d/1S8POPjM8uvjCqs0V6LG4wGsFfHfqgxBg/view?usp=sharing" },
+                                { t: "Aula 03 - Video de Correção das Questões de Alcalose Metabólica.mp4", u: "https://drive.google.com/file/d/1JZDqJSx6HbpFftgbcDjdIk6zeHW9XAdd/view?usp=sharing" },
+                                { t: "PDF - Questões: Alcalose Metabólica.pdf", u: "https://drive.google.com/file/d/17dXMaIv2CefNL7LdrEXI2CBwAgshjHSo/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 05 - Distúrbios Respiratórios", lessons: [
+                                { t: "Aula 01 - Acidose Respiratória.mp4", u: "https://drive.google.com/file/d/12WTM1nliu2-HGGHCoQay-VJtGVHFp6JU/view?usp=sharing" },
+                                { t: "Aula 02 - Alcalose Respiratória.mp4", u: "https://drive.google.com/file/d/1AM_qwUMc1Cp14B85n8F2HrgbO0NYQZK_/view?usp=sharing" },
+                                { t: "Aula 03 - Vídeo das Questões Comentadas.mp4", u: "https://drive.google.com/file/d/1t6P0XiB7E_Uve4CFb8Txbfg4AfUaks0J/view?usp=sharing" },
+                                { t: "PDF - Questões: Distúrbios Respiratórios.pdf", u: "https://drive.google.com/file/d/1f3cwkjyYL-fWR0nAkwCFh6HNvMr2e2uX/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 06 - Avaliação, Monitorização e Tratamento dos Distúrbios Volêmicos", lessons: [
+                                { t: "Aula 01 - Conceitos Gerais de Volemia.mp4", u: "https://drive.google.com/file/d/1xbr95rtVnOY-aFfGbK5pYEF-wIE4rQSm/view?usp=sharing" },
+                                { t: "Aula 02 - Diagnóstico Clínico e Laboratorial da Hipovolemia.mp4", u: "https://drive.google.com/file/d/10tzg4aNlfYZzvSAjDztfbtRGPfMtMtCW/view?usp=sharing" },
+                                { t: "Aula 03 - Monitorização Hemodinâmica e Tratamento da Hipovolemia.mp4", u: "https://drive.google.com/file/d/1wKhVDAusnqzkeNhFXcTqH9beWVSakwL3/view?usp=sharing" },
+                                { t: "Aula 04 - Questões Corrigidas.mp4", u: "https://drive.google.com/file/d/1sZUjH4Mgs553_cu-6qey7J-nOzwzBDYk/view?usp=sharing" },
+                                { t: "PDF - Questões: Avaliação, Monitorização e Tratamento dos Distúrbios Volêmicos.pdf", u: "https://drive.google.com/file/d/1r2hO_0d8W_rY8-9HuA3ViF1U7T6UQo9t/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 07 - Hiponatremia", lessons: [
+                                { t: "Aula 01 - Conceitos Gerais e Fisiologia.mp4", u: "https://drive.google.com/file/d/19w_zE-bKZXY8lbtot5sAWaU9Y19Bh39e/view?usp=sharing" },
+                                { t: "Aula 02 - Osmolaridade, Tonicidade e Pseudohiponatremia.mp4", u: "https://drive.google.com/file/d/1MGp0Syzs4Xj06kbp190DSV4us07-QS1w/view?usp=sharing" },
+                                { t: "Aula 03 - Classificação da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1Hgp9Q2_nbQTyD8m9EGY7tNbIrJ-xQtHe/view?usp=sharing" },
+                                { t: "Aula 04 - Raciocínio Clinico e Diagnóstico.mp4", u: "https://drive.google.com/file/d/1oQ7X4T4ltp11YIN4t9S-OYoqoQkYe-V1/view?usp=sharing" },
+                                { t: "Aula 05 - Bases do Tratamento da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1w4N3V_xsqo1jUAbekNY3kWq7DGS3pG8Q/view?usp=sharing" },
+                                { t: "Aula 06 - Tratamento da Hiponatremia.mp4", u: "https://drive.google.com/file/d/1RJ_Hm29NgQHBb2_5tJsl-omNoDHW8zHb/view?usp=sharing" },
+                                { t: "Aula 07 - Desmielinização Osmótica e Casos Práticos.mp4", u: "https://drive.google.com/file/d/1WmZNeqAElTuvwySM_Fb7Qm8qCsCxD4s_/view?usp=sharing" },
+                                { t: "Aula 08 - Resolução das Questões.mp4", u: "https://drive.google.com/file/d/1LZl6Q4m1s9KuuOIJYHd0ZvOWotuxItAI/view?usp=sharing" },
+                                { t: "PDF - Questões: Hiponatremia.pdf", u: "https://drive.google.com/file/d/178D7xqryICVd4rcIB9Syh1YYJA4qffaN/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 08 - Hipernatremia", lessons: [
+                                { t: "Aula 01 - Conceitos Básicos de Hipernatremia.mp4", u: "https://drive.google.com/file/d/19_YYbvWbPNDluWlxXuqMWa56fRoxLbOI/view?usp=sharing" },
+                                { t: "Aula 02 - Diagnóstico Diferencial e Causas.mp4", u: "https://drive.google.com/file/d/1w3VEQydCg93g8bpCwDWB8fEmCwo6EQue/view?usp=sharing" },
+                                { t: "Aula 03 - Diagnóstico e Tratamento da Hipernatremia.mp4", u: "https://drive.google.com/file/d/1E7GdeW3AjH1HgtMxqSaFf4jnVhkKm4ai/view?usp=sharing" },
+                                { t: "Aula 04 - Resolução das Questões.mp4", u: "https://drive.google.com/file/d/1TbVDXSzat1lc_-oTHyHBea05GbND-x4D/view?usp=sharing" },
+                                { t: "PDF - Questões: Hipernatremia.pdf", u: "https://drive.google.com/file/d/1Xr2g2kiasRsI1VRaveKnAXEK4yW34h-p/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 09 - Hiperpotassemia", lessons: [
+                                { t: "Aula 01 - Mecanismos e Causas.mp4", u: "https://drive.google.com/file/d/1Ugk91ylPt8HMmv8YWmKMlhJWYk1YrUUJ/view?usp=sharing" },
+                                { t: "Aula 02 - Nova Lógica no Tratamento.mp4", u: "https://drive.google.com/file/d/166yubwQS2_C_UmZTgkvBX-bSLsqx9NY4/view?usp=sharing" },
+                                { t: "Aula 03 - Tratamento da Hiperpotassemia Aguda.mp4", u: "https://drive.google.com/file/d/1RftlEO84ik63O6vpmRSsa9NAeT5XNvfo/view?usp=sharing" },
+                                { t: "Aula 04 - Tratamento da Hipercalemia Crônica.mp4", u: "https://drive.google.com/file/d/1-MWJe3RFtQLB_jjPSZhQT54oo6gH_Q4d/view?usp=sharing" },
+                                { t: "Aula 05 - Correção Questões.mp4", u: "https://drive.google.com/file/d/1fUTKwrsGLHC7jLRArXNWS560b0dqW6rh/view?usp=sharing" },
+                                { t: "PDF - Questões: Hiperpotassemia.pdf", u: "https://drive.google.com/file/d/1NxqgxOCp1j9mas7qqPWJWuJeN_ZwKFRX/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 10 - Hipopotassemia", lessons: [
+                                { t: "Aula 01 - Causas e Sintomas.mp4", u: "https://drive.google.com/file/d/1kl1sL04U-J3ZSBbgaz7-hAZoNyZ3lvYW/view?usp=sharing" },
+                                { t: "Aula 02 - Princípios do Tratamento.mp4", u: "https://drive.google.com/file/d/1fKeYVzXrygJlZDQ3PfTFn3gKipSaakFd/view?usp=sharing" },
+                                { t: "Aula 03 - Tratamento da Hipopotassemia.mp4", u: "https://drive.google.com/file/d/1Ejzr2rHRlevpd9OTKWqrRBnJqW1zFp56/view?usp=sharing" },
+                                { t: "Aula 04 - Correção das Questões.mp4", u: "https://drive.google.com/file/d/1DIl5GaosDDmYaxwD4SR01vVL5UT99z1T/view?usp=sharing" },
+                                { t: "PDF - Questões: Hipopotassemia.pdf", u: "https://drive.google.com/file/d/1Ao0qY8QEZpJ3UGf9rwBtLJA6I8GfSQ3z/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 11 - Distúrbios do Cálcio", lessons: [
+                                { t: "Aula 01 - Fisiologia do Cálcio Parte I.mp4", u: "https://drive.google.com/file/d/1HXysiHELNDfbdB9FlhDlQq7MdwdSodG8/view?usp=sharing" },
+                                { t: "Aula 02 - Fisiologia do Cálcio Parte II.mp4", u: "https://drive.google.com/file/d/1ockN0OvlxqlbgxtVgD29ScETucA7Wj9z/view?usp=sharing" },
+                                { t: "Aula 03 - Hipercalcemia Causas e Bases do Tratamento.mp4", u: "https://drive.google.com/file/d/1xU9yhfTQ6tJq2mU3TPrRCDU5f1WSIS33/view?usp=sharing" },
+                                { t: "Aula 04 - Tratamento da Hipercalcemia.mp4", u: "https://drive.google.com/file/d/18KGeotPo84sy84JsCk59l7KiCw96Auxr/view?usp=sharing" },
+                                { t: "Aula 05 - Hipocalcemia.mp4", u: "https://drive.google.com/file/d/1jqrKmFNxfMPF0IVEyUTTa0ZbnXXY_e8J/view?usp=sharing" },
+                                { t: "Aula 06 - Correção das Questões.mp4", u: "https://drive.google.com/file/d/1G5iBJcMRIoxwKh5v04H-OHeYkY6wJq4D/view?usp=sharing" },
+                                { t: "PDF - Questões: Distúrbios do Cálcio.pdf", u: "https://drive.google.com/file/d/1Zvd21Aa5fcwdL0o-ye203h5GwfTSj3_k/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 12 - Distúrbios do Fósforo", lessons: [
+                                { t: "Aula 01 - Fisiologia do Fosfato e Hiperfosfatemia.mp4", u: "https://drive.google.com/file/d/1c-v50OM1nomsNkp1YfKVk8ldyOqCDgEE/view?usp=sharing" },
+                                { t: "Aula 02 - Hipofosfatemia.mp4", u: "https://drive.google.com/file/d/16G_l841tclj4CKRXgxxDerooTX25nlcL/view?usp=sharing" },
+                                { t: "Aula 03 - Correção das Questões.mp4", u: "https://drive.google.com/file/d/1US8Qnv39to2PIa6HFu68Z5Y-o8Ywlnd6/view?usp=sharing" },
+                                { t: "PDF - Questões: Distúrbios do Fósforo.pdf", u: "https://drive.google.com/file/d/1JvZkwRfK0suzhmEmtd28ME1NDeIQ87h8/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 13 - Distúrbios do Magnésio", lessons: [
+                                { t: "Aula 01 - Distúrbios do Magnésio.mp4", u: "https://drive.google.com/file/d/121a07lm6SyLZanehQMmlQkNsE1j4QYzg/view?usp=sharing" },
+                                { t: "Aula 02 - Correção das Questões de Magnésio.mp4", u: "https://drive.google.com/file/d/1gPTqdh3jXwtR9z5-7b_lsfwktIjPFG18/view?usp=sharing" },
+                                { t: "PDF - Questões: Distúrbios do Magnésio.pdf", u: "https://drive.google.com/file/d/1OzK_3tOkHXD_2Mca2OHaUmcXH4oakG2N/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 14 - Bônus E-Book - Ácido-Bases", lessons: [
+                                { t: "PDF - E-Book: Ácido-Bases.pdf", u: "https://drive.google.com/file/d/1OUISwUfOoDwXonb5gSLZ2FIAjJrEfUSj/view?usp=sharing" }
+                            ]}
+                        ]
+                    },
+                    {
+                        title: "Seção 05 - Bônus: Cartilhas e Congressos",
+                        modules: [
+                            { title: "Módulo 01 - Cartilhas de Urolitíase e DRC", lessons: [
+                                { t: "PDF - Cartilha Informativa de DRC.pdf", u: "https://drive.google.com/file/d/1us4qHvCiVjFPVvU6CAgmQtKMh8c6cZGv/view?usp=sharing" },
+                                { t: "PDF - Cartilha Informativa de Urolitíase.pdf", u: "https://drive.google.com/file/d/17qF1Yr8apWauOYKDNSx7_3NgRsGkmmgU/view?usp=sharing" }
+                            ]},
+                            { title: "Módulo 02 - Congresso Americano de Nefrologia (2022)", lessons: [{ t: "Aula 01 - Congresso Americano de Nefrologia (2022).mp4", u: "https://drive.google.com/file/d/12Y1PBL-Fg9jyiDoT81Z3ml8M3ZT1C5J_/view?usp=sharing" }] },
+                            { title: "Módulo 03 - Congresso Europeu de Nefrologia (2023)", lessons: [{ t: "Aula 01 - Congresso Europeu de Nefrologia (2023).mp4", u: "https://drive.google.com/file/d/11O0Y9oCkecIGoIqPX7LxHj99e1tKxYkl/view?usp=sharing" }] },
+                            { title: "Módulo 04 - Congresso Americano de Nefrologia (2023)", lessons: [{ t: "Aula 01 - Congresso Americano de Nefrologia (2023).mp4", u: "https://drive.google.com/file/d/11X_Qv2hq7uzyetnAJALnB5n-OxkVfQYF/view?usp=sharing" }] },
+                            { title: "Módulo 05 - Congresso Europeu (2024)", lessons: [{ t: "Aula 01 - Congresso Europeu (2024).mp4", u: "https://drive.google.com/file/d/1tP-00URIy33CctvNSHzoibT6dZbH5UnQ/view?usp=sharing" }] },
+                            { title: "Módulo 06 - Congresso Americano de Nefrologia (2024)", lessons: [{ t: "Aula 01 - Congresso Americano (2024).mp4", u: "https://drive.google.com/file/d/1QzDurK_HfLRazR4UDICc_1vszpqyF61W/view?usp=sharing" }] }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // Formatando e Atribuindo IDs Internamente (Processamento Recursivo)
+        platformData.forEach(course => {
+            if (course.sections) {
+                // Curso com Seções (Ex: Curso 5)
+                course.sections.forEach((sec, sIndex) => {
+                    sec.id = `${course.id}_sec_${sIndex + 1}`;
+                    sec.modules = sec.modules.map((mod, mIndex) => {
+                        return {
+                            id: `${sec.id}_mod_${mIndex + 1}`,
+                            title: mod.title,
+                            courseId: course.id,
+                            sectionId: sec.id,
+                            lessons: mod.lessons.map((lesson, lIndex) => ({
+                                id: `${sec.id}_vid_${mIndex + 1}_${lIndex + 1}`,
+                                title: lesson.t,
+                                url: lesson.u 
+                            }))
+                        };
+                    });
+                });
+            } else {
+                // Cursos Normais (Ex: Cursos 1 a 4)
+                course.modules = course.modules.map((mod, index) => {
+                    return {
+                        id: `${course.id}_mod_${index + 1}`,
+                        title: mod.title,
+                        courseId: course.id,
+                        lessons: mod.lessons.map((lesson, lIndex) => ({
+                            id: `${course.id}_vid_${index + 1}_${lIndex + 1}`,
+                            title: lesson.t,
+                            url: lesson.u 
+                        }))
+                    };
+                });
+            }
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA E NAVEGAÇÃO
+        // ==================================================================================
+
+        const coursesView = document.getElementById('courses-view');
+        const sectionsView = document.getElementById('sections-view');
+        const modulesView = document.getElementById('modules-view');
+        const playerView = document.getElementById('player-view');
+        
+        const playerControls = document.getElementById('player-controls');
+        const btnBackToModules = document.getElementById('btnBackToModules');
+        const btnBackToSections = document.getElementById('btnBackToSections');
+        const btnBackToCourses = document.getElementById('btnBackToCourses');
+        const btnModulesBack = document.getElementById('btnModulesBack');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const videoLoader = document.getElementById('videoLoader');
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const moduleTitleDisplay = document.getElementById('moduleTitleDisplay');
+        const pulseIndicator = document.getElementById('pulseIndicator');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const lessonCountBadge = document.getElementById('lessonCountBadge');
+        
+        const moduleSelector = document.getElementById('moduleSelector');
+        const coursesGrid = document.getElementById('courses-grid');
+        const sectionsGrid = document.getElementById('sections-grid');
+        const modulesGrid = document.getElementById('modules-grid');
+        const sectionsViewTitle = document.getElementById('sectionsViewTitle');
+        const modulesViewTitle = document.getElementById('modulesViewTitle');
+        const currentCourseOrSectionLabel = document.getElementById('currentCourseOrSectionLabel');
+        
+        const videoNavControls = document.getElementById('videoNavControls');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        let currentCourseId = null;
+        let currentSectionId = null;
+        let selectedLessonId = null;
+        let currentVideoList = []; 
+        let currentVideoIndex = -1;
+
+        // --- Renderização da HOME (Cursos) ---
+        function renderCourses() {
+            let html = '';
+            platformData.forEach(course => {
+                let totalLessons = 0;
+                let totalModules = 0;
+                
+                if (course.sections) {
+                    course.sections.forEach(sec => {
+                        totalModules += sec.modules.length;
+                        totalLessons += sec.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
+                    });
+                } else {
+                    totalModules = course.modules.length;
+                    totalLessons = course.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
+                }
+                
+                html += `
+                <div onclick="openCourse('${course.id}')" class="course-card rounded-2xl cursor-pointer group">
+                    <div class="module-card-header p-6 flex justify-between items-start" style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.1) 0%, rgba(15, 23, 42, 0) 100%); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <div class="w-16 h-16 rounded-2xl bg-slate-900/80 flex items-center justify-center text-3xl shadow-lg border border-white/10 group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas ${course.icon} text-transparent bg-clip-text bg-gradient-to-br ${course.color}"></i>
+                        </div>
+                        <span class="bg-slate-950/80 backdrop-blur-md text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/5 uppercase tracking-widest shadow-sm">
+                            ${totalModules} Módulos
+                        </span>
+                    </div>
+                    
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-bold text-white mb-3 group-hover:text-sky-400 transition-colors font-display leading-tight">${course.title}</h3>
+                        <p class="text-slate-400 text-sm flex-grow leading-relaxed font-normal mb-6">${course.description}</p>
+                        
+                        <div class="pt-5 border-t border-slate-800/50 flex items-center justify-between">
+                            <div class="text-xs font-bold text-slate-500 uppercase flex items-center gap-2">
+                                <i class="fas fa-play-circle text-slate-400"></i> ${totalLessons} Aulas & Materiais
+                            </div>
+                            <div class="flex items-center text-xs font-bold text-sky-500 group-hover:text-sky-400 transition-colors">
+                                <span class="tracking-wide mr-2 uppercase">Acessar Curso</span>
+                                <div class="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            coursesGrid.innerHTML = html;
+        }
+
+        // --- Navegação Global ---
+        function goCourses() {
+            playerView.classList.add('hidden');
+            modulesView.classList.add('hidden');
+            sectionsView.classList.add('hidden');
+            coursesView.classList.remove('hidden');
+            playerControls.classList.add('hidden');
+            
+            contentPlayer.src = "";
+            document.title = "Nefrologia Avançada | Plataforma Clínica";
+            currentCourseId = null;
+            currentSectionId = null;
+        }
+
+        function openCourse(courseId) {
+            currentCourseId = courseId;
+            currentSectionId = null; // Reseta se mudou de curso
+            const course = platformData.find(c => c.id === courseId);
+            
+            coursesView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            
+            if (course.sections) {
+                // Abre Tela de Seções
+                modulesView.classList.add('hidden');
+                sectionsView.classList.remove('hidden');
+                
+                playerControls.classList.remove('hidden');
+                btnBackToModules.classList.add('hidden');
+                btnBackToSections.classList.add('hidden');
+                btnBackToCourses.classList.remove('hidden');
+                moduleSelector.parentElement.classList.add('hidden');
+                
+                renderSections(courseId);
+            } else {
+                // Abre Tela de Módulos (Direto)
+                sectionsView.classList.add('hidden');
+                modulesView.classList.remove('hidden');
+                
+                playerControls.classList.remove('hidden');
+                btnBackToModules.classList.add('hidden');
+                btnBackToSections.classList.add('hidden');
+                btnBackToCourses.classList.remove('hidden');
+                moduleSelector.parentElement.classList.add('hidden');
+                
+                renderModules(courseId, null);
+            }
+        }
+        
+        function goSections() {
+            if (!currentCourseId) { goCourses(); return; }
+            playerView.classList.add('hidden');
+            modulesView.classList.add('hidden');
+            sectionsView.classList.remove('hidden');
+            
+            btnBackToModules.classList.add('hidden');
+            btnBackToSections.classList.add('hidden');
+            btnBackToCourses.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            
+            contentPlayer.src = "";
+            currentSectionId = null;
+        }
+
+        function openSection(sectionId) {
+            currentSectionId = sectionId;
+            sectionsView.classList.add('hidden');
+            modulesView.classList.remove('hidden');
+            
+            renderModules(currentCourseId, sectionId);
+        }
+
+        // Lida com o botão "Voltar" dentro da view de Módulos (varia dependendo se há Seções ou não)
+        function goSectionsOrCourses() {
+            if (currentSectionId) {
+                goSections();
+            } else {
+                goCourses();
+            }
+        }
+
+        function goModules() {
+            if(!currentCourseId) { goCourses(); return; }
+            playerView.classList.add('hidden');
+            modulesView.classList.remove('hidden');
+            
+            btnBackToModules.classList.add('hidden');
+            
+            if (currentSectionId) {
+                btnBackToSections.classList.remove('hidden');
+                btnBackToCourses.classList.add('hidden');
+            } else {
+                btnBackToSections.classList.add('hidden');
+                btnBackToCourses.classList.remove('hidden');
+            }
+            
+            moduleSelector.parentElement.classList.add('hidden');
+            contentPlayer.src = "";
+        }
+
+        // --- Renderização de SEÇÕES ---
+        function renderSections(courseId) {
+            const course = platformData.find(c => c.id === courseId);
+            sectionsViewTitle.textContent = course.title;
+            
+            let html = '';
+            course.sections.forEach((sec, index) => {
+                const totalLessons = sec.modules.reduce((acc, mod) => acc + mod.lessons.length, 0);
+                
+                html += `
+                <div onclick="openSection('${sec.id}')" class="module-card rounded-2xl p-6 cursor-pointer group bg-slate-900/80 hover:bg-slate-800 transition-all border border-slate-800 hover:border-sky-500/30">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-slate-950 flex items-center justify-center text-lg shadow-inner border border-white/5 group-hover:bg-sky-500/20 group-hover:text-sky-400 transition-colors">
+                            <span class="font-bold text-slate-500 group-hover:text-sky-400">0${index + 1}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-white group-hover:text-sky-400 transition-colors leading-tight">${sec.title.replace(`Seção 0${index + 1} - `, '')}</h3>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-800 flex justify-between items-center text-xs font-bold text-slate-500">
+                        <span>${sec.modules.length} Módulos • ${totalLessons} Itens</span>
+                        <div class="flex items-center text-sky-500 group-hover:text-sky-400">
+                            <span class="uppercase mr-2">Abrir</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            sectionsGrid.innerHTML = html;
+        }
+
+        // --- Renderização de MÓDULOS (Lida com cursos com ou sem seções) ---
+        function renderModules(courseId, sectionId) {
+            const course = platformData.find(c => c.id === courseId);
+            let modulesToRender = [];
+            
+            if (sectionId) {
+                const section = course.sections.find(s => s.id === sectionId);
+                modulesToRender = section.modules;
+                modulesViewTitle.textContent = section.title;
+                currentCourseOrSectionLabel.textContent = course.title;
+            } else {
+                modulesToRender = course.modules;
+                modulesViewTitle.textContent = course.title;
+                currentCourseOrSectionLabel.textContent = "Curso Selecionado";
+            }
+            
+            let html = '';
+            modulesToRender.forEach(mod => {
+                const mockProgress = Math.floor(Math.random() * 60) + 10;
+                
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl cursor-pointer group">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-lg font-bold text-white group-hover:text-sky-400 transition-colors font-display leading-tight pr-4">${mod.title}</h3>
+                            <span class="bg-slate-950/80 text-slate-400 text-[9px] font-bold px-2 py-1 rounded border border-white/5 uppercase tracking-widest shrink-0">
+                                ${mod.lessons.length} Itens
+                            </span>
+                        </div>
+                        
+                        <div class="mb-5 mt-auto pt-4">
+                            <div class="flex justify-between text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">
+                                <span>Progresso</span>
+                                <span class="text-sky-500">${mockProgress}%</span>
+                            </div>
+                            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r ${course.color} rounded-full transition-all duration-1000" style="width: ${mockProgress}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-slate-800/50 flex items-center justify-end">
+                            <div class="flex items-center text-xs font-bold text-sky-500 group-hover:text-sky-400 transition-colors">
+                                <span class="tracking-wide mr-2 uppercase">Estudar Módulo</span>
+                                <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Abertura de um Módulo Específico (PLAYER) ---
+        function openModule(moduleId) {
+            modulesView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            
+            btnBackToCourses.classList.add('hidden');
+            btnBackToSections.classList.add('hidden');
+            btnBackToModules.classList.remove('hidden');
+            moduleSelector.parentElement.classList.remove('hidden'); 
+            
+            // Popula o Seletor de Módulos (Apenas os módulos da seção ou curso atual)
+            const course = platformData.find(c => c.id === currentCourseId);
+            let relevantModules = [];
+            
+            if (currentSectionId) {
+                const section = course.sections.find(s => s.id === currentSectionId);
+                relevantModules = section.modules;
+            } else {
+                relevantModules = course.modules;
+            }
+
+            moduleSelector.innerHTML = '';
+            relevantModules.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m.id;
+                option.textContent = m.title;
+                if(m.id === moduleId) option.selected = true;
+                moduleSelector.appendChild(option);
+            });
+
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização das AULAS do Módulo ---
+        function renderLessons(moduleId) {
+            const course = platformData.find(c => c.id === currentCourseId);
+            let module = null;
+            
+            if (currentSectionId) {
+                const section = course.sections.find(s => s.id === currentSectionId);
+                module = section.modules.find(m => m.id === moduleId);
+            } else {
+                module = course.modules.find(m => m.id === moduleId);
+            }
+
+            if (!module) return;
+
+            const videoLessons = module.lessons.filter(l => !l.title.toLowerCase().includes('.pdf'));
+            const pdfMaterials = module.lessons.filter(l => l.title.toLowerCase().includes('.pdf'));
+            
+            currentVideoList = videoLessons;
+            currentVideoIndex = -1;
+
+            moduleTitleDisplay.textContent = module.title;
+            moduleTitleDisplay.classList.remove('hidden');
+            pulseIndicator.classList.add('hidden');
+            videoNavControls.style.display = 'none'; 
+            lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
+
+            // Gerar Sidebar (Vídeos)
+            let html = '';
+            videoLessons.forEach((lesson, index) => {
+                const lessonNumber = (index + 1).toString().padStart(2, '0');
+                const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+                
+                html += `
+                <div class="lesson-item flex items-center gap-4 p-3.5 cursor-pointer text-slate-400 hover:text-white rounded-xl bg-slate-900/30 border border-transparent hover:border-slate-700/50" 
+                     onclick="loadVideoByIndex(${index})" 
+                     data-id="${lesson.id}"
+                     id="lesson-item-${index}">
+                    
+                    <div class="flex-shrink-0 w-8 text-center relative">
+                        <span class="text-[9px] font-mono font-bold opacity-30 block mb-1">#${lessonNumber}</span>
+                        <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 flex items-center justify-center border border-white/5">
+                            <i class="fas fa-play text-xs lesson-icon transition-transform ml-0.5"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 pr-2">
+                        <p class="text-sm font-semibold lesson-text leading-tight mb-1">${displayTitle}</p>
+                        <span class="text-[9px] bg-slate-800/80 text-slate-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider inline-block">Vídeo</span>
+                    </div>
+                </div>`;
+            });
+            lessonsContainer.innerHTML = html;
+
+            // Gerar PDFs
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            
+            if (pdfMaterials.length > 0) {
+                materialsSection.classList.remove('hidden');
+                let htmlMaterials = '';
+                pdfMaterials.forEach((lesson) => {
+                    const displayTitle = lesson.title.replace(/\.pdf$/i, '').replace('PDF - ', '');
+                    htmlMaterials += `
+                    <div class="material-btn group flex flex-col p-4 bg-slate-900 border border-slate-800 hover:border-sky-500/30 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                         onclick="window.open('${lesson.url}', '_blank')">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-sky-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-sky-900/20 text-sky-500 flex items-center justify-center shrink-0 border border-sky-500/10 transition-transform pdf-icon">
+                                <i class="fas fa-file-pdf text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-sky-400 transition-colors">${displayTitle}</p>
+                                <div class="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide gap-1.5">
+                                    <i class="fas fa-external-link-alt"></i> Abrir PDF
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+                materialsContainer.innerHTML = htmlMaterials;
+            } else {
+                materialsSection.classList.add('hidden');
+                materialsContainer.innerHTML = '';
+            }
+            
+            // Reset player view
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            emptyState.style.display = 'flex';
+            lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
+            selectedLessonId = null;
+        }
+
+        // --- Lógica de Controle do Player ---
+        
+        function loadVideoByIndex(index) {
+            if (index < 0 || index >= currentVideoList.length) return;
+            
+            const lesson = currentVideoList[index];
+            currentVideoIndex = index;
+            const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-sky-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+            }
+            
+            selectedLessonId = lesson.id;
+            const cur = document.getElementById(`lesson-item-${index}`);
+            if (cur) {
+                cur.classList.remove('border-transparent');
+                cur.classList.add('selected-lesson');
+                cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const icon = cur.querySelector('.lesson-icon');
+                if(icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause', 'text-sky-500');
+                }
+            }
+
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = displayTitle;
+            
+            videoNavControls.style.display = 'flex';
+            btnPrev.disabled = currentVideoIndex === 0;
+            btnNext.disabled = currentVideoIndex === currentVideoList.length - 1;
+
+            if (lesson.url && lesson.url !== '#') {
+                emptyState.style.display = 'none';
+                videoLoader.style.display = 'flex';
+                contentPlayer.style.display = 'none';
+
+                const embedUrl = getDriveEmbedUrl(lesson.url);
+                contentPlayer.src = embedUrl;
+
+                contentPlayer.onload = () => {
+                    videoLoader.style.display = 'none';
+                    contentPlayer.style.display = 'block';
+                };
+            }
+        }
+
+        function playNext() { loadVideoByIndex(currentVideoIndex + 1); }
+        function playPrevious() { loadVideoByIndex(currentVideoIndex - 1); }
+
+        function getDriveEmbedUrl(url) {
+            if (!url || url === '#') return '';
+            let id = '';
+            const parts = url.split('/');
+            const dIndex = parts.indexOf('d');
+            if (dIndex !== -1 && dIndex < parts.length - 1) {
+                id = parts[dIndex + 1];
+            } else {
+                const match = url.match(/[-\w]{25,}/);
+                if (match) id = match[0];
+            }
+            if (id.includes('?')) id = id.split('?')[0];
+            if (id.includes('/')) id = id.split('/')[0];
+
+            if (id) return `https://drive.google.com/file/d/${id}/preview`;
+            return url;
+        }
+
+        // --- Inicialização ---
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        renderCourses();
+
+    </script>
+</body>
+</html>
