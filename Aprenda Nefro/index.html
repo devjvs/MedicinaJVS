@@ -141,7 +141,6 @@
 </head>
 <body class="flex flex-col h-screen bg-medical-pattern">
 
-    <!-- HEADER -->
     <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative">
         <div class="flex items-center space-x-4 cursor-pointer group" onclick="goCourses()">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 flex items-center justify-center shadow-[0_0_15px_rgba(225,29,72,0.3)] group-hover:shadow-[0_0_25px_rgba(225,29,72,0.5)] transition-all duration-300">
@@ -176,7 +175,6 @@
         </div>
     </header>
 
-    <!-- VIEW 1: CURSOS -->
     <main id="courses-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
         <div class="max-w-7xl mx-auto pb-20">
             <div class="mb-14 relative mt-4">
@@ -188,12 +186,10 @@
             </div>
             
             <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Cursos injetados via JS -->
-            </div>
+                </div>
         </div>
     </main>
 
-    <!-- VIEW 2: SEÇÕES (Apenas para cursos com seções, mantido por garantia de lógica) -->
     <main id="sections-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
         <div class="max-w-7xl mx-auto pb-20">
             <div class="mb-14 relative mt-4">
@@ -211,17 +207,14 @@
             </div>
             
             <div id="sections-grid" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Seções injetadas via JS -->
-            </div>
+                </div>
         </div>
     </main>
 
-    <!-- VIEW 3: MÓDULOS -->
     <main id="modules-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
         <div class="max-w-7xl mx-auto pb-20">
             <div class="mb-14 relative mt-4">
                 <div class="flex items-center gap-4 mb-4">
-                    <!-- Botão de voltar dinâmico (Volta pra Seções ou Cursos) -->
                     <button id="btnModulesBack" onclick="goSectionsOrCourses()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-700 transition-colors">
                         <i class="fas fa-arrow-left"></i>
                     </button>
@@ -235,15 +228,12 @@
             </div>
             
             <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-                <!-- Módulos injetados via JS -->
-            </div>
+                </div>
         </div>
     </main>
 
-    <!-- VIEW 4: PLAYER -->
     <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-slate-950 z-10 relative">
         
-        <!-- Área Esquerda (Vídeo + Controles + Materiais) -->
         <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group">
             
             <div class="w-full aspect-video max-h-[70vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
@@ -264,7 +254,6 @@
                 </div>
             </div>
             
-            <!-- Barra de Título da Aula + Navegação Prática -->
             <div class="bg-slate-900 p-5 border-b border-white/5 shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 z-20">
                 <div class="flex-1">
                     <h2 id="lessonTitle" class="text-xl font-bold text-white flex items-center gap-3">
@@ -274,7 +263,6 @@
                     <p id="moduleTitleDisplay" class="text-xs text-rose-400 mt-1.5 font-bold uppercase tracking-wider pl-5 hidden sm:block">Módulo</p>
                 </div>
                 
-                <!-- Botões de Navegação de Vídeo -->
                 <div class="flex items-center gap-2" id="videoNavControls" style="display: none;">
                     <button onclick="playPrevious()" id="btnPrev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border border-slate-700">
                         <i class="fas fa-step-backward"></i> Anterior
@@ -285,18 +273,15 @@
                 </div>
             </div>
 
-            <!-- Seção de Materiais -->
             <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <i class="fas fa-book-medical text-rose-500"></i> Materiais Complementares & E-Books
                 </h3>
                 <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Materiais injetados via JS -->
-                </div>
+                    </div>
             </div>
         </section>
 
-        <!-- Área Direita (Sidebar Cronograma) -->
         <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
             <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
                 <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
@@ -306,8 +291,7 @@
             </div>
             
             <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5 pb-20">
-                <!-- Aulas injetadas via JS -->
-            </div>
+                </div>
         </aside>
 
     </main>
@@ -392,7 +376,11 @@
                         { t: "Aula 03 - Reposição Volêmica + Reposição Eletrolítica Basal.mp4", u: "https://drive.google.com/file/d/1Y5CyE8haAchNtIuLCJFFCgByoEQCsJ9L/view?usp=sharing" }
                     ]},
                     { title: "Módulo 03 - Distúrbios do Sódio", lessons: [
-                        // Deixado vazio ou pode ser preenchido futuramente
+                        { t: "Aula 01 - Controle da Osmolaridade.mp4", u: "https://drive.google.com/file/d/1PgQ06A5ZbrviFBfHS4osPO6jfa1HRXmF/view?usp=sharing" },
+                        { t: "Aula 02 - Diagnóstico das Hiponatremias Agudas e Crônicas.mp4", u: "https://drive.google.com/file/d/1PlgBnGe6FJVdFt1-VrX2XgbnWTTaSYt0/view?usp=sharing" },
+                        { t: "Aula 03 - Hiponatremias Hipovolêmicas.mp4", u: "https://drive.google.com/file/d/1z1QgSYta14Aaiea0iuGxRShfDMa-X8oi/view?usp=sharing" },
+                        { t: "Aula 04 - Tratamento das Hiponatremias, Reposição de Solução Salina Hipertônica.mp4", u: "https://drive.google.com/file/d/1UBrUQvklBXyWm2wS41VMTg1dEeUtg7Fw/view?usp=sharing" },
+                        { t: "Aula 05 - Tratamento da Hipernatremia: Cálculo do Déficit de Água Livre.mp4", u: "https://drive.google.com/file/d/1VyB8mvNgplFVhsbobk7UblD_VYHGiQhI/view?usp=sharing" }
                     ]},
                     { title: "Módulo 04 - Distúrbios do Potássio", lessons: [
                         { t: "Aula 01 - Introdução aos Distúrbios do Potássio + Revisão de Diuréticos.mp4", u: "https://drive.google.com/file/d/1ulxZ9W6fWuIjzs6WktCTZ_gSHDDDkSr4/view?usp=sharing" },
@@ -428,11 +416,11 @@
                 icon: 'fa-lungs', color: 'from-emerald-500 to-teal-600', shadow: 'shadow-emerald-500/20',
                 modules: [
                     { title: "Módulo 01 - Introdução a Gasometria Arterial", lessons: [
-                        { t: "Aula 01 - Introdução aos Distúrbios Ácido-Básico.mp4", u: "#" },
-                        { t: "Aula 02 - Mecanismos Compensatórios.mp4", u: "#" },
+                        { t: "Aula 01 - Introdução aos Distúrbios Ácido-Básico.mp4", u: "https://drive.google.com/file/d/1sjopVo0WXysSYN7CvUgHmQv94Hbxvs5r/view?usp=sharing" },
+                        { t: "Aula 02 - Mecanismos Compensatórios.mp4", u: "https://drive.google.com/file/d/1h0L4BhfxFHoQd-9Yr20_xK7TlyDgFuAZ/view?usp=sharing" },
                         { t: "Aula 03 - Distúrbios Mistos.mp4", u: "https://drive.google.com/file/d/1XOISiIEADGPQn3SDgrkZgLz7PG-jme2X/view?usp=sharing" },
-                        { t: "Aula 04 - Treinamento com Questões I.mp4", u: "#" },
-                        { t: "Aula 05 - Treinamento com Questões II.mp4", u: "https://drive.google.com/file/d/1_UpSHhh4R8vzke6KNuab0NnNjes61tB1/view?usp=sharing" }
+                        { t: "Aula 04 - Treinamento com Questões I: Revisão do Módulo I.mp4", u: "https://drive.google.com/file/d/1FusYbiGX48kE7liZsF9nMNKdJs_-Wu4-/view?usp=sharing" },
+                        { t: "Aula 05 - Treinamento com Questões II: Revisão do Módulo II.mp4", u: "https://drive.google.com/file/d/1_UpSHhh4R8vzke6KNuab0NnNjes61tB1/view?usp=sharing" }
                     ]},
                     { title: "Módulo 02 - Acidoses Metabólicas", lessons: [
                         { t: "Aula 01 - Acidoses Metabólicas.mp4", u: "https://drive.google.com/file/d/1GUTZ_BJrKbDwGUnq07tUkVr3891cSbYZ/view?usp=sharing" },
@@ -765,7 +753,7 @@
             modulesToRender.forEach(mod => {
                 const mockProgress = Math.floor(Math.random() * 60) + 10;
                 
-                // Módulos vazios ficam visivelmente desativados (ou apenas não clicáveis)
+                // Módulos vazios ficam visivelmente desativados
                 const isEmpty = mod.lessons.length === 0;
                 const clickAction = isEmpty ? '' : `onclick="openModule('${mod.id}')"`;
                 const cursorStyle = isEmpty ? 'cursor-not-allowed opacity-60' : 'cursor-pointer group';
@@ -824,7 +812,7 @@
 
             moduleSelector.innerHTML = '';
             relevantModules.forEach(m => {
-                if (m.lessons.length > 0) { // não mostrar no dropdown módulos vazios
+                if (m.lessons.length > 0) {
                     const option = document.createElement('option');
                     option.value = m.id;
                     option.textContent = m.title;
@@ -870,15 +858,15 @@
                 const hasLink = lesson.url && lesson.url !== '#';
                 
                 html += `
-                <div class="lesson-item flex items-center gap-4 p-3.5 ${hasLink ? 'cursor-pointer hover:border-slate-700/50 hover:text-white' : 'cursor-not-allowed opacity-50'} text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
-                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''}
+                <div class="lesson-item flex items-center gap-4 p-3.5 cursor-pointer hover:border-slate-700/50 hover:text-white text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
+                     onclick="loadVideoByIndex(${index})"
                      data-id="${lesson.id}"
                      id="lesson-item-${index}">
                     
                     <div class="flex-shrink-0 w-8 text-center relative">
                         <span class="text-[9px] font-mono font-bold opacity-30 block mb-1">#${lessonNumber}</span>
                         <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 flex items-center justify-center border border-white/5">
-                            <i class="fas ${hasLink ? 'fa-play' : 'fa-lock'} text-xs lesson-icon transition-transform ${hasLink ? 'ml-0.5' : ''}"></i>
+                            <i class="fas fa-play text-xs lesson-icon transition-transform ml-0.5"></i>
                         </div>
                     </div>
                     
@@ -925,6 +913,8 @@
             contentPlayer.style.display = 'none';
             contentPlayer.src = '';
             emptyState.style.display = 'flex';
+            emptyState.querySelector('h2').textContent = "Ambiente Clínico";
+            emptyState.querySelector('p').textContent = "Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.";
             lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
             selectedLessonId = null;
         }
@@ -934,7 +924,6 @@
             if (index < 0 || index >= currentVideoList.length) return;
             
             const lesson = currentVideoList[index];
-            if (!lesson.url || lesson.url === '#') return; // Bloqueia aulas sem link
 
             currentVideoIndex = index;
             const displayTitle = lesson.title.replace(/\.mp4$/i, '');
@@ -970,9 +959,8 @@
             
             videoNavControls.style.display = 'flex';
             
-            // Lógica para desativar botão caso a próxima/anterior seja sem link
-            btnPrev.disabled = currentVideoIndex === 0 || currentVideoList[currentVideoIndex - 1].url === '#';
-            btnNext.disabled = currentVideoIndex === currentVideoList.length - 1 || currentVideoList[currentVideoIndex + 1].url === '#';
+            btnPrev.disabled = currentVideoIndex === 0;
+            btnNext.disabled = currentVideoIndex === currentVideoList.length - 1;
 
             if (lesson.url && lesson.url !== '#') {
                 emptyState.style.display = 'none';
@@ -986,6 +974,13 @@
                     videoLoader.style.display = 'none';
                     contentPlayer.style.display = 'block';
                 };
+            } else {
+                contentPlayer.style.display = 'none';
+                contentPlayer.src = '';
+                videoLoader.style.display = 'none';
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('h2').textContent = "Aula Indisponível";
+                emptyState.querySelector('p').textContent = "Esta aula ainda não possui um link de vídeo associado na plataforma.";
             }
         }
 
