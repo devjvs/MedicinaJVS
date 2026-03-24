@@ -1,0 +1,2562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroEmergências | Plataforma Médica</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neuro: {
+                            dark: '#020617',    /* Slate 950 */
+                            card: '#0f172a',    /* Slate 900 */
+                            primary: '#4f46e5', /* Indigo 500 */
+                            primaryLight: '#6366f1', /* Indigo 500 */
+                            accent: '#06b6d4',  /* Cyan 400 */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.05), transparent 25%),
+                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: #e2e8f0; 
+            overflow: hidden;
+        }
+        
+        h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar Premium */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Estilos da Lista de Aulas */
+        .lesson-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+        }
+        .lesson-item:hover { 
+            background-color: rgba(79, 70, 229, 0.08); 
+            border-left-color: #475569;
+        }
+        .selected-lesson { 
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.15) 0%, transparent 100%);
+            border-left-color: #6366f1; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+        .selected-lesson .lesson-icon { color: #06b6d4; transform: scale(1.1); }
+        .selected-lesson .lesson-text { color: #ffffff; font-weight: 600; }
+        
+        /* Cards da Home */
+        .module-card {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .module-card-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        .module-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.25);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .module-card:hover::after { left: 150%; }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border-top: 3px solid #06b6d4;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        .active-indicator { animation: pulse-ring 2s infinite; }
+        .hidden { display: none !important; }
+        .material-btn:hover .pdf-icon { transform: translateY(-2px); color: #fff; }
+
+        /* Estilos do Quiz / Avaliação */
+        .quiz-option {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .quiz-option:hover:not(.disabled) {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .quiz-option.selected {
+            background-color: rgba(99, 102, 241, 0.15);
+            border-color: #6366f1;
+            box-shadow: inset 0 0 0 1px #6366f1;
+        }
+        .quiz-option.selected .option-radio {
+            border-color: #06b6d4;
+            background-color: #06b6d4;
+        }
+        .quiz-option.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+        }
+        .quiz-option.correct .option-radio {
+            border-color: #10b981;
+            background-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: rgba(225, 29, 72, 0.1);
+            border-color: #e11d48;
+        }
+        .quiz-option.incorrect .option-radio {
+            border-color: #e11d48;
+            background-color: #e11d48;
+        }
+        .quiz-option.disabled { cursor: default; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-300">
+
+    <!-- HEADER -->
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative">
+        <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
+                <i class="fas fa-brain text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-none uppercase">NeuroEmergências</h1>
+                <p class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mt-0.5">Prática Clínica</p>
+            </div>
+        </div>
+        
+        <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
+            <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+            
+            <div class="relative group hidden sm:block">
+                <select id="moduleSelector" class="appearance-none bg-slate-900/80 text-white text-xs font-semibold py-2.5 pl-4 pr-10 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer min-w-[280px] max-w-[350px] truncate transition-all hover:bg-slate-800">
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <button onclick="goHome()" class="text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Módulos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Domine as <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Urgências Neurológicas</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Do acidente vascular encefálico aos distúrbios do movimento. O guia completo para o diagnóstico preciso e manejo avançado no pronto-socorro.
+                </p>
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <!-- Modules Injected via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- PLAYER VIEW -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-slate-950 z-10 relative">
+        
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group">
+            
+            <div class="w-full aspect-video max-h-[70vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
+                
+                <!-- Componentes de Vídeo -->
+                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-0 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Botão de emergência sobreposto -->
+                <div id="externalLinkBtn" class="absolute top-4 right-4 z-20" style="display:none;">
+                    <button onclick="openCurrentVideoExternal()" class="bg-black/60 hover:bg-indigo-600 text-white backdrop-blur-md px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 border border-white/10 transition-colors shadow-lg" title="Se o vídeo não carregar, abra noutra aba">
+                        <i class="fas fa-external-link-alt"></i> Abrir Aula noutra Aba
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-slate-900 to-[#050505] w-full absolute inset-0 z-10">
+                    <div class="w-24 h-24 bg-slate-900/80 rounded-2xl flex items-center justify-center mb-8 border border-white/5 shadow-[0_0_50px_rgba(99,102,241,0.15)] transform rotate-3">
+                        <i class="fas fa-user-md text-4xl text-indigo-500 -rotate-3"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3 font-display">Ambiente Clínico</h2>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+                        Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.
+                    </p>
+                </div>
+
+                <!-- STATE DO QUIZ / AVALIAÇÃO -->
+                <div id="quizState" class="hidden absolute inset-0 w-full h-full z-20 bg-slate-950 overflow-y-auto custom-scroll p-6 sm:p-10">
+                    <div class="max-w-3xl mx-auto pb-10">
+                        <div class="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white font-display">Avaliação do Módulo</h2>
+                                <p class="text-slate-400 text-sm">Teste os seus conhecimentos adquiridos</p>
+                            </div>
+                        </div>
+
+                        <div id="quizQuestionsContainer" class="space-y-10">
+                            <!-- Perguntas injetadas via JS -->
+                        </div>
+
+                        <div id="quizControls" class="mt-10 pt-6 border-t border-white/10 flex justify-between items-center hidden">
+                            <div id="quizScore" class="hidden text-lg font-bold"></div>
+                            <button id="btnSubmitQuiz" onclick="submitAssessment()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 ml-auto">
+                                Finalizar Avaliação <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="bg-slate-900 p-5 border-b border-white/5 shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 z-20">
+                <div class="flex-1">
+                    <h2 id="lessonTitle" class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 active-indicator hidden" id="pulseIndicator"></span>
+                        <span class="line-clamp-1">Nenhuma aula selecionada</span>
+                    </h2>
+                    <p id="moduleTitleDisplay" class="text-xs text-cyan-400 mt-1.5 font-bold uppercase tracking-wider pl-5 hidden sm:block">Módulo</p>
+                </div>
+                
+                <!-- Navegação de Vídeo -->
+                <div class="flex items-center gap-2" id="videoNavControls" style="display: none;">
+                    <button onclick="playPrevious()" id="btnPrev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border border-slate-700">
+                        <i class="fas fa-step-backward"></i> Anterior
+                    </button>
+                    <button onclick="playNext()" id="btnNext" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        Próxima <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-book-medical text-cyan-500"></i> Mapas Mentais & Diretrizes
+                </h3>
+                <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Materials Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
+            <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
+                <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ul text-indigo-500"></i> Programa do Módulo
+                </h3>
+                <span id="lessonCountBadge" class="bg-indigo-500/10 text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-500/20">0 Aulas</span>
+            </div>
+            
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5 pb-20">
+                <!-- Lessons Injected via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DO CURSO (NEUROEMERGÊNCIAS MÉDICAS) + ESTRUTURA DE AVALIAÇÕES
+        // ==================================================================================
+        const courseData = [
+            {
+                title: "Módulo 01 - AVE Hemorrágico Intraparenquimatoso",
+                description: "Diagnóstico, causas, manejo pressórico e coagulopatias na hemorragia intraparenquimatosa.",
+                lessons: [
+                    { t: "Aula 01 - Como Diagnosticar e Manejar uma Hemorragia Intraparenquimantosa.mp4", u: "https://drive.google.com/file/d/16Sdod4jWKb8mtH0NajRXzMvDU0zTkgod/view?usp=sharing" },
+                    { t: "Aula 02 - Quais são as Causas de uma Hemorragia Intraparenquimatosa.mp4", u: "https://drive.google.com/file/d/1GmkgKYDpGL1SzVljAoZkaN9ekifeUtU3/view?usp=sharing" },
+                    { t: "Aula 03 - Como Controlar os Níveis Pressóricos.mp4", u: "https://drive.google.com/file/d/1E0_iQXJAXJcrXUTpGIXW-ZmNln1eDGOd/view?usp=sharing" },
+                    { t: "Aula 04 - Manejo de Coagulopatias no Contexto de Hemorragia.mp4", u: "https://drive.google.com/file/d/1E1myN-b_pxlXpxQS12uJPeqZujP8bOzv/view?usp=sharing" },
+                    { t: "Aula 05 - Preciso Chamar o Neurocirurgião.mp4", u: "https://drive.google.com/file/d/1ZiG-ut0PGRzfVtY-wckr8Qn2IR4jk-f9/view?usp=sharing" },
+                    { t: "Aula 06 - Complicações da Hemorragia Intraparenquimatosa.mp4", u: "https://drive.google.com/file/d/1aGpns4TGhet9M933XmsEzPXIGNaNW6oX/view?usp=sharing" },
+                    { t: "Mapa Mental - Acidente Vascular Encefálico Esquemas de Atendimento.pdf", u: "https://drive.google.com/file/d/1EEcQXlIZwgZYfvrUmXHFL9Lz1lZUGRVf/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos, sem comorbidades, apresentando discreto declínio cognitivo, subitamente iniciou quadro de cefaleia e hemiparesia a esquerda. PA: 140 × 100 mmHg. Após tomografia de crânio de urgência alterada, foi internado e realizou ressonância magnética de crânio.\n\nAs imagens mostram a ressonância magnética de encéfalo com sequências T2* e FLAIR. Sequência em T1 pós-contraste não demonstra captação de contraste pela lesão. [Inserir imagem aqui]\n\nProvável hipótese etiológica:",
+                        options: [
+                            "Malformação arteriovenosa encefálica.",
+                            "Hipertensão.",
+                            "Angiopatia amiloide.",
+                            "Tumor primário de sistema nervoso central.",
+                            "Metástase Cerebral."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos... [Inserir imagem aqui]\n\nSegundo as recomendações baseadas nas novas diretrizes da AHA/ASA e da Sociedade Brasileira de Doenças Cerebrovasculares, em relação aos cuidados gerais deste paciente, é INCORRETA a conduta:",
+                        options: [
+                            "Recomendar a mobilização precoce e fisioterapia motora e respiratória de imediato em pacientes estáveis.",
+                            "Iniciar profilaxia de TVP e TEP com heparina não fracionada ou heparina de baixo peso molecular após 24 horas da estabilização do sangramento.",
+                            "Não prescrever corticosteroides.",
+                            "Iniciar profilaxia para crises convulsivas (Fenitoína 100mg 8/8h IV).",
+                            "Solicitar TC de controle após 24 horas da admissão."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos... [Inserir imagem aqui]\n\nAlguns pacientes com hemorragia intraparenquimatosa podem se beneficiar do controle pressórico mais rigoroso, que características esses pacientes apresentam?",
+                        options: [
+                            "< 6h do ictus / PAS de entrada > 220mmHg / Anticoagulação / Sem marcadores de expansão na neuroimagem / Função renal normal",
+                            "< 6h do ictus / PAS de entrada < 220mmHg / Sem anticoagulação / Marcadores de expansão na neuroimagem / Função renal alterada",
+                            "> 6h do ictus / PAS de entrada > 220mmHg / Anticoagulação / Sem marcadores de expansão na neuroimagem / Função renal alterada",
+                            "> 6h do ictus / PAS de entrada > 220mmHg / Sem anticoagulação / Marcadores de expansão na neuroimagem / Função renal alterada",
+                            "< 6h do ictus / PAS de entrada < 220mmHg / Anticoagulação / Marcadores de expansão na neuroimagem / Função renal normal"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos... [Inserir imagem aqui]\n\nQuais situações indicariam necessidade de avaliação pela equipe de Neurocirurgia?",
+                        options: [
+                            "Cefaleia intensa.",
+                            "Afasia.",
+                            "Rebaixamento do nível de consciência.",
+                            "Crise convulsiva.",
+                            "Hemiparesia."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos... [Inserir imagem aqui]\n\nConsiderando as hemorragias intraparenquimatosas em pacientes anticoagulados, assinale a alternativa que correlaciona os anticoagulantes e seus reversores de forma correta.\nA. Heparina - 1. Andexanet alfa\nB. Varfarina - 2. Vitamina K\nC. Inibidores do fator Xa - 3. Protamina\nD. Dabigatrana - 4. Idarucizumabe",
+                        options: [
+                            "A-3 / B-2 / C-1 / D-4",
+                            "A-1 / B-4 / C-3 / D-2",
+                            "A-2 / B-3 / C-4 / D-1",
+                            "A-3 / B-2 / C-4 / D-1",
+                            "A-4 / B-2 / C-1 / D-3"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente do sexo masculino, de 72 anos... [Inserir imagem aqui]\n\nConsiderando que o paciente apresentou apenas a clínica citada e que o volume calculado do hematoma foi <30mL, qual a pontuação do ICH score desse paciente?",
+                        options: [
+                            "0",
+                            "1",
+                            "2",
+                            "3",
+                            "4"
+                        ],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                title: "Módulo 02 - Cefaleia Abordagem Inicial e Diferencial",
+                description: "Identificação de cefaleias primárias e causas secundárias graves na sala de emergência.",
+                lessons: [
+                    { t: "Aula 01 - Doutor, Estou com Cefaleia Intensa. É Algo Grave.mp4", u: "https://drive.google.com/file/d/1uz3c1dPRY3B_YlCe3gDpwLiiVvfNDiBX/view?usp=sharing" },
+                    { t: "Aula 02 - Como eu Posso Reconhecer se a Dor é Primária.mp4", u: "https://drive.google.com/file/d/1C5TURQEWPIU38ZbdbOiZJLzRPldLDrQo/view?usp=sharing" },
+                    { t: "Aula 03 - Quando Devo me Preocupar de ser uma Causa Secundária Mais Grave.mp4", u: "https://drive.google.com/file/d/1pUUowRHW2-IM0e-nnC_LPEDt_TwJRgez/view?usp=sharing" },
+                    { t: "Aula 04 - Quais Diferenciais Ninguém Pode Perder no PS.mp4", u: "https://drive.google.com/file/d/125Pe0kdwEedln-Y5KcSsA-PyMYT61s2N/view?usp=sharing" },
+                    { t: "Aula 05 - Quais Diferenciais Ninguém Pode Perder no PS Hemorragia Subaracnoide.mp4", u: "https://drive.google.com/file/d/1jctKKFfziOvpLLV2LVafTVZlrnJnIiTN/view?usp=sharing" },
+                    { t: "Aula 06 - Quais Diferenciais Ninguém Pode Perder no PS Trombose Venosa Cerebral.mp4", u: "https://drive.google.com/file/d/1Cul6j9inVPbnsAuIK8qfx_WQaUDgMwqL/view?usp=sharing" },
+                    { t: "Aula 07 - Quais Diferenciais Ninguém Pode Perder no PS Síndrome de Vasoconstrição.mp4", u: "https://drive.google.com/file/d/1dmO9if4jLZVZ_npV_L8wxZww_QBSYO4o/view?usp=sharing" },
+                    { t: "Aula 08 - Quais Diferenciais Ninguém Pode Perder no PS Dissecção de Artérias.mp4", u: "https://drive.google.com/file/d/1_cd5pB-G8r5w2BIBtB__O97wktJNsoOC/view?usp=sharing" },
+                    { t: "Aula 09 - Quais Diferenciais Ninguém Pode Perder no PS Meningite.mp4", u: "https://drive.google.com/file/d/1zdNngYBr7dyWH246AKPK9hdxM-NvUfzo/view?usp=sharing" },
+                    { t: "Aula 10 - Quais Diferenciais Ninguém Pode Perder no PS Hipertensão Intracraniana.mp4", u: "https://drive.google.com/file/d/1bZ3H8PsqqBhrcFxdDYjbHqsaHYbso0kQ/view?usp=sharing" },
+                    { t: "Aula 11 - Quais Diferenciais Ninguém Pode Perder no PS Arterite de Células Gigantes.mp4", u: "https://drive.google.com/file/d/1LuxbTGEYVXhJMgmVWSlgf14TU_0BEaQL/view?usp=sharing" },
+                    { t: "Aula 12 - Como Posso ter Certeza que o Paciente tem Enxaqueca e não Outro Diferencial.mp4", u: "https://drive.google.com/file/d/15le47rGRN1rpGrkJTNjoVBb-NreRjSbh/view?usp=sharing" },
+                    { t: "Aula 13 - E a Cefaleia em Salvas Nunca vi uma, Como vou Reconhecer.mp4", u: "https://drive.google.com/file/d/1Qc_1zMQi0TAcdjafj6SQZ9Em8tjwePCj/view?usp=sharing" },
+                    { t: "Aula 14 - E Essa dor de Dente, é Neuralgia.mp4", u: "https://drive.google.com/file/d/14NvSZ3_vOcBKQoy6C-Dy22-4AhgEhmhc/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Em geral, o que o paciente com cefaleia deseja quando procura atendimento médico?",
+                        options: [
+                            "Tratamento para sua dor",
+                            "Afastamento de atividades profissionais",
+                            "Uma explicação para suas dores",
+                            "Realização de exames complementares"
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Qual das alternativas abaixo é mais útil para a diferenciação entre dores primárias e secundárias na emergência?",
+                        options: [
+                            "Neuroimagem",
+                            "Fundo de olho e sinais meníngeos",
+                            "Resposta a analgesia",
+                            "Caracterização da evolução temporal das dores"
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "O SNNOOP10 é um checklist útil para identificação de sinais de alarme em cefaleia na emergência. Qual dos sinais abaixo NÃO É um sinal de alarme?",
+                        options: [
+                            "Ausência de resposta a medicação",
+                            "Idade > 50 anos",
+                            "Início súbito da cefaleia",
+                            "Anormalidade ao exame neurológico"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Assinale a correta:",
+                        options: [
+                            "Cefaleia isolada é rara no contexto de patologias intracranianas graves",
+                            "Tumores cerebrais podem se manifestar clinicamente com cefaleia isolada por anos",
+                            "Cefaleia isolada é incomum em trombose venosa cerebral",
+                            "Cefaleia em trovoada (thunderclap headache) deve sempre ser avaliada em ambiente hospitalar mesmo se tomografia de crânio for normal"
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Todos os sinais abaixo falam contra a possibilidade de cefaleia secundária, EXCETO:",
+                        options: [
+                            "Melhora da cefaleia com opioides",
+                            "Cefaleias anteriores idênticas",
+                            "Nível de consciência preservado e comportamento adequado",
+                            "Exame clínico e neurológico normais, incluindo sinais vitais"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Qual das alternativas abaixo ocorre na cefaleia em salvas?",
+                        options: [
+                            "Ocorrência de mais de 10 crises de dor ao dia",
+                            "Dor unilateral estrita sem alternância de lados",
+                            "Alterações visuais durante a crise",
+                            "Fono e fotofobia"
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Nas dores neurálgicas cranianas qual o tratamento sintomático de eleição?",
+                        options: [
+                            "Analgésicos simples",
+                            "Antiinflamatórios",
+                            "Triptanos",
+                            "Anticonvulsivantes"
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Assinale a CORRETA:",
+                        options: [
+                            "Opioides não são indicados no tratamento da crise aguda de enxaqueca",
+                            "Triptanos devem ser reservados apenas para crises que não respondem a corticoide",
+                            "Corticoides são indicados para pacientes com crises com vômito",
+                            "Uso de analgésicos deve ser evitado no PS para pacientes com crises mais que semanais"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "No tratamento da crise aguda de cefaleia em salvas, qual a melhor alternativa?",
+                        options: [
+                            "Corticoide",
+                            "Opioides",
+                            "Triptanos e oxigênio",
+                            "Dilacoron"
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                title: "Módulo 03 - Neuro-Oftalmologia Diplopia",
+                description: "Avaliação, exame neurológico e diferenciação da diplopia aguda.",
+                lessons: [
+                    { t: "Aula 01 - O que é Diplopia Aguda.mp4", u: "https://drive.google.com/file/d/1jyCd6LBntb87XmA8eNGcC6dAD_qPJGSS/view?usp=sharing" },
+                    { t: "Aula 02 - O Que Buscar no Exame Neurológico da Diplopia.mp4", u: "https://drive.google.com/file/d/1s89pYVfA9u4wFzduId4-hvpiUwlUl0ed/view?usp=sharing" },
+                    { t: "Aula 03 - Como é a Diplopia do Nervo Oculomotor.mp4", u: "https://drive.google.com/file/d/16x3gs5om8o0JSOFWSVb-wacXNbz4ofVQ/view?usp=sharing" },
+                    { t: "Aula 04 - Como é a Diplopia do VI Nervo.mp4", u: "https://drive.google.com/file/d/1y2EjjJxBaEfDVk8yaxolwop9zkgG6mlz/view?usp=sharing" },
+                    { t: "Aula 05 - Outras Causas de Diplopia.mp4", u: "https://drive.google.com/file/d/1_0QrS10HaAW1UIB11txRN_ofYD0oqpJD/view?usp=sharing" },
+                    { t: "Mapa Mental - Diplopia.pdf", u: "https://drive.google.com/file/d/1FdmABrdDjLzcH91Af6EJ3p49aOA1umhS/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher, 32 anos, obesa, busca pronto atendimento por visão dupla há 2 dias. Conta que a visão dupla só ocorre com ambos olhos abertos. As imagens são uma ao lado da outra, aumentando a distância entre elas ao olhar para a esquerda e para longe. Refere cefaleia nova há 15 dias associada à diplopia. Sobre o caso acima, é certo:",
+                        options: [
+                            "O fato da diplopia melhorar ao fechar um dos olhos sugere uma causa oftalmológica como opacidade de meio.",
+                            "Como as imagens são uma ao lado da outra, a diplopia deve ser causada por causas de desalinhamento ocular horizontal para acometimento do VI par ou oftalmoplegia internuclear.",
+                            "Como a distância entre as imagens aumenta ao olhar para a esquerda, a diplopia decorre de doença do olho esquerdo.",
+                            "Como a diplopia é pior para longe, a paciente deve ter dificuldade em tarefas que exijam maior divergência, como é o caso da leitura."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Ainda sobre o caso: Mulher, 32 anos, obesa, com visão dupla há 2 dias. As imagens são uma ao lado da outra, aumentando a distância entre elas ao olhar para a esquerda e para longe. Refere cefaleia nova há 15 dias. É certo:",
+                        options: [
+                            "Você esperaria que o desalinhamento fosse horizontal, com desvio do olho esquerdo para dentro (esotropia) ao observarmos o reflexo corneano no teste de Hirschberg.",
+                            "Em quadros leves, o desalinhamento não seria visível a inspeção e precisaríamos usar manobras como o cover alternado ou o bastão de Maddox para avaliar desalinhamentos latentes (forias).",
+                            "Na avaliação de oftalmoparesia nas nove posições do olhar, a paciente provavelmente apresenta uma limitação da abdução do olho esquerdo.",
+                            "Todas as alternativas anteriores estão corretas."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Mulher, 54 anos, hipertensa, tabagista e com antecedente de rins policísticos busca a emergência por quadro de cefaleia súbita e visão dupla hoje. Ao exame neurológico, observa-se ptose do lado direito, midríase fixa da pupila direita e olho “down and out” com limitação de todos movimentos oculares exceto abdução e inciclodução. É INCORRETO:",
+                        options: [
+                            "O diagnóstico a ser descartado é um aneurisma de artéria comunicante posterior com compressão do III nervo craniano, por isso, devemos solicitar uma angiotomografia arterial de crânio.",
+                            "Tipicamente, na compressão por aneurisma, a pupila é preservada, porque as fibras pupilomotoras são internas e mais resistentes a compressão.",
+                            "Embora a paciente tenha mais de 50 anos e seja hipertensa, não podemos considerar uma investigação conservadora do III nervo pelo acometimento pupilar e cefaleia súbita associada.",
+                            "É importante testar a abdução e inciclodução do olho afetado para definir se é uma lesão isolada do III nervo ou se há acometimento do VI e IV nervo associados."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Mulher, 26 anos, busca o neurologista com tontura, desequilíbrio e diplopia há 5 dias. Refere diplopia intermitente, incapacitando a leitura da paciente. Você suspeita de uma oftalmoplegia internuclear. É correto:",
+                        options: [
+                            "A oftalmoplegia internuclear é caracterizada pela limitação da adução do olho ipsilateral, sendo comum o nistagmo de abdução do olho contralateral.",
+                            "A oftalmoplegia internuclear em uma mulher jovem é sugestivo de esclerose múltipla.",
+                            "Diferente de uma diplopia por lesão do VI par, a diplopia é intermitente e pior para perto e não para longe.",
+                            "Todas as afirmativas estão corretas."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem, 73 anos, obeso, hipertenso e diabético busca pronto atendimento por visão dupla hoje. Conta que a visão dupla só ocorre com ambos olhos abertos. As imagens são uma ao lado da outra, aumentando a distância entre elas ao olhar para a direita e para longe. Nega sintomas associados e o restante do exame neurológico é normal. Dextro 343 mg/dL. É INCORRETO:",
+                        options: [
+                            "Não se faz necessário a coleta de provas inflamatórias (PCR e VHS) pois a arterite temporal afeta o II par e não os nervos da motricidade ocular extrínseca.",
+                            "Ao exame neurológico, é provável encontrar uma esotropia do olho direito com limitação da abdução desse olho.",
+                            "O diabetes e a hipertensão podem justificar a paralisia do VI par por oclusão microvascular. Nesse cenário, a investigação pode ser conservadora e o seguimento tende a mostrar evolução favorável.",
+                            "Caso doente apresentasse cefaleia e papiledema, seria fundamental descartar hipertensão intracraniana. Se a tomografia de crânio fosse normal, a coleta de exame de líquor com medida da pressão de abertura seria mandatória."
+                        ],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                title: "Módulo 04 - AVE Trombose Venosa Cerebral",
+                description: "Reconhecimento de TVC, análise de angiotomografia venosa e opções de tratamento.",
+                lessons: [
+                    { t: "Aula 01 - Quem é Mais Propenso a ter TVC.mp4", u: "https://drive.google.com/file/d/1VV1CZhRexSzjgr567FWAo4CRXYT81xzb/view?usp=sharing" },
+                    { t: "Aula 02 - Essa Cefaleia Pode ser TVC.mp4", u: "https://drive.google.com/file/d/1UWQtP9LBLSRrKuLdF01Dy5xixaFnKYwf/view?usp=sharing" },
+                    { t: "Aula 03 - Manejo na Sala de Emergência.mp4", u: "https://drive.google.com/file/d/1AVRyNeWZOUE1yEnQfAMHzm_KuD0rMMZt/view?usp=sharing" },
+                    { t: "Aula 04 - O Que Procurar na Tomografia ou Ressonância de Crânio.mp4", u: "https://drive.google.com/file/d/12D_bWY7b_LeT1FLJ8NH5OLwcvIxs3KER/view?usp=sharing" },
+                    { t: "Aula 05 - Como Devo Analisar uma Angiotomografia Venosa.mp4", u: "https://drive.google.com/file/d/1epjbTwuoDmObGlIk3-yS_BK6MogDkX2u/view?usp=sharing" },
+                    { t: "Aula 06 - Quais as Opções de Tratamento - Quais as Indicaões de Neurocirurgia.mp4", u: "https://drive.google.com/file/d/1MDEPujroFUryRMbGvpdk-WtBSwB9PFSI/view?usp=sharing" },
+                    { t: "Mapa Mental - TVC.pdf", u: "https://drive.google.com/file/d/1LR5cSCPEVbno_mT_nltw66WJvyoi4n0f/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "A hipertensão arterial sistêmica e o tabagismo são grandes fatores de risco para a trombose venosa cerebral.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Paciente de vinte e cinco anos de idade, do sexo feminino, apresentou quadro de cefaleia de difícil controle associado a borramento visual. Na situação em apreço, a trombose venosa cerebral é uma suspeita razoável.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "A paciente em questão deve realizar tomografia sem contraste para se verificar se há presença do sinal do delta vazio.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Um possível diagnóstico para o caso em questão é a trombose venosa cerebral, que pode acometer a veia anastomótica inferior ou veia de Trolard.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Entre as características da Trombose Venosa Cerebral, qual sinal direto é visto na Tomografia de Crânio?",
+                        options: [
+                            "Sinal do Triângulo Denso",
+                            "Edema Cerebral",
+                            "Hemorragia Cerebral",
+                            "Apagamento dos sulcos",
+                            "Hiperdensidade no interior da Artéria Cerebral Média"
+                        ],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                title: "Módulo 05 - Acidente Vascular Encefálico Isquêmico",
+                description: "Terapia de reperfusão, avaliação neurovascular, trombectomia e manejo de complicações.",
+                lessons: [
+                    { t: "Aula 01 - Triagem e Estabilização Como Reconhecer uma Síndrome Neurovascular.mp4", u: "https://drive.google.com/file/d/1vWxiXQIadl3fHIKSf-lS0qjLGqOBBw_A/view?usp=sharing" },
+                    { t: "Aula 02 - Princípios Gerais da Terapia de Reperfusão no AVCi.mp4", u: "https://drive.google.com/file/d/13ap26LSK94lW1lzWppdVSTxonh3jKNFX/view?usp=sharing" },
+                    { t: "Aula 03 - Princípios Gerais da Redução do Tempo de Atendimento.mp4", u: "https://drive.google.com/file/d/1HHLjtFIChxzHWotBga88HsMhYKxlg2tI/view?usp=sharing" },
+                    { t: "Aula 04 - Como Fazer o NIHSS.mp4", u: "https://drive.google.com/file/d/1PreDhRExXb4qGf9ZL-sR9jfp82BGQZ-O/view?usp=sharing" },
+                    { t: "Aula 05 - Como Avaliar a Neuroimagem no AVC Agudo Parte I.mp4", u: "https://drive.google.com/file/d/1FL8DXnKGJfGCa0CAJDfKcmLxszgFppn2/view?usp=sharing" },
+                    { t: "Aula 06 - Como Avaliar a Neuroimagem no AVC Agudo Parte II.mp4", u: "https://drive.google.com/file/d/1oyuk42RPL4R_LOw4Tt_zemSVm8gESoG0/view?usp=sharing" },
+                    { t: "Aula 07 - Quais as Indicações e Contraindicações de Trombólise.mp4", u: "https://drive.google.com/file/d/1HC8Fv1Fhtk6Qb8p2ROKUXS8wbv2lUyrw/view?usp=sharing" },
+                    { t: "Aula 08 - Indicações de Trombectomia Parte I.mp4", u: "https://drive.google.com/file/d/1gkaHcGiadA5MWcrmtWsx2hhYWrx23Jod/view?usp=sharing" },
+                    { t: "Aula 09 - Indicações de Trombectomia Parte II.mp4", u: "https://drive.google.com/file/d/1TmsfYzQyejEEEIlf2UezCPwwo1qv05tD/view?usp=sharing" },
+                    { t: "Aula 10 - Como Fazer o Rastreio de Disfagia em um Paciente.mp4", u: "https://drive.google.com/file/d/1Mi-zm0F2YikhSQi9k04sMIXJt-QHeVYo/view?usp=sharing" },
+                    { t: "Aula 11 - Manejo de Complicações no AVC.mp4", u: "https://drive.google.com/file/d/1nPMdBjFIQKIS-NJedl3196Nibu5zaPMe/view?usp=sharing" },
+                    { t: "Aula 12 - Manejo do Paciente Não-Candidato a Reperfusão.mp4", u: "https://drive.google.com/file/d/1uDqm45qRJz1hqi-aYw-h0i7kpX60hRsc/view?usp=sharing" },
+                    { t: "Aula 13 - Unidade de AVC.mp4", u: "https://drive.google.com/file/d/1j3xF4fmZdsYmeMUhDZcQgKZD_RI2ZPjv/view?usp=sharing" },
+                    { t: "Aula 14 - Investigação e Profilaxia de Novos Eventos.mp4", u: "https://drive.google.com/file/d/1MsxAOA3bNS5G_JffGKgXRhsLjaSH_JHC/view?usp=sharing" },
+                    { t: "Aula 15 - O Que eu Devo Orientar à Alta de um Paciente.mp4", u: "https://drive.google.com/file/d/1qTy9hua52NilpOdGjlVlKScVwZtSFusH/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Existem escalas para detectar sinais mais comuns a fim de agilizar o atendimento nos setores habilitados. Podem ser usadas no atendimento pré-hospitalar ou mesmo em setor de triagem hospitalar. Quais seriam essas escalas?",
+                        options: [
+                            "Rankin e Barthel.",
+                            "Rankin e Los Angeles.",
+                            "Cincinnati e Los Angeles.",
+                            "Bamford e Fast."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "A abordagem inicial da isquemia cerebral, usando ativador do plasminogênio tecidual (t-PA), na terapia de reperfusão, requer um prazo máximo de tempo recomendado para a sua utilização, a partir do início dos sintomas. Esse prazo é de até:",
+                        options: [
+                            "duas horas",
+                            "três horas",
+                            "quatro horas e meia",
+                            "cinco horas"
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Diante da suspeita de AVC realizada pela enfermeira da triagem, foi acionado o protocolo de atendimento e a paciente foi imediatamente levada para a sala de emergência. À chegada na sala de emergência, qual deve ser a prioridade no atendimento dessa paciente?",
+                        options: [
+                            "Estabilização clínica, seguida de exame neurológico minucioso.",
+                            "Tomografia computadorizada de crânio, seguida de estabilização clínica.",
+                            "Estabilização clínica, seguida de tomografia computadorizada de crânio.",
+                            "Escala de NIH, seguida de estabilização clínica."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Sobre a escala NIHSS (National Institute of Health Stroke Scale), é correto afirmar que:",
+                        options: [
+                            "A presença de ataxia pode ser avaliada pela manobra index-nariz ou calcanhar-joelho.",
+                            "A presença de mutismo causado por barreira mecânica caracteriza pontuação máxima nos itens disartria e linguagem.",
+                            "A pontuação, nos casos em que o paciente não possui um membro (amputação), deve ser máxima na avaliação de força desse membro.",
+                            "A heminegligência deve ser pontuada no paciente não contatuante.",
+                            "A escala de NIHSS é mais importante nos casos de AVC hemorrágico."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente feminina de 60 anos, hipertensa mal controlada e tabagista. Trazida à emergência pois há 4 horas caiu da própria altura... Realizada TC de crânio [Inserir imagem aqui]. Assinale a alternativa com a melhor conduta terapêutica no momento:",
+                        options: [
+                            "Aplicar Alteplase, desde que não haja contraindicação à realização de trombólise.",
+                            "Prescrever insulina e avaliar novamente o déficit após controle metabólico.",
+                            "Iniciar Nitroprussiato em bomba de infusão contínua até reduzir 25% da pressão arterial.",
+                            "Administrar Aspirina 300mg e manter em observação hospitalar por 48 horas."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Qual das opções abaixo é uma contraindicação absoluta ao tratamento com trombólise endovenosa com rtPA em paciente com acidente vascular cerebral isquêmico?",
+                        options: [
+                            "Gravidez.",
+                            "Uso de varfarina com resultado de RNI 1,9.",
+                            "Crise epiléptica no início dos sintomas.",
+                            "Início dos sintomas há quatro horas."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Paciente de 68 anos, diabético, hipertenso sem controle adequado, apresentou quadro súbito de hemiparesia completa desproporcionada à esquerda... AngioTC de crânio = oclusão no segmento M1. Qual a melhor alternativa terapêutica para esse paciente?",
+                        options: [
+                            "Trombectomia mecânica direta, pois NIHSS muito elevado aumenta a chance de sangramento pós-trombólise.",
+                            "Ressonância de crânio para avaliar Mismatch e trombólise endovenosa.",
+                            "Trombólise endovenosa, angioTC de controle, trombectomia mecânica caso oclusão permaneça.",
+                            "Ressonância de crânio para avaliar Mismatch, trombólise endovenosa seguida de trombectomia mecânica."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "São sinais de disfagia pós-AVC, exceto:",
+                        options: [
+                            "Tosse",
+                            "Dispneia",
+                            "Hemoptise",
+                            "Desconforto faríngeo"
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paralisia de nervos cranianos, diplopia, tontura, náusea, vômitos, disartria, disfagia, soluços, ataxia de marcha. Um quadro de acidente vascular encefálico isquêmico com tais características clínicas provavelmente ocorreria em território vascular de artéria:",
+                        options: [
+                            "Cerebral anterior.",
+                            "Vértebro-basilar.",
+                            "Cerebral média.",
+                            "Cerebral posterior.",
+                            "Carótida interna."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "O exame de ressonância magnética de crânio, quando realizado no AVC, costuma mostrar alterações bastante precoces. Assinale a alternativa correta referente a estas alterações:",
+                        options: [
+                            "Hipossinal à difusão e hipersinal no mapa ADC.",
+                            "Hipersinal à difusão e hipossinal à perfusão.",
+                            "Hipersinal à difusão e hipossinal no mapa ADC.",
+                            "Hipossinal à difusão e hipersinal à perfusão."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Em pacientes internados por AVC deve-se:",
+                        options: [
+                            "Tratar crises convulsivas profilaticamente em todos os casos.",
+                            "Iniciar quimioprofilaxia para trombose venosa apenas após 24 horas da trombólise, se o paciente for trombolisado.",
+                            "Complicação com disfagia em pacientes com AVC ocorre em <20% dos casos.",
+                            "Todo paciente com AVC deve receber AAS na prescrição."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Qual dos seguintes itens não faz parte dos componentes clínicos da prevenção secundária:",
+                        options: [
+                            "Terapia anti-hipertensiva.",
+                            "Terapia antiagregante ou anticoagulante.",
+                            "Terapia antiepiléptica.",
+                            "Terapia hipolipemiante."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente idoso internado há 8 dias devido ao AVEi de etiologia aterotrombótica... Considerando o caso descrito, assinale a alternativa que apresenta a recomendação MAIS adequada no momento da alta desse paciente:",
+                        options: [
+                            "Prescrever anticoagulação com rivaroxabana, pois o paciente possui CHA2DS2VASc elevado.",
+                            "Prescrever anticoagulação com marevan, pois o paciente possui CHA2DS2VASc elevado; além de associar estatina.",
+                            "Iniciar estatina no momento da alta e anticoagulação após 21 dias do ictus do AVEi.",
+                            "Prescrever AAS e estatina, além de otimizar o tratamento da hipertensão e diabetes."
+                        ],
+                        correctIndex: 3
+                    }
+                ]
+            },
+            {
+                title: "Módulo 06 - AVE Hemorragia Subaracnóidea (HSA)",
+                description: "Abordagem da HSA, interpretação de líquor e angiotomografia.",
+                lessons: [
+                    { t: "Aula 01 - Quem é Mais Propenso a ter HSA.mp4", u: "https://drive.google.com/file/d/1PwbMbpZJQipcNeBt9bu-ZkGxntkClykU/view?usp=sharing" },
+                    { t: "Aula 02 - Essa Cefaleia Pode ser HSA.mp4", u: "https://drive.google.com/file/d/1PG8d3kcmgjb98mZY3SYr_kKwhJzDvEHB/view?usp=sharing" },
+                    { t: "Aula 03 - Manejo Hiperagudo da Hemorragia Subaracnoide.mp4", u: "https://drive.google.com/file/d/1jkUSos4YGp77X_e5hqkXy_cAqBE5lNhm/view?usp=sharing" },
+                    { t: "Aula 04 - O Que Devo Observar na Tomografia de Crânio.mp4", u: "https://drive.google.com/file/d/114crP74aMFXuEsq8wJaiB06pLqq7C3JE/view?usp=sharing" },
+                    { t: "Aula 05 - Sempre Preciso Pedir Líquor na Suspeita de HSA.mp4", u: "https://drive.google.com/file/d/1TjsrPsGS-wKWQOGX2FSBL1H1fQ20IZeN/view?usp=sharing" },
+                    { t: "Aula 06 - Será que é HSA ou Acidente de Punção.mp4", u: "https://drive.google.com/file/d/14AhrXvPaqU7QFuj7qpeHstmd-5ys7WwC/view?usp=sharing" },
+                    { t: "Aula 07 - E Sempre Precisa Pedir a Angiotomografica.mp4", u: "https://drive.google.com/file/d/1VMjlllAH0Pzgtmy4IWK8uVUiQGNU06Hu/view?usp=sharing" },
+                    { t: "Aula 08 - Complicações da Hemorragia Subaracnoide e Como Manejar.mp4", u: "https://drive.google.com/file/d/1bnXsnpOcyOIEwfqa96Vs0kKP4QHnLvkv/view?usp=sharing" },
+                    { t: "Aula 09 - Quais as Opções de Tratamento.mp4", u: "https://drive.google.com/file/d/1_EvapUDo50OBcJLTjFv2VHrWGAwq5lHC/view?usp=sharing" },
+                    { t: "Mapa Mental - HSA.pdf", u: "https://drive.google.com/file/d/1cBMEY7iomcC_HFSlB0Yvr27YcBKPWr2c/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Sobre a Hemorragia Subaracnoidea, assinale a alternativa correta.",
+                        options: [
+                            "Tomografia de Crânio sem contraste não evidencia a hemorragia meníngea nas primeiras 24 horas",
+                            "Se a suspeita é Hemorragia Subaracnoidea, tendo a Tomografia de Crânio sem confirmação, deve-se submeter o paciente à punção lombar para exame liquórico",
+                            "O Líquido Cefalorraquidiano apresenta aspecto xantocrômico somente na primeira semana",
+                            "A Ressonância Nuclear Magnética de Crânio é o único exame inicial de maior sensibilidade na fase inicial"
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "A realização de Angiotomografia arterial não ajuda no diagnóstico de Aneurisma com mais de 5 mm.",
+                        options: ["Verdadeiro", "Falso"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Dentre as complicações da punção lombar, estão: dor local, cefaleia pós-punção e punção traumática.",
+                        options: ["Verdadeiro", "Falso"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Em relação às principais complicações da Hemorragia Subaracnoidea, assinale a alternativa correta.",
+                        options: [
+                            "Vasoespasmo cerebral é a principal complicação aguda nestes pacientes, relacionada às sequelas incapacitantes em 20 a 30% dos casos",
+                            "Hidrocefalia pode ocorrer em qualquer fase após a hemorragia meníngea, em cerca de 20 a 30% dos casos, principalmente em pacientes com pior graduação nas escalas de Fisher e Hunt e Hess",
+                            "Crises epilépticas são pouco frequentes e ocorrem em torno de 5 a 10% dos casos, sendo mais raras em aneurismas de Artéria Cerebral Média",
+                            "Distúrbios hidroeletrolíticos como hiponatremia ocorrem em mais de 40% dos pacientes, sendo relacionados com infusão excessiva de líquidos endovenosos",
+                            "Não há correlação entre disfunção miocárdica e Hemorragia meníngea, mas sim por causa da doença coronariana prévia"
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Em relação às complicações da Hemorragia Subaracnoidea, é correto afirmar que:",
+                        options: [
+                            "A probabilidade de aparecimento de vasoespasmo depende da quantidade de sangue no espaço aracnoide",
+                            "A angiografia cerebral é incapaz de demonstrar o vasoespasmo",
+                            "O Doppler Transcraniano demonstra redução da velocidade do fluxo sanguíneo nas grandes artérias cerebrais",
+                            "O risco de vasoespasmo tem o pico entre o 15º ao 20º dias",
+                            "A hidrocefalia é uma complicação crônica frequente"
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Uma paciente com hipertensão arterial, sem outros males antecedentes sofria de cefaleia de moderada intensidade havia oito dias... O exame adequado para a investigação do referido caso é a tomografia computadorizada do crânio com contraste intravenoso, e o achado que define o diagnóstico é a presença de sangue intraventricular.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "A hipertensão arterial sistêmica e o tabagismo são grandes fatores de risco para a hemorragia subaracnoide espontânea.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "O exame neurológico da paciente em apreço pode apresentar sinais meningíticos típicos, como rigidez de nuca, Kernig e Brudzinski.",
+                        options: ["Certo", "Errado"],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                title: "Módulo 07 - Cefaleia Tratamento das Cefaleias Primárias",
+                description: "Terapêutica específica para enxaqueca e cefaleia em salvas na emergência.",
+                lessons: [
+                    { t: "Aula 01 - Princípios Gerais e Metas de Tratamento.mp4", u: "https://drive.google.com/file/d/1RUHvK0Z52vZ9r76WKpezJd1TRq5xxKSF/view?usp=sharing" },
+                    { t: "Aula 02 - Tratamento da Enxaqueca na Emergência.mp4", u: "https://drive.google.com/file/d/1cR7MZ-ndZX_WFVFQFk4br_SQK27oqyci/view?usp=sharing" },
+                    { t: "Aula 03 - Tratamento da Cefaleia em Salvas na Emergência.mp4", u: "https://drive.google.com/file/d/1T6sqyWEgdvQo1SgzTnBeiKXeI-WIvNiW/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Considerando-se os tipos de cefaleia, correlacione as colunas (Enxaqueca, Tensional, Salvas, Migrânea...):",
+                        options: [
+                            "C - E - F - A",
+                            "A - D - F - C",
+                            "A - B - F - E",
+                            "C - B - D - A"
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Joana, 32 anos, com idade gestacional de 30 semanas, se queixa de crises de dor de cabeça. Concluindo se tratar de uma enxaqueca comum, sobre o uso de medicamentos para essa condição na gravidez, a conduta mais segura para Joana seria prescrever:",
+                        options: [
+                            "Paracetamol com ergotamina para a dor e dimenidrinato para a náusea.",
+                            "Paracetamol para a dor e metoclopramida para a náusea.",
+                            "Naproxeno para a dor e ondansetrona para a náusea.",
+                            "Dipirona com ergotamina para a dor e domperidona para náusea."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Paciente sexo masculino, 32 anos, iniciou há cerca de uma semana com dor de cabeça unilateral, intermitente, predominantemente à noite. Relata ainda corrimento nasal e ocular associados. Assinale a principal hipótese diagnóstica e conduta:",
+                        options: [
+                            "Cefaleia por abuso de analgésicos e iniciar naproxeno.",
+                            "Migrânea como áurea e iniciar triptanos.",
+                            "Hemorragia subaracnoidea e pedir TC de crânio.",
+                            "Cefaleia em salvas e oxigenoterapia."
+                        ],
+                        correctIndex: 3
+                    }
+                ]
+            },
+            {
+                title: "Módulo 08 - Vertigem",
+                description: "Anamnese, VPPB, diagnóstico diferencial e métodos de imagem para vertigem.",
+                lessons: [
+                    { t: "Aula 01 - Que Dados de Anamnese te Auxiliam no Diagnóstico.mp4", u: "https://drive.google.com/file/d/1jjSWxAKQivLq2c5JbMFgv_9ipDtZ45NK/view?usp=sharing" },
+                    { t: "Aula 02 - Que Dados de Exame Físico te Auxiliam no Diagnóstico.mp4", u: "https://drive.google.com/file/d/1w9VDhUxBx7EHxaIgIDseAswBv8f95lxy/view?usp=sharing" },
+                    { t: "Aula 03 - Esse Paciente com Vertigem Está Tendo um AVC.mp4", u: "https://drive.google.com/file/d/1hGbYrxSlWg_BCM6KqEunxsxsaHz42Le2/view?usp=sharing" },
+                    { t: "Aula 04 - Quais os Principais Diagnósticos Diferenciais na Emergência.mp4", u: "https://drive.google.com/file/d/1o4Y3fCK787JBFDfHOXiY7NCVpKWbLw--/view?usp=sharing" },
+                    { t: "Aula 05 - Como Diagnosticar a Vertigem Posicional.mp4", u: "https://drive.google.com/file/d/1VCZHI1j6F0jxIF0jU4H2UWm9JEfwePkr/view?usp=sharing" },
+                    { t: "Aula 06 - Como Tratar a Vertigem Posicional Paroxística Benigna (VPPB).mp4", u: "https://drive.google.com/file/d/1pZDiahzwdaNsmDc_JPAPttxwK7TosmbJ/view?usp=sharing" },
+                    { t: "Aula 07 - Quando Devo Pedir Exame de Imagem.mp4", u: "https://drive.google.com/file/d/1rmDWMK9XpccfFojpIQyO9CA-B7Stmxdj/view?usp=sharing" },
+                    { t: "Mapa Mental - Vertigem Esquemas de Atendimento.pdf", u: "https://drive.google.com/file/d/1cZ49xLMzXsVITKMct4TFOhEZa1bvMnle/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Paciente de 35 anos, queixa-se de vertigem desde ontem. Qual dos questionamentos abaixo, realizados na anamnese, não é essencial para o raciocínio clínico?",
+                        options: [
+                            "Se há desencadeante para o episódio de tontura.",
+                            "Se há sintomas associados e quais são eles.",
+                            "Se a sensação é de o paciente estar rodando ou dos objetos estarem girando ao seu redor.",
+                            "Se já teve episódios de vertigem anteriormente."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "O nistagmo que surge pela lesão periférica das vias vestibulares:",
+                        options: [
+                            "É causado por alteração nas vias de fixação do olhar.",
+                            "Se inverte conforme a direção para qual o paciente olha.",
+                            "Piora com a fixação do olhar.",
+                            "Tem componentes horizontal e rotatório."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Esse paciente com vertigem está tendo um AVC? Qual dos pacientes abaixo tem como principal suspeita AVC agudo?",
+                        options: [
+                            "Paciente de 30 anos, sem comorbidades, com cefaleia, vertigem e hipoacusia há 4 horas.",
+                            "Paciente de 88 anos, hipertenso e diabético, com episódios de vertigem isolada, com duração de 1 minuto, há 1 semana.",
+                            "Paciente de 55 anos, hipertensa, com tontura transitória ao se levantar da cama hoje pela manhã.",
+                            "Paciente de 40 anos, lúpica, com mal estar geral, tontura e desequilíbrio progressivos há 4 dias."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente de 60 anos, refere tontura desde que acordou. Apresenta nistagmo horizonto rotatório para direita, reflexo vestíbulo ocular alterado para esquerda. Qual diagnóstico mais provável e melhor conduta neste momento?",
+                        options: [
+                            "Neurite vestibular – reabilitação vestibular.",
+                            "Ramsay Hunt – antiviral.",
+                            "AVC – tomografia ou ressonância de encéfalo.",
+                            "Wernicke - tiamina."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Como diagnosticar a vertigem posicional? Não é característica do nistagmo típico da VPPB do canal semicircular posterior:",
+                        options: [
+                            "Demorar para começar após a realização da manobra de Dix Hallpike.",
+                            "Componente rotatório batendo para a orelha contralateral à afetada.",
+                            "Durar no máximo um minuto.",
+                            "Tornar-se menos intenso conforme é realizada a manobra diagnóstica repetidas vezes."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Quinze segundos após deitar o paciente com a cabeça pendente na maca, virada 45° para a direita, foi possível notar nistagmo com componente vertical para cima e rotatório para o solo. Qual a conduta e diagnóstico corretos?",
+                        options: [
+                            "Manobra de Semont começando para a esquerda (VPPB posterior esquerdo).",
+                            "Manobra de Semont começando para a esquerda (VPPB posterior direito).",
+                            "Manobra de Epley começando com a cabeça para direita (VPPB posterior direito).",
+                            "Manobra de Epley começando com a cabeça para direita (VPPB posterior esquerdo)."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Quando devo pedir exame de imagem no paciente com vertigem e o que procurar? Assinale a incorreta:",
+                        options: [
+                            "A visualização de contato neurovascular entre a artéria vertebral e o oitavo nervo craniano leva ao diagnóstico de paroxismia vestibular.",
+                            "A ressonância normal não exclui vertigem de origem central.",
+                            "O paciente com nistagmo vertical espontâneo deve ser investigado com ressonância de encéfalo.",
+                            "Achados do exame da motricidade ocular extrínseca são mais sensíveis para o diagnóstico de vertigem central de que a ressonância de encéfalo."
+                        ],
+                        correctIndex: 3
+                    }
+                ]
+            },
+            {
+                title: "Módulo 09 - Coma",
+                description: "Avaliação neurológica avançada do paciente comatoso, pupilas e escala de Glasgow.",
+                lessons: [
+                    { t: "Aula 01 - O Que é Coma O que Significa um Paciente Sonolento.mp4", u: "https://drive.google.com/file/d/1L3ZecsNVZdYInxmbvVncK3VhGzRPBaAE/view?usp=sharing" },
+                    { t: "Aula 02 - Quais são as Causas de Rebaixamento de Consciência.mp4", u: "https://drive.google.com/file/d/1OI-z7Fijz6bGhXxUyMTFNYj-LWYNfm92/view?usp=sharing" },
+                    { t: "Aula 03 - O Que Devo Fazer no Atendimento Inicial.mp4", u: "https://drive.google.com/file/d/18jwc2mVZC5fY5_p5Z00jDVwZKCO4aMoO/view?usp=sharing" },
+                    { t: "Aula 04 - A Avaliação do Nível de Consciência Resume-se a Glasgow.mp4", u: "https://drive.google.com/file/d/1-KDdWxhkNCG6t4xdGGmjYlu7d9iQRQ39/view?usp=sharing" },
+                    { t: "Aula 05 - O Que Significa Decerebrar e Decorticar.mp4", u: "https://drive.google.com/file/d/1VSZFQIIGvZkCrNrjU2t_usUC29dQrAVh/view?usp=sharing" },
+                    { t: "Aula 06 - O Que as Pupilas Podem nos Dizer Sobre o Coma.mp4", u: "https://drive.google.com/file/d/1Uu_qk6v8XeQQM3JnTWWiRzQUh43V4kap/view?usp=sharing" },
+                    { t: "Aula 07 - Como a Motricidade Ocular Pode nos Ajudar.mp4", u: "https://drive.google.com/file/d/1PT7QbTb0JBEangGShpievmhJNdAYGsJR/view?usp=sharing" },
+                    { t: "Aula 08 - As Pupilas Abriram! O Que isso Significa.mp4", u: "https://drive.google.com/file/d/12aiAu_hYSRLLnMPLVTI6m0WD07LBOFiC/view?usp=sharing" },
+                    { t: "Aula 09 - As Pupilas Estão Anisocóricas!.mp4", u: "https://drive.google.com/file/d/1vylAKWELBg616tWCHSkPzWmEPst9I-oI/view?usp=sharing" },
+                    { t: "Aula 10 - Está Herniando! O Que Faço Dou Salgadão.mp4", u: "https://drive.google.com/file/d/15-4N6xHSLJx7IkCjzWaxPmwJm4YBNaOO/view?usp=sharing" },
+                    { t: "Aula 11 - E se o Rebaixamento de Consciência Persistir.mp4", u: "https://drive.google.com/file/d/1V9Apfp5mWjWahK1fdI2w5AEU45KP6GDP/view?usp=sharing" },
+                    { t: "Aula 12 - Todo Paciente que não Reage a Estímulos Significa Coma.mp4", u: "https://drive.google.com/file/d/1zs_HP4juPFLwxwXg6KUYy7w0Cu7FI5Dn/view?usp=sharing" },
+                    { t: "Aula 13 - Como Avaliar um Paciente em Possível Morte Encefálica.mp4", u: "https://drive.google.com/file/d/1nA8ipgc2SU9PgtESH-iADI1krUf-NH7h/view?usp=sharing" },
+                    { t: "Aula 14 - Como é o Exame Neurológico na Avaliação de Morte Encefálica.mp4", u: "https://drive.google.com/file/d/18RJZLbXOiS3JnRo0ipxeoGgsrzWbPDBu/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Homem de 40 anos, em situação de rua, levado ao hospital devido a rebaixamento do nível de consciência. Sinais de desnutrição importante, hálito etílico e glicemia de 25 mg/dL. Após glicose, evoluiu com confusão mental, nistagmo e ataxia. [Inserir imagem aqui] Assinale o diagnóstico e o tratamento indicado:",
+                        options: [
+                            "Encefalopatia de Wernicke — reposição de tiamina.",
+                            "Hematoma epidural — craniectomia descompressiva.",
+                            "Deficiência de vitamina A — reposição de retinol.",
+                            "Hemorragia intraparenquimatosa — derivação ventricular.",
+                            "Esclerose lateral amiotrófica — plasmaférese."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Assinale a alternativa que, segundo os critérios de Beers, apresenta fármacos a serem evitados em idosos pelo potencial risco de confusão mental:",
+                        options: [
+                            "Benzodiazepínicos e inibidores de bomba protônica.",
+                            "Anti-histamínicos de primeira geração e inibidores da acetilcolinesterase.",
+                            "Antidepressivos tricíclicos e relaxantes musculares.",
+                            "Antipsicóticos e inibidores seletivos da recaptação de serotonina."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Mulher de 37 anos, trazida com vômitos e sinais de embriaguez... Após cloreto de sódio 0,9% e solução glicosada 50% IV, a paciente evolui com agitação psicomotora, agressividade, alucinações e nistagmo. É correto apenas o que se afirma em (I, II, III...):",
+                        options: [
+                            "III e V.",
+                            "I, II e III.",
+                            "I, IV e V.",
+                            "II, IV e V.",
+                            "I, II, III e IV."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente internado com TCE. Na escala de coma de Glasgow ele apresenta: abertura ocular a dor, resposta verbal com palavras inapropriadas e resposta motora com localização da dor. Os valores atribuídos são:",
+                        options: [
+                            "2, 3 e 5.",
+                            "2, 3 e 4.",
+                            "2, 2 e 5.",
+                            "2, 2 e 4."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente vítima de queda do telhado de 10 metros. Rebaixamento do nível de consciência, sem abertura ocular a qualquer estímulo, sem resposta verbal, com movimentos de extensão anormal. A pontuação de Glasgow convencional foi de:",
+                        options: [
+                            "4 pontos.",
+                            "3 pontos.",
+                            "8 pontos.",
+                            "5 pontos."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Paciente masculino com hemiparesia direita de início súbito. Evolui com Glasgow 7, midríase fixa à direita, FR 8, FC 48, PA 240/120. Assinale o diagnóstico e conduta:",
+                        options: [
+                            "Estado de mal não convulsivo e hidantalização.",
+                            "Acidente vascular cerebral isquêmico maligno e tomografia de crânio de urgência.",
+                            "Tríade de Cushing e infusão de manitol endovenoso em bolus.",
+                            "Síndrome de hipertensão intracraniana e intubação orotraqueal.",
+                            "Hematoma intracerebral e drenagem cirúrgica de urgência."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Mulher de 37 anos com cefaleia holocraniana seguida de perda transitória de consciência. Ao exame, rigidez de nuca, estrabismo divergente à direita, com pupila direita de maior diâmetro. O provável local vascular e o nervo craniano acometidos são:",
+                        options: [
+                            "Bifurcação das artérias cerebral média e comunicante anterior esquerda / nervo oculomotor.",
+                            "Bifurcação das artérias cerebral média e comunicante anterior esquerda / nervo abducente.",
+                            "Bifurcação das artérias carótida interna e comunicante posterior direita / nervo abducente.",
+                            "Bifurcação das artérias carótida interna e comunicante posterior direita / nervo oculomotor."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Dentre os critérios clínicos para suspeita de morte encefálica, a lesão global do tronco cerebral pode ser demonstrada por:",
+                        options: [
+                            "Apneia sustentada, pupilas fixas e reflexo cilioespinhal conservado.",
+                            "Ausência de fotorreação pupilar e perda dos reflexos oculovestibular e corneopalpebral.",
+                            "Coma profundo e não responsivo, apneia e bradicardia.",
+                            "Coma, pupilas mióticas e perda dos reflexos tendíneos profundos.",
+                            "Apneia total com frequência cardíaca invariável e responsiva à atropina."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Em pacientes com anisocoria qual dessas alternativas é mais favorável à causa do coma?",
+                        options: [
+                            "Hipoglicemia.",
+                            "Hemorragia intracraniana com herniação uncal.",
+                            "Status epiléptico não convulsivo.",
+                            "Hiponatremia.",
+                            "Encefalopatia de Wernicke."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "São medidas para a redução da Pressão Intracraniana, EXCETO:",
+                        options: [
+                            "Sedação e analgesia.",
+                            "Hiperventilação.",
+                            "Hipotermia.",
+                            "Soluções hipotônicas."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Pela legislação brasileira, para a constatação de morte encefálica é(são) necessário(s):",
+                        options: [
+                            "Apenas um exame clínico realizado por neurologista ou neurocirurgião após 12 horas da suspeita.",
+                            "Dois exames clínicos realizados por profissionais diferentes com intervalo de 12 horas.",
+                            "Dois exames clínicos realizados por profissionais diferentes e um exame complementar.",
+                            "Um exame complementar é superior ao exame clínico e suficiente para confirmar diagnóstico."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Para a doação de órgãos é necessária a confirmação da Morte Encefálica. Qual dos exames não faz parte dos critérios diagnósticos de Morte Encefálica?",
+                        options: [
+                            "Coma aperceptivo.",
+                            "Ausência de Reflexos Oculocefálicos.",
+                            "Ausência de Reflexo de Tosse.",
+                            "Ausência de Reflexo Medular.",
+                            "Ausência de Resposta às provas calóricas."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Assinale a alternativa que contempla condições clínicas para a realização dos procedimentos para determinação de Morte Encefálica (CFM):",
+                        options: [
+                            "Coma prolongado, ausência de reatividade supraespinhal e respiração agônica.",
+                            "Coma não perceptivo, ausência de reatividade supraespinhal e apneia persistente.",
+                            "Coma grave (Glasgow 3), pupilas dilatadas e não reagentes e respiração agônica.",
+                            "Coma profundo (Glasgow 4), pupilas anisocóricas e apneia persistente."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Dentro os critérios abaixo, qual não satisfaz o diagnóstico de morte encefálica?",
+                        options: [
+                            "Pupilas mióticas.",
+                            "Motricidade ocular: manobras óculo-cefálica e óculo-vestibular negativas.",
+                            "Resposta motora: sem resposta motora à estimulação dolorosa, podendo ocorrer respostas medulares.",
+                            "Respiração: realizar obrigatoriamente apneia oxigenada para atingir o estímulo respiratório máximo sem que ocorram movimentos respiratórios espontâneos."
+                        ],
+                        correctIndex: 0
+                    }
+                ]
+            },
+            {
+                title: "Módulo 10 - Delirium",
+                description: "Diagnóstico assertivo, investigação da causa e uso de medicações para Delirium.",
+                lessons: [
+                    { t: "Aula 01 - Ele Está Confuso. Como Reconhecer.mp4", u: "https://drive.google.com/file/d/1lnQmMI-9McWyZaD1KHVemVbP0qNrgEuG/view?usp=sharing" },
+                    { t: "Aula 02 - Existe a Famosa Neuro ITU.mp4", u: "https://drive.google.com/file/d/1O-l5hbVWDTneholkVjxHfHinmOqqqNnd/view?usp=sharing" },
+                    { t: "Aula 03 - Qual Paciente em Delirium Precisa de Tomografia e Líquor.mp4", u: "https://drive.google.com/file/d/16vFJ4zpNqCl61ZY6ZmphtUyG09xqOI9m/view?usp=sharing" },
+                    { t: "Aula 04 - Por que Devemos dar Importância.mp4", u: "https://drive.google.com/file/d/14cSD4kjKplo8gRzqch4wuTCDA912RQwd/view?usp=sharing" },
+                    { t: "Aula 05 - Basta Prescrever Haloperidol Para Tratar.mp4", u: "https://drive.google.com/file/d/18KV2lKxWeyK0-PQ3ZzHA9Gtmn-cuh4bJ/view?usp=sharing" },
+                    { t: "Aula 06 - Quando a Quetiapina é Necessária.mp4", u: "https://drive.google.com/file/d/1FL2JPuo28q-xfQVtZa5Z8hydvU5Sq2o3/view?usp=sharing" },
+                    { t: "Aula 07 - Tiamina Salva Cérebros.mp4", u: "https://drive.google.com/file/d/1sPMgRdHOcwbmmm9dYxJWkgYF-zkICJ0I/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher de 83 anos... internada por causa de pneumonia e em uso de cefepime. Apresentou agitação psicomotora, desorientação e alucinações visuais de insetos pequenos. Assinale a alternativa que NÃO apresenta uma causa provável para o quadro apresentado.",
+                        options: [
+                            "Efeito colateral de medicamentos.",
+                            "Esquizofrenia.",
+                            "Fecaloma.",
+                            "Infecção."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Delirium é uma condição relativamente frequente em pacientes hospitalizados. Sobre essa condição, é correto afirmar que:",
+                        options: [
+                            "Quando indicado, o tratamento pode ser feito com a prescrição de antipsicóticos para o controle de agitação do polo hiperativo.",
+                            "Em pacientes internados em UTI, não há ferramentas validadas para o diagnóstico de delirium.",
+                            "O diagnóstico deve ser realizado utilizando-se a RASS, sendo recomendada uma pontuação inferior a -2.",
+                            "Não há evidências de medidas recomendadas para se prevenir essa condição.",
+                            "Sendo um estado confusional crônico, o uso de benzodiazepínicos deve ser indicado como primeira escolha."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Idosa de 90 anos, trazida ao PS com sonolência diurna, diminuição de apetite, há 2 dias não reconhece a casa e fala coisas desconexas. Em uso de Losartan, Metformina e uso de Clonazepam há 2 dias para a insônia. Diagnóstico provável e conduta:",
+                        options: [
+                            "Demência de Alzheimer - iniciar anticolinesterásico.",
+                            "Demência de Alzheimer com distúrbio de comportamento - iniciar antipsicótico.",
+                            "Delirium - identificar e tratar causas precipitantes.",
+                            "Delirium - introduzir antipsicótico, essencial para a resolução do quadro."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Mulher de 82 anos, com diabetes e Alzheimer, levada ao PS com diarreia líquida. Apatia e lentificação há 1 dia. Desidratada, estável, déficit de atenção e sonolência. Conduta inicial deverá incluir:",
+                        options: [
+                            "Coleta de hemograma, urina I, eletrólitos e função renal.",
+                            "Tomografia de crânio e gasometria arterial.",
+                            "Ressonância de crânio e gasometria venosa.",
+                            "Coleta de hemoculturas e gasometria arterial.",
+                            "Tomografia de tórax e ultrassonografia de abdome."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem, 87 anos, hospitalizado por sepse secundária à pneumonia. Iniciou episódios de confusão e agitação. A medida mais apropriada para o tratamento e prevenção do delirium neste paciente é:",
+                        options: [
+                            "Iniciar haloperidol.",
+                            "Iniciar lorazepam.",
+                            "Mobilizar precocemente.",
+                            "Retirar a hidroclorotiazida."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Acerca do tratamento do delirium na população geriátrica, assinale a alternativa correta:",
+                        options: [
+                            "Faz-se necessário o uso rotineiro de neurolépticos.",
+                            "Em agitação, prefere-se a contenção física em detrimento da contenção medicamentosa.",
+                            "A droga de escolha é o benzodiazepínico.",
+                            "Tratando-se de um quadro multifatorial, deve-se atuar nos fatores desencadeantes. Em situações de agitação, está autorizada contenção, mas nunca medida isolada.",
+                            "Como o principal fator desencadeante é infeccioso, é fundamental a instituição de antibioticoterapia imediatamente."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Sobre o tratamento da síndrome confusional aguda (delirium), é correto afirmar:",
+                        options: [
+                            "Óculos e aparelhos auditivos devem ser retirados para evitar que ele se machuque.",
+                            "O uso de benzodiazepínicos está indicado nos casos de delirium tremens.",
+                            "O uso de benzodiazepínicos está indicado nos casos de delirium em idosos.",
+                            "As intervenções farmacológicas constituem a primeira etapa no manejo."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Homem de 49 anos, levado ao PS porque 'não fala coisa com coisa'. Bebe diariamente grandes quantidades de cachaça. Desorientado, prejuízo importante da atenção, nistagmo horizontal, estrabismo e ataxia de marcha. Assinale a alternativa correta:",
+                        options: [
+                            "A conduta inicial deve consistir na administração de soro glicosado.",
+                            "O quadro descrito é compatível com encefalopatia de Korsakoff.",
+                            "Para confirmação diagnóstica deve-se solicitar exame de imagem cerebral.",
+                            "O tratamento consiste na administração de tiamina.",
+                            "A hipótese diagnóstica mais provável é de traumatismo cranioencefálico."
+                        ],
+                        correctIndex: 3
+                    }
+                ]
+            },
+            {
+                title: "Módulo 11 - Primeira Crise Escape de Crise",
+                description: "Avaliação inicial da crise convulsiva, diagnósticos diferenciais e medicação.",
+                lessons: [
+                    { t: "Aula 01 - Primeira Crise e Escapes de Crise no Pronto-Socorro.mp4", u: "https://drive.google.com/file/d/1DTQnVMi7Nd6SEN6EKfjN8GiXqrIQ6VwA/view?usp=sharing" },
+                    { t: "Aula 02 - Como Diferenciar Crise Epiléptica de uma Síncope.mp4", u: "https://drive.google.com/file/d/1jzPwJrj9Y-tYfM-RVveUAL8MJB_HT6lO/view?usp=sharing" },
+                    { t: "Aula 03 - Como Diferenciar Crise de uma CNEP.mp4", u: "https://drive.google.com/file/d/1I3ng_quYwtExjN7msuPP5FlJj5a-pHuW/view?usp=sharing" },
+                    { t: "Aula 04 - Como Diferenciar Crise Focal de Crise Generalizada.mp4", u: "https://drive.google.com/file/d/1Jg8qWhFKicEVH85lxy4o9ra3CsN-e3AN/view?usp=sharing" },
+                    { t: "Aula 05 - Quais Exames Solicitar Após Primeira Crise.mp4", u: "https://drive.google.com/file/d/1kw8shp1CEp2eR8F-ivMFe5SH6WWprqdk/view?usp=sharing" },
+                    { t: "Aula 06 - Exames de Imagem em uma Primeira Crise.mp4", u: "https://drive.google.com/file/d/1tSkDVANfFePYoJgxi44LP3hHGhoWwhpk/view?usp=sharing" },
+                    { t: "Aula 07 - Devemos Coletar Líquor Após Primeira Crise.mp4", u: "https://drive.google.com/file/d/1Em7aqUoac4xD1NgLx4mgtxbV24FgHI-a/view?usp=sharing" },
+                    { t: "Aula 08 - Devemos Iniciar Fármaco Anticrise.mp4", u: "https://drive.google.com/file/d/1eSAa4BrCNCZU_MB70awvGZ-aNscpIsmg/view?usp=sharing" },
+                    { t: "Aula 09 - Qual Fármaco Anticrise Iniciar.mp4", u: "https://drive.google.com/file/d/1t6m3dYezlr1I-SWq01FyVb4IWjcet0tJ/view?usp=sharing" },
+                    { t: "Aula 10 - Orientações Para Paciente Após Primeira Crise.mp4", u: "https://drive.google.com/file/d/1HqVj9AdIgxrShcJm5JY4VHOn7s7vOkp9/view?usp=sharing" },
+                    { t: "Aula 11 - O Que Fazer em Pacientes com Crises Prévias.mp4", u: "https://drive.google.com/file/d/1chq4HpoQgzbPJS9vjsBhbDOJI0UZ8K7j/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Sobre primeira crise epiléptica, marque alternativa correta:",
+                        options: [
+                            "Causa rara de avaliação entre as emergências neurológicas.",
+                            "Investigação pode ser ambulatorial na maioria das causas.",
+                            "Lesão cerebral aguda por trauma crânio, acidente vascular, encefalite são causas de crises agudas sintomáticas.",
+                            "Exames laboratoriais podem ser dispensados, sendo necessário apenas tomografia de crânio.",
+                            "Medicações e uso de drogas não são causas de crises epilépticas."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Assinale a alternativa correta (diferenciação clínica):",
+                        options: [
+                            "Mordedura língua só acontece em crises epilépticas.",
+                            "Registro de assistolia só ocorre na síncope cardiogênica.",
+                            "Liberação esfincteriana só acontece em crises epilépticas.",
+                            "A recuperação da consciência é lenta e pode acontecer confusão após síncope.",
+                            "Abalos podem acontecer durante a síncope."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Semiologia bizarra afasta diagnóstico de crises epilépticas.",
+                            "Relação com fatores emocionais não é um ponto que claramente diferencia crises epilépticas de CNEP.",
+                            "Liberação esfincteriana, manter olhos abertos e mordera de língua podem ocorrer em CNEP.",
+                            "Olhos fechados, movimentos assíncronos/fora de fase, girar em torno do corpo e mover cabeça para lados sugere CNEP.",
+                            "Ausência de alteração EEG não afasta crise epiléptica."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Crise tônico-clônicas podem ter início focal ou generalizado.",
+                            "Mioclonias são mais frequentemente vistas no contexto das epilepsias generalizadas.",
+                            "Crises com inicio no lobo temporal podem ter fenômenos conscientes/perceptivos e depois evoluir com perda de consciência.",
+                            "Pacientes com epilepsia do lobo temporal podem ter crises de ausência.",
+                            "Em algumas crises não é possível com base clínica diferenciar se tem início focal ou generalizado."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Alteração nos eletrólitos, incluindo potássio, podem ser causa de uma crise epiléptica.",
+                            "Alterações metabólicas ou da glicemia são causas.",
+                            "Eletrocardiograma faz parte da avaliação após primeira crise.",
+                            "Eletroencefalograma ajuda a diferenciar tipo de crise.",
+                            "Eletroencefalograma com alteração epileptiforme é um marcador prognóstico com aumento risco de recorrência."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "A tomografia de crânio é um exame indicado após uma primeira crise epiléptica.",
+                            "O uso do contraste pode aumentar ganho diagnóstico.",
+                            "Devemos fazer ressonância em todos os casos após uma primeira crise.",
+                            "A ressonância tem maior sensibilidade para lesões que causam crises epilépticas.",
+                            "Exames de imagem não devem ser feitos de rotina em pacientes com diagnóstico prévio de Epilepsia."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Líquor deve ser pensado em todos pacientes após uma primeira crise epiléptica, especialmente quando existe suspeita de infecção.",
+                            "O uso de anticoagulantes não é uma contraindicação.",
+                            "Neuroimagem deve ser feita em todos casos antes da punção.",
+                            "Alterações secundárias a crise podem ocorrer, mas são diagnóstico de exclusão.",
+                            "Encefalites autoimunes são uma das etiologias em que o líquor será importante para o diagnóstico."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Tratamento profilático não está indicado de rotina.",
+                            "O risco de recorrência deve ser avaliado para cada paciente.",
+                            "Alteração na neuroimagem, EEG com atividade epileptiforme aumentam risco.",
+                            "Tratamento precoce não parece mudar resposta a longo prazo.",
+                            "O uso de fármacos antiepilépticos é seguro pelo baixo risco de efeitos adversos, devendo ser iniciado em todos pacientes após primeira crise."
+                        ],
+                        correctIndex: 4
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "O tipo de crise influencia na decisão de qual fármaco escolher.",
+                            "Interações medicamentosas não influenciam a escolha.",
+                            "Teratogenicidade deve ser levada em conta em mulheres em idade fértil.",
+                            "Efeitos adversos cognitivos e comportamentais são importantes na escolha.",
+                            "Sempre que possível inicie e aumento os fármacos anticrise de forma lenta e gradual."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "Epilepsia é uma doença neurológica comum e que tem tratamento.",
+                            "Importante orientar pacientes e familiares sobre os cuidados durante uma crise.",
+                            "A Epilepsia está associado maior risco de morte (SUDEP).",
+                            "Pessoas com epilepsia nunca podem dirigir veículos.",
+                            "O acompanhamento regular é necessário para controle das medicações e exames."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta:",
+                        options: [
+                            "A não adesão ao tratamento é a principal causa de descompensação.",
+                            "Uma parte dos pacientes com Epilepsia tem difícil controle e pode apresentar crises mesmo com uso regular das medicações.",
+                            "A fenitoína endovenosa deve ser feita de rotina em pessoas com Epilepsia que vem ao pronto-socorro com nova crise.",
+                            "Exames de imagem não devem ser feitos de rotina em pessoas com Epilepsia já diagnosticada.",
+                            "Exames laboratoriais e nível sérico podem ajudar entender motivo do escape de crise."
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                title: "Módulo 12 - Estado de Mal Epiléptico",
+                description: "Manejo completo do estado de mal convulsivo e não-convulsivo, e opções refratárias.",
+                lessons: [
+                    { t: "Aula 01 - Estado de Mal Epiléptico Importância e Definição.mp4", u: "https://drive.google.com/file/d/1sESDTkJ3J-B7Rm0yuZgV9GpIhfDWy47_/view?usp=sharing" },
+                    { t: "Aula 02 - Estado de Mal Epiléptico Abordagem Inicial.mp4", u: "https://drive.google.com/file/d/1HqZWbkH2bR3RP23JGIQoqoVaVYtzdIFf/view?usp=sharing" },
+                    { t: "Aula 03 - Estado de Mal Epiléptico Investigação da Causa.mp4", u: "https://drive.google.com/file/d/1Av8dJHNNt-_GZhpr7TtY8tjDGL5yvdf9/view?usp=sharing" },
+                    { t: "Aula 04 - Estado de Mal Convulsivo Tratamento Inicial.mp4", u: "https://drive.google.com/file/d/1peWT2fJeQrQmqK4QahKWWihLiYAQu8wG/view?usp=sharing" },
+                    { t: "Aula 05 - Estado de Mal Convulsivo Tratamento Segunda Linha.mp4", u: "https://drive.google.com/file/d/1dFBWbnzuvN8jgaZadoCP7t9AHgzsLr5L/view?usp=sharing" },
+                    { t: "Aula 06 - Estado de Mal Epilético Resumo do Tratamento.mp4", u: "https://drive.google.com/file/d/1E1y11pNZ49entFUehJKHgCSYYmJ9g0Fg/view?usp=sharing" },
+                    { t: "Aula 07 - Estado de Mal Convulsivo Refratário Opções.mp4", u: "https://drive.google.com/file/d/1nkvau4nMeDWbl-lII8DgaMZDSrtPhLx8/view?usp=sharing" },
+                    { t: "Aula 08 - Estado de Mal Epiléptico Não-Convulsivo.mp4", u: "https://drive.google.com/file/d/13FCTJ9tl0sN_8DH4uHCEzAkyYnHoqppQ/view?usp=sharing" },
+                    { t: "Aula 09 - Importância da Monitorização EEG.mp4", u: "https://drive.google.com/file/d/1mHRcCyil8jzB33GCcs0qxuH3B6KiVuvd/view?usp=sharing" },
+                    { t: "Aula 10 - Estado de Mal Não-Convulsivo Tratamento.mp4", u: "https://drive.google.com/file/d/1s5QP-TgAq5pGzPW801eVjzwnlbi8Kw7e/view?usp=sharing" },
+                    { t: "Aula 11 - Estado de Mal Epiléptico Considerações Finais.mp4", u: "https://drive.google.com/file/d/1CMQ6DFPsVlM0omQihG0mUemzKzMsIzaP/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "A condição clínica denominada 'status epilepticus' é uma situação emergencial, devendo ser tratada de forma imediata. A definição dessa condição se baseia em:",
+                        options: [
+                            "Presença de crises contínuas, ou ausência de recuperação da consciência entre crises repetidas.",
+                            "Generalização de crise motora, com perda de consciência, após esta ter se iniciado somente em um membro.",
+                            "Repetição de 2 ou mais crises em 24 horas apesar do uso de medicação antiepiléptica.",
+                            "Presença de crises diárias em paciente sabidamente com lesão cerebral estrutural."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Lactente de 4 meses chega à emergência com movimentos repetitivos e desvio ocular. Evoluiu com abalos clônicos generalizados. Após duas doses de Diazepam endovenoso, não houve melhora da crise. Qual conduta a seguir NÃO seria apropriada nesse momento?",
+                        options: [
+                            "Fenitoína 15 mg/kg.",
+                            "Repetir Diazepam 0,3 mg/kg.",
+                            "Aguardar a avaliação Neurológica, para prescrever o próximo antiepiléptico.",
+                            "Administrar Fenobarbital.",
+                            "Conduzir o lactente dentro de um ambiente semi intensivo."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Sobre o estado de mal epilético é correto afirmar que:",
+                        options: [
+                            "A retirada de medicamento anticonvulsivante não está entre suas principais causas.",
+                            "O eletroencefalograma tem pouco valor no diagnóstico.",
+                            "A dosagem sérica de drogas anticonvulsivantes, quando disponível, pode ser recomendada.",
+                            "Diazepam e midazolam estão proscritos no manejo farmacológico inicial.",
+                            "Propofol é indicado quando o paciente apresenta alergia à fenitoína em dose de ataque."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Menino de 10 anos, com mal convulsivo há 20 minutos. Foi administrado diazepínico (3 doses) sem melhora. Optou-se por iniciar hidantalização (fenitoína). Nesse caso, a próxima conduta médica deve ser administrar:",
+                        options: [
+                            "topiramato por infusão endovenosa contínua.",
+                            "fenitoína em dose de ataque endovenosa.",
+                            "diazepam em dose dobrada endovenosa.",
+                            "tiopental por cânula endotraqueal."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Menino de 10 anos, seguindo o protocolo de tratamento de mal epiléptico, caso não haja reversão da crise após fenitoína, quais são a opção terapêutica a ser adotada e o principal risco do seu uso?",
+                        options: [
+                            "Tiopental; arritmia cardíaca.",
+                            "Midazolan; hipertensão intracraniana.",
+                            "Propofol; instabilidade hemodinâmica.",
+                            "Fenobarbital sódico; depressão respiratória."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Sobre o manejo do EME na infância, analise as assertivas:\nI. A definição de EME refratário é o que deixou de responder à terapia com pelo menos duas classes de medicações.\nII. A terapia inicial deve ser realizada com um benzodiazepínico.\nIII. A terapia de segunda linha geralmente se faz com fenobarbital.",
+                        options: [
+                            "As afirmativas I e II são verdadeiras. A afirmativa III é falsa.",
+                            "As afirmativas I e III são verdadeiras. A afirmativa II é falsa.",
+                            "As afirmativas II e III são verdadeiras. A afirmativa I é falsa.",
+                            "As afirmativas I, II e III são verdadeiras.",
+                            "As afirmativas I, II e III são falsas."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem de 65 anos apresenta movimentos involuntários no braço direito e face há 2 horas. Diagnóstico e conduta sequencial:",
+                        options: [
+                            "Estado de mal epiléptico; midazolam EV, seguido de fenitoína EV com velocidade de infusão de 50 mg/min, se necessário, e corrigir glicemia.",
+                            "Crises convulsivas; diazepam EV, fenobarbital EV, se necessário, e corrigir glicemia.",
+                            "Estado de mal epiléptico; corrigir glicemia, fenitoína EV.",
+                            "Crises convulsivas; midazolam EV, fenitoína EV."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "A respeito do estado de mal epiléptico, podemos afirmar, EXCETO:",
+                        options: [
+                            "Se houver dúvida quanto à história, deve-se infundir glicose, precedida de tiamina.",
+                            "O estado de mal epiléptico não-convulsivo é mais comum em pacientes jovens sem história prévia.",
+                            "A punção lombar deve ser realizada em todo paciente febril, mesmo sem sinais de meningite.",
+                            "Níveis de catecolamina elevam-se agudamente e podem desencadear arritmias fatais."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente chega com história de crises convulsivas há 1 hora. Apresentou 4 episódios sem recuperação de consciência. Assinale a INCORRETA:",
+                        options: [
+                            "Idealmente, a condução do status epilépticos deveria ser na UTI com EEG contínuo.",
+                            "São fatores importantes a investigar: má aderência, drogas que reduzem limiar, infecções.",
+                            "A droga de escolha no Brasil para tratamento abortivo no PS é o diazepam, seguido pela fenitoína.",
+                            "A fenitoína EV pode precipitar bradiarritmias graves por alongamento QT.",
+                            "Segundo a descrição da mãe, o paciente não preenche critérios para status epilepticus."
+                        ],
+                        correctIndex: 4
+                    },
+                    {
+                        question: "Mulher, 34 anos, movimentos tônico-clônicos há 5 minutos. Não foi possível punção venosa periférica. A medicação mais adequada intramuscular é:",
+                        options: [
+                            "O midazolam.",
+                            "O fenobarbital.",
+                            "O haloperidol.",
+                            "A fenitoína.",
+                            "O diazepam."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Sobre a fisiopatologia do Status Epileticus (SE), assinale a alternativa correta:",
+                        options: [
+                            "Nos primeiros momentos ocorre queda progressiva da PA, perfusão e glicemia.",
+                            "A lesão cerebral secundária está mais ligada à hipóxia por si só do que à falha compensatória.",
+                            "As crises prolongadas estão associadas a alterações na PA, FC, respiração, eletrólitos, glicemia e temperatura.",
+                            "As evidências mais recentes mostram que a esclerose do hipocampo é a causa do SE."
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                title: "Módulo 13 - Meningites e Meningoencefalites",
+                description: "Análise de líquor, diferenciação etiológica e tratamento antibiótico/corticoide.",
+                lessons: [
+                    { t: "Aula 01 - Quando Devo Pensar em Meningite E em Encefalite.mp4", u: "https://drive.google.com/file/d/119PYIUXsMeQiwVSK41MaKdVJmd3lMNMc/view?usp=sharing" },
+                    { t: "Aula 02 - Preciso Pedir Exame de Imagem Antes de Colher Líquor.mp4", u: "https://drive.google.com/file/d/1I8fWZg045JKURw7yevEsCAvGON1-3zae/view?usp=sharing" },
+                    { t: "Aula 03 - Para Que Devo Atentar no Exame de Imagem.mp4", u: "https://drive.google.com/file/d/18IOX3dhjo2TokhFws9o5uT4ldQ7sHqyv/view?usp=sharing" },
+                    { t: "Aula 04 - O Que Observar no Líquor.mp4", u: "https://drive.google.com/file/d/1KSWoD1nEWyv95gFz4Vp6HqrKYTB3ePMB/view?usp=sharing" },
+                    { t: "Aula 05 - Como Diferenciar Meningites Virais e Bacterianas.mp4", u: "https://drive.google.com/file/d/15xk08jkLGhuOyQ6JgjTNkQz6t9P7cNhs/view?usp=sharing" },
+                    { t: "Aula 06 - Como Tratar de Forma Empírica.mp4", u: "https://drive.google.com/file/d/110ScuJgpLVhCtIbj8ymKCKRg8bfdgHqa/view?usp=sharing" },
+                    { t: "Aula 07 - Sempre Devo Fazer Corticóide Antes dos Antibióticos.mp4", u: "https://drive.google.com/file/d/1tnh3M7c0C2KiQEgVJIbL155MsA63NJ0S/view?usp=sharing" },
+                    { t: "Aula 08 - Complicações das Infecções e do Tratamento.mp4", u: "https://drive.google.com/file/d/1dyMvYTBdYDa-1KUC4w5MlSplBwxlXgdN/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Homem de 32 anos, queixa de febre, cefaleia e vômitos há três dias. Fez uso de um comprimido de amoxicilina. Líquor: 203 células (90% linfomononucleares), proteína 60 mg/dl, glicose 50 mg/dl (glicemia 75). Gram e outras colorações negativas. Diagnóstico provável?",
+                        options: [
+                            "Meningite viral aguda.",
+                            "Meningite bacteriana aguda.",
+                            "Meningite por leucemia linfocítica aguda.",
+                            "Meningite bacteriana parcialmente tratada."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Paciente com suspeita de meningite... Com relação à abordagem diagnóstica, assinale a opção correta.",
+                        options: [
+                            "A coleta de líquido cefalorraquidiano deverá ser realizada através de punção suboccipital.",
+                            "O exame que evidencie bastonetes Gram negativos, confirma diagnóstico de meningite pneumocócica.",
+                            "A punção liquórica com exame da bioquímica permitirá a distinção entre infecção bacteriana e viral, o que orientará a conduta terapêutica.",
+                            "A paciente deverá ser submetida a um exame de imagem antes da coleta de LCR pois há contraindicação."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente de 25 anos, com HIV há dois anos (carga viral indetectável), febre, cefaleia, convulsões focais inéditas. Líquor com pleocitose linfocítica, proteína aumentada, glicorraquia normal. RM com encefalite em região temporal. O agente etiológico mais provável é:",
+                        options: [
+                            "Encefalite por Mycobacterium tuberculosis.",
+                            "Encefalite pelo vírus da imunodeficiência humana (HIV).",
+                            "Encefalite por herpes vírus simples (HSV-1, HSV-2).",
+                            "Encefalite por Neisseria meningitidis."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Na suspeita de meningite bacteriana, a alternativa que contém achados na análise do LCR mais sugestivos de etiologia bacteriana é:",
+                        options: [
+                            "Celularidade e lactato aumentados.",
+                            "Hemácias e glicorraquia aumentadas.",
+                            "Proteinorraquia e celularidade normais.",
+                            "Glicorraquia e hemácias aumentadas.",
+                            "Lactato normal e celularidade diminuída."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Lactente de nove meses com meningite. LCR hipertenso, turvo, 1250 células (95% neutrófilos), diplococos Gram-negativos. Hipótese diagnóstica:",
+                        options: [
+                            "Meningite viral.",
+                            "Meningite bacteriana pneumocócica.",
+                            "Meningite bacteriana meningocócica.",
+                            "Meningite por Mycobacterium tuberculosis.",
+                            "Meningite sem agente etiológico determinado."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Homem, 30 anos com rigidez de nuca e liquor com diplococos gram positivos. Conduta:",
+                        options: [
+                            "Iniciar ceftriaxone imediatamente, dexametasona em até 12 horas.",
+                            "Iniciar ceftriaxone e dexametasona imediatamente.",
+                            "Iniciar ceftazidime e vancomicina, dexametasona em até 12 horas.",
+                            "Iniciar vancomicina imediatamente, dexametasona em até 4 horas."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Homem com cefaleia, febre, perda de peso. LCR com linfocitose, proteínas elevadas, glicose baixa, nanquim negativo. Hipótese:",
+                        options: [
+                            "Meningite tuberculosa.",
+                            "Meningite bacteriana.",
+                            "Neurocriptococose.",
+                            "Meningite viral."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Assinale a alternativa incorreta sobre a apresentação e as características clínicas da doença meningocócica invasiva:",
+                        options: [
+                            "Bacteremia oculta é descrita frequentemente com N. meningitidis.",
+                            "O choque meningocócico e a meningite podem coexistir.",
+                            "Meningococcemia é a forma mais temida, caracterizando-se por choque séptico com disfunção endotelial.",
+                            "Sintomas gastrointestinais agudos como apresentação primária são raros e inespecíficos, mas frequentemente descritos em MenW."
+                        ],
+                        correctIndex: 3
+                    }
+                ]
+            },
+            {
+                title: "Módulo 14 - Encefalites",
+                description: "Avaliação por EEG, métodos de imagem e suspeita de encefalites autoimunes.",
+                lessons: [
+                    { t: "Aula 01 - Qual a Diferença de Encefalopatia e Encefalite.mp4", u: "https://drive.google.com/file/d/1xKzkyUBiXJ3mtOZ1vq5BNaiUEGjYhKHw/view?usp=sharing" },
+                    { t: "Aula 02 - Como Usar Métodos de Imagem na Avaliação.mp4", u: "https://drive.google.com/file/d/1qAcXeMW8mxt1_tmyw7mNocyje3GVDeJQ/view?usp=sharing" },
+                    { t: "Aula 03 - Como Usar os Exames Laboratoriais.mp4", u: "https://drive.google.com/file/d/1alv3pKvz53FlkopFAU5c0-7hp2UJZjvh/view?usp=sharing" },
+                    { t: "Aula 04 - Como Usar o Eletroencefalograma Para Auxiliar.mp4", u: "https://drive.google.com/file/d/1Q3DdLpiDvx3DJ1TS3zE1CYE0oV2cfFmt/view?usp=sharing" },
+                    { t: "Aula 05 - Como Fazer o Tratamento Empírico Inicial.mp4", u: "https://drive.google.com/file/d/154GOCA-pOfb_hDoJpqoyq3lxGxT0GLyr/view?usp=sharing" },
+                    { t: "Aula 06 - Quando Considerar e Conduta Inicial (Autoimunes).mp4", u: "https://drive.google.com/file/d/1lyeDwwbGNHFHgIu6dIRQjsdf61CCA86j/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Paciente 50 anos, etilista, confuso. Exame abdominal com dor, descompressão negativa. Qual alternativa contém apenas exames que devem ser realizados neste momento:",
+                        options: [
+                            "Função renal e paracentese para citologia e cultura.",
+                            "Endoscopia digestiva alta e coagulograma.",
+                            "Tomografia de crânio e análise da urina tipo 1.",
+                            "Hemograma e ultrassonografia de abdome."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Paciente 13 anos, rebaixamento de consciência após crise convulsiva. Líquor 10 celulas 100% linfo. RM com hipersinal temporal. A principal hipótese é:",
+                        options: [
+                            "Esclerose múltipla.",
+                            "Meningite bacteriana aguda.",
+                            "Acidente vascular encefálico isquêmico.",
+                            "Encefalite herpética."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Das alternativas apresentadas abaixo, qual a incorreta sobre a investigação laboratorial do paciente com encefalite?",
+                        options: [
+                            "As amostras de outros sítios podem auxiliar na busca pela identificação do patógeno.",
+                            "Recomenda-se que o líquor seja enviado para a pesquisa de herpes vírus por PCR.",
+                            "Os exames gerais trazem resultados inespecíficos, mas devem ser realizados.",
+                            "A punção lombar deve ser sempre realizada, a não ser que contraindicada. O seu resultado auxilia na investigação porque sempre está alterado."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Mulher de 34 anos com confusão, febre, crise focal com olhar fixo. TC com hipoatenuação temporal. EEG com atividade periódica lateralizada. Hipótese e exame:",
+                        options: [
+                            "Encefalite imuno mediada, anticorpos anti-NMDA no líquor.",
+                            "Encefalite herpética, PCR para herpes vírus no líquor.",
+                            "Endocardite bacteriana com embolização séptica, hemocultura.",
+                            "Neurotoxoplasmose, ressonância nuclear magnética de crânio."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Homem 61 anos, febre, confusão. RM mostra anormalidades em lobo temporal bilateral, insula e giro do cíngulo. Líquor com 124 leucócitos (95% linfócitos). Considere a conduta terapêutica:",
+                        options: [
+                            "Provável encefalite por SARS-CoV-2, iniciar dexametasona.",
+                            "Provável encefalite por HSV, solicitar ELISA no LCR e iniciar Ganciclovir.",
+                            "Provável encefalite por HSV, solicitar PCR SARS-CoV-2, Elisa e PCR HSV e iniciar Aciclovir endovenoso.",
+                            "Provável encefalite por SARS-CoV-2, iniciar Aciclovir empírico."
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                title: "Módulo 15 - Neuro-Oftalmologia Perda Visual",
+                description: "Do exame neurológico à identificação de Neurite Óptica Isquêmica e não isquêmica.",
+                lessons: [
+                    { t: "Aula 01 - Perda Visual Aguda História.mp4", u: "https://drive.google.com/file/d/1nTDdsDjEHTl639FyCV1NHfb6VEf0edyE/view?usp=sharing" },
+                    { t: "Aula 02 - Perda Visual Aguda Exame Neurológico.mp4", u: "https://drive.google.com/file/d/1Aq7xyDMgLI8qJc7QcG0rdovCt6Db3zFO/view?usp=sharing" },
+                    { t: "Aula 03 - Perda Visual Aguda Exames de Imagem.mp4", u: "https://drive.google.com/file/d/1NK_rZ7Mhz1aBe66b1IEdcpHA_U1LCl22/view?usp=sharing" },
+                    { t: "Aula 04 - Perda Visual Aguda Neurite Óptica Isquêmica Anterior.mp4", u: "https://drive.google.com/file/d/1v_isN-VU8Nf20t4PdeoY9g879ZTJzS_e/view?usp=sharing" },
+                    { t: "Aula 05 - Perda Visual Aguda Neurite Óptica.mp4", u: "https://drive.google.com/file/d/1AX79Y2k4oijXBMZQF2Nj9-lPu763vtD2/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher, 32 anos, perda visual unilateral gradual em 2 dias, com dor à movimentação ocular. Sobre o caso:",
+                        options: [
+                            "A história acima sugere uma perda visual de origem retroquiasmática.",
+                            "A perda visual é sugestiva de neurite óptica, pela instalação aguda/subaguda, em mulher jovem, com dor à movimentação ocular.",
+                            "A dor à movimentação ocular define uma causa oftalmológica.",
+                            "A dormência em membros inferiores sugere acometimento de nervos periféricos."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Sobre o exame neurológico no caso acima, é certo:",
+                        options: [
+                            "A acuidade visual deve ser avaliada sem o óculos do paciente para buscar causas neurológicas.",
+                            "O fundo de olho normal não exclui o diagnóstico de neurite óptica na paciente acima.",
+                            "O defeito pupilar aferente deve ser avaliado no claro, sempre afastar defeitos relativos e não somente absolutos.",
+                            "O defeito de campo esperada na paciente acima é uma perda de campo periférica."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Sobre o exame de imagem no caso acima, é certo:",
+                        options: [
+                            "A tomografia de crânio é bem sensível para descartar causas neurológicas da perda visual.",
+                            "A ressonância magnética de órbita mostra hipersinal em T1 no nervo óptico, geralmente sem captação de contraste.",
+                            "A ressonância magnética de crânio pode auxiliar com a etiologia da perda visual mesmo em doenças pré-quiasmáticas, como na esclerose múltipla.",
+                            "Não há benefício adicional de solicitar RM de crânio em lesões retroquiasmáticas."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Exame neurológico mostra ausência de percepção luminosa no olho esquerdo, com DPAR claro e fundo de olho normal. RM com extenso hipersinal e captação do nervo óptico. Sobre esse caso:",
+                        options: [
+                            "Devemos iniciar imediatamente prednisona 1mg/kg via oral.",
+                            "Uma RM de crânio normal afasta esclerose múltipla e não necessita seguimento.",
+                            "Além da pulsoterapia com metilprednisolona, devemos considerar avaliação de plasmaférese pela gravidade do caso.",
+                            "O diagnóstico de neurite óptica é puramente radiológico."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Homem, 64 anos, perda visual unilateral, esquerda, súbita, indolor. Escotoma altitudinal, DPAR e fundo de olho com edema de disco. Sobre esse caso:",
+                        options: [
+                            "A RM de órbita normal afasta neuropatia isquêmica.",
+                            "Devemos indicar urgência na descompressão do nervo óptico.",
+                            "Devemos descartar arterite temporal por sintomas associados e solicitar VHS/PCR.",
+                            "Devemos prescrever dupla antiagregação como AVCi minor."
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            },
+            {
+                title: "Módulo 16 - Paralisias Flácidas Agudas Guillain-Barré",
+                description: "Suspeita clínica, suporte ventilatório, interpretação da ENMG e tratamento do SGB.",
+                lessons: [
+                    { t: "Aula 01 - Como Colher a História de um Paciente.mp4", u: "https://drive.google.com/file/d/1a1eR0_eE1qtJjJ_8HtWHQ4UD6s1xSg1O/view?usp=sharing" },
+                    { t: "Aula 02 - Como Examinar um Paciente com Suspeita de Guillain-Barré.mp4", u: "https://drive.google.com/file/d/1NOs0MszvJRpUlvda7BS2lrPfJRH584G4/view?usp=sharing" },
+                    { t: "Aula 03 - Síndrome de Guillain-Barré, Suas Formas e a ENMG.mp4", u: "https://drive.google.com/file/d/1Kxcobya-NOe3y6captvTFT2n4BxDp7aO/view?usp=sharing" },
+                    { t: "Aula 04 - Como e Quando Pedir Exames na Suspeita.mp4", u: "https://drive.google.com/file/d/1M5oblCmhsI4Ro67g4p9zsRcaAk5b4RVk/view?usp=sharing" },
+                    { t: "Aula 05 - Como Tratar uma Síndrome de Guillain-Barré.mp4", u: "https://drive.google.com/file/d/19LCvo9VJt5XM_IVjBz9I7f-SpP3aJTdg/view?usp=sharing" },
+                    { t: "Aula 06 - Quando Indicar Suporte Ventilatório.mp4", u: "https://drive.google.com/file/d/1xvdD66DSCexS0Q4B9KdadNwg1uwG4U3Z/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Paciente consciente com insuficiência respiratória grave, oftalmoparesia bilateral, paresia do véu palatino, déficit motor nos 4 membros com reflexos profundos vivos, sensibilidade normal. Diagnóstico mais provável:",
+                        options: [
+                            "botulismo",
+                            "polirradiculoneurite",
+                            "miastenia grave",
+                            "síndrome de Horner",
+                            "neoplasia em tronco cerebral"
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Acerca da síndrome de Guillain-Barré, assinale a alternativa correta:",
+                        options: [
+                            "Os reflexos superficiais estão sempre reduzidos ou abolidos.",
+                            "O número de células no líquor é normal, mas, em pacientes com Aids, pode apresentar-se elevado.",
+                            "A variante de Miller Fisher caracteriza-se por associação de oftalmoplegia, ataxia e hiperreflexia.",
+                            "A síndrome tem curso monofásico, progredindo até 8 semanas.",
+                            "A associação de imunoglobulina e plasmaférese é indicada se não melhorar com a primeira."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Sobre a síndrome de Guillain-Barré (SGB), assinale a alternativa correta:",
+                        options: [
+                            "A infecção por citomegalovírus está associada à forma axonal da doença.",
+                            "A infecção por Campylobacter jejuni está associada à forma desmielinizante da doença e síndrome de Miller Fisher.",
+                            "A manifestação com diplegia facial e parestesias é apresentação focal da SGB axonal.",
+                            "A infecção por EBV está associada à forma desmielinizante da SGB.",
+                            "Nos EUA e Europa, a forma axonal é a mais comum."
+                        ],
+                        correctIndex: 1
+                    }
+                ]
+            },
+            {
+                title: "Módulo 17 - Paralisias Flácidas Agudas Miastenia Gravis",
+                description: "Manejo da Miastenia Gravis, crise miastênica e uso adequado de imunoterapia.",
+                lessons: [
+                    { t: "Aula 01 - Quais os Dados da História são Típicos de Miastenia Gravis.mp4", u: "https://drive.google.com/file/d/19CEWbcFy6ecbTnkmFccefhZKM0MnRuyl/view?usp=sharing" },
+                    { t: "Aula 02 - Como Fazer o Exame Neurológico.mp4", u: "https://drive.google.com/file/d/1c4Rd05sbH9nIq4IhFxMEC0JS19f3PHvN/view?usp=sharing" },
+                    { t: "Aula 03 - Como Interpretar Exames Complementares.mp4", u: "https://drive.google.com/file/d/1A6-2VvJPfDHxG-N5pDExfKEZc7WzH71D/view?usp=sharing" },
+                    { t: "Aula 04 - Como Interpretar a ENMG na Miastenia Gravis.mp4", u: "https://drive.google.com/file/d/1XbJkZkFH_Yb8te3E_ZdArGrB64yzbNub/view?usp=sharing" },
+                    { t: "Aula 05 - Quando Indicar o Suporte Ventilatório.mp4", u: "https://drive.google.com/file/d/1ehSyY4hSyOUpyHYAZr69LSKfiwB9wSWa/view?usp=sharing" },
+                    { t: "Aula 06 - Como Usar a Piridostigmina.mp4", u: "https://drive.google.com/file/d/1Oj5pz0bveyfOvXoVzBaZ1qbOTGjueG_p/view?usp=sharing" },
+                    { t: "Aula 07 - Como Usar a Imunoterapia.mp4", u: "https://drive.google.com/file/d/1bqSCIb1SF7qGJqwr-FCrQtt_ChpvjCBf/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher de 32 anos com queda assimétrica das pálpebras, diplopia flutuante, disfagia, fraqueza muscular proximal e dispneia com infecção pulmonar associada. A principal hipótese é:",
+                        options: [
+                            "Meningoencefalite tuberculosa.",
+                            "Polirradiculoneurite aguda.",
+                            "Neoplasia maligna em tronco encefálico.",
+                            "Miastenia gravis."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Do ponto de vista etiológico, o que causa a Miastenia Gravis?",
+                        options: [
+                            "Anticorpo contra receptores mescalínicos da adrenalina.",
+                            "Anticorpo contra receptores nicotínicos da acetilcolina na fenda sináptica.",
+                            "Anticorpo contra bainha de mielina.",
+                            "Anticorpo contra endotélio neural.",
+                            "NDA"
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Paciente com afonia, disfagia, diplopia, melhora ao acordar e piora ao fim do dia. Com relação ao quadro é correto afirmar, EXCETO:",
+                        options: [
+                            "Até 50% dos casos podem manifestar-se somente com sintomas oculares.",
+                            "Comprometimento da musculatura respiratória caracteriza crise miastênica com indicação de Imunoglobulina.",
+                            "A dosagem de anticorpo antirreceptor de acetilcolina negativa afasta o diagnóstico de Miastenia.",
+                            "Apresenta pico bimodal.",
+                            "Acometimento da musculatura distal não é comum."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "O exame indicado para confirmar o diagnóstico da suspeita de Miastenia Gravis com sintomas oculares e de fala flutuantes é:",
+                        options: [
+                            "Punção lombar e exame de líquor.",
+                            "Eletroneuromiografia.",
+                            "Ressonância magnética de coluna.",
+                            "Potencial evocado visual e sonossensitivo."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Mulher com miastenia e infecção urinária, apresentou crise após uso de ciprofloxacino. Fala entrecortada e retenção de CO2. Qual a conduta?",
+                        options: [
+                            "BiPAP, plasmaférese, suspender cipro e manter piridostigmina.",
+                            "Expansão volêmica, manter cipro.",
+                            "Intubação orotraqueal, plasmaférese seguida de imunoglobulina, suspensão do ciprofloxacino e piridostigmina.",
+                            "Norepinefrina, piperacilina-tazobactam."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "A eletroneuromiografia mostra-se incapaz de prever achados laboratoriais pois os achados são parecidos independentemente da sorologia (AChR ou MuSK).",
+                        options: ["Verdadeiro", "Falso"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "A presença de anormalidades no timo em pacientes com miastenia grave está relacionada com a presença dos anticorpos anti-AChR.",
+                        options: ["Verdadeiro", "Falso"],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Um resultado negativo da pesquisa dos anticorpos indica má resposta do paciente aos efeitos do tratamento.",
+                        options: ["Verdadeiro", "Falso"],
+                        correctIndex: 1
+                    }
+                ]
+            },
+            {
+                title: "Módulo 18 - Mielopatia Aguda",
+                description: "Compressão medular, causas isquêmicas, inflamatórias (mielites) e exames de imagem.",
+                lessons: [
+                    { t: "Aula 01 - História.mp4", u: "https://drive.google.com/file/d/1JhGMWGMMiQjcb5KXvxwe80JxvHUt4Qrx/view?usp=sharing" },
+                    { t: "Aula 02 - Exame Neurológico.mp4", u: "https://drive.google.com/file/d/1WY0dbTiLG1T68SYXkl1MQSVXqoqbr3Bn/view?usp=sharing" },
+                    { t: "Aula 03 - Laboratoriais.mp4", u: "https://drive.google.com/file/d/1eQi5bTxThawR56IDNxzVrNYh6GDj-Zz7/view?usp=sharing" },
+                    { t: "Aula 04 - Compressão Medular.mp4", u: "https://drive.google.com/file/d/1ndVLbpVvLuEDeT8Ayf99N3fVnrzjn9Yy/view?usp=sharing" },
+                    { t: "Aula 05 - Mielopatia Isquêmica.mp4", u: "https://drive.google.com/file/d/11K9dOODFV0gYABLoXO9uHPWU8vu-7yZ1/view?usp=sharing" },
+                    { t: "Aula 06 - Mielites.mp4", u: "https://drive.google.com/file/d/1MBTxoiwvbUUSywhHkIHZQ7c0lRGXSCzd/view?usp=sharing" },
+                    { t: "Material Complementar - Medicina e Cuidado Centrado no Paciente.pdf", u: "https://drive.google.com/file/d/1J891sxVcl1cFh2LzPe3n8nFkaMvXV8xr/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher, 36 anos, busca pronto atendimento por dificuldade de marcha e dormência nas pernas há 4 dias. Sobre o caso acima, é certo:",
+                        options: [
+                            "A presença de sintomas autonômicos, como urgência urinária podem auxiliar com a caracterização.",
+                            "A distribuição do acometimento sensitivo é semelhante a neuropatias como GBS.",
+                            "Devemos sempre avaliar os antecedentes com a hipótese de mielopatias, principalmente de doenças autoimunes e neoplásicas.",
+                            "As alternativas 'a' e 'c' estão corretas."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Mulher com câncer de mama prévio e mielopatia aguda. É correto:",
+                        options: [
+                            "Realizar tomografia para afastar compressão, se negativa, GBS.",
+                            "Iniciar corticoterapia com dexametasona em altas doses (10mg ataque) visando reduzir edema antes da imagem.",
+                            "A neurocirurgia deve ser feita idealmente em até 7 dias.",
+                            "Tratar compressão neoplásica com quimioterapia sistêmica de urgência (platina no dia)."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Fraqueza nas pernas e dormência há 2 dias. Sobre o caso acima, é INCORRETO:",
+                        options: [
+                            "A presença de arreflexia ao exame neurológico descarta mielopatia aguda, levando ao diagnóstico de SGB.",
+                            "A diferenciação pode ser realizada pelo nível sensitivo.",
+                            "O sinal de Babinski ajudaria a reforçar o diagnóstico de mielopatia.",
+                            "A perda superficial com preservação profunda sugere mielopatia."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Mulher jovem com paraparesia e nível sensitivo umbilical, antecedente de neurite óptica. É correto:",
+                        options: [
+                            "Diagnóstico de mielite exige nadir súbito em até 12h.",
+                            "Para o diagnóstico de mielite, devemos confirmar a inflamação com pleiocitose ou lesão com captação de contraste.",
+                            "O tratamento mais usado é a IVIG.",
+                            "A causa mais comum é infecciosa, exigindo ceftriaxone empírico."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Mielite com hiperreflexia e nível sensitivo. É correto:",
+                        options: [
+                            "O líquor deve ser solicitado antes dos exames de imagem.",
+                            "O exame de líquor deve incluir pesquisa das bandas oligoclonais que podem sugerir produção intratecal.",
+                            "Devemos solicitar sorologias para afastar causa por toxoplasma primariamente.",
+                            "O principal autoanticorpo é o anti-proteína básica."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Homem idoso com dor lombar e perda de força súbita (mielopatia isquêmica suspeita). Sobre o caso:",
+                        options: [
+                            "O principal diagnóstico a ser descartado é mielite.",
+                            "A RM normal não afasta isquemia; deve-se incluir difusão e exame de vaso da aorta com urgência.",
+                            "Trombólise de infarto medular deve ser a primeira conduta.",
+                            "O tratamento envolve vasodilatação."
+                        ],
+                        correctIndex: 1
+                    }
+                ]
+            },
+            {
+                title: "Módulo 19 - Urgências em Distúrbios do Movimento",
+                description: "Síndromes hipercinéticas, hipocinéticas, serotoninérgica e neuroléptica maligna.",
+                lessons: [
+                    { t: "Aula 01 - Qual a Fisiopatologia dos Distúrbios de Movimento.mp4", u: "https://drive.google.com/file/d/1STUg8d-GQBSlRK2oF79sGnbUnYP5AMvS/view?usp=sharing" },
+                    { t: "Aula 02 - Como os Distúrbios de Movimento se Manifestam.mp4", u: "https://drive.google.com/file/d/1SYyELpJcDuLW477pgxRqKP7MMrHvCZj6/view?usp=sharing" },
+                    { t: "Aula 03 - Introdução às Urgências em Distúrbios de Movimento.mp4", u: "https://drive.google.com/file/d/1xj3ra2BLoLreHZD8AQJsnOoQppT8gdTM/view?usp=sharing" },
+                    { t: "Aula 04 - Como Identificar uma Síndrome Neuroléptica Maligna.mp4", u: "https://drive.google.com/file/d/144CeyEf6_tehTIVuCjsQv6QCV40K8EdR/view?usp=sharing" },
+                    { t: "Aula 05 - Quais as Condutas Terapêuticas em SNM.mp4", u: "https://drive.google.com/file/d/1N3B4-evlStKfTqBtGREOf-QQBn2atL7f/view?usp=sharing" },
+                    { t: "Aula 06 - Como Identificar uma Síndrome Serotoninérgica.mp4", u: "https://drive.google.com/file/d/1hs1CIIuHObV8YY0_lopU9jvoW4T1C5s6/view?usp=sharing" },
+                    { t: "Aula 07 - Quais as Condutas Terapêuticas na Síndrome Serotoninérgica.mp4", u: "https://drive.google.com/file/d/1ZMfAa3zkrDjDgOA5mqWXbDUvZBRxIvjl/view?usp=sharing" },
+                    { t: "Aula 08 - Como Identificar uma Reação Distônica Aguda.mp4", u: "https://drive.google.com/file/d/1ve_i0R06hxZAO6zb4fqVsLRmh5Mz_Eys/view?usp=sharing" },
+                    { t: "Aula 09 - Síndromes Hipocinéticas Agudas.mp4", u: "https://drive.google.com/file/d/1jaZjd4R1EqPW-RW66t-jzKZ6GL7pyCpu/view?usp=sharing" },
+                    { t: "Aula 10 - Síndromes Hipercinéticas Agudas.mp4", u: "https://drive.google.com/file/d/1LAPdWoNcouSlNi4uR1ivqwLxcHoUidiq/view?usp=sharing" }
+                ],
+                assessment: [
+                    {
+                        question: "Mulher em uso de lítio e haloperidol há 2 meses. Evolui com febre, rigidez e FC=120. Hipótese e conduta:",
+                        options: [
+                            "Distonia aguda – interrupção antipsicótico.",
+                            "Intoxicação por lítio – interrupção do estabilizador.",
+                            "Síndrome serotoninérgica – interrupção do antipsicótico.",
+                            "Síndrome neuroléptica maligna – interrupção do antipsicótico, hidratação, diazepam e dantrolene."
+                        ],
+                        correctIndex: 3
+                    },
+                    {
+                        question: "Os critérios da síndrome neuroléptica maligna são baseados na presença de febre e rigidez grave associada a, pelo menos, dois outros critérios:",
+                        options: [
+                            "Diaforese, tremor, labilidade de pressão arterial e alteração do nível de consciência.",
+                            "Alteração do nível de consciência, hiper-reflexia e pouca resposta a benzodiazepínicos.",
+                            "Crises epilépticas, CK reduzida, bradicardia e tremor.",
+                            "Disfagia, incontinência, hipotensão grave e sialorreia."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem em uso de olanzapina, febre de 41,2, PA 90x60, hipertonia, CPK 3176. Além da suspensão da olanzapina, o tratamento é:",
+                        options: [
+                            "Bromocriptina.",
+                            "Haloperidol.",
+                            "Buspirona.",
+                            "Riluzol."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Adolescente com rigidez grave, febre (39,5), sudorese, tremores após tratamento para depressão. A interação medicamentosa provável é:",
+                        options: [
+                            "Fluoxetina e fenelzina.",
+                            "Sertralina e imipramina.",
+                            "Risperidona e metilfenidato.",
+                            "Venlafaxina e sibutramina.",
+                            "Carbonato de lítio e anfetamina."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Mulher de 35 anos após tentativa de suicídio. Hiperreflexia, febril, mioclonias, confusão com períodos de agitação. Qual o fármaco mais provável:",
+                        options: [
+                            "Diazepam.",
+                            "Lamotrigina.",
+                            "Fluoxetina.",
+                            "Carbamazepina.",
+                            "Fenobarbital."
+                        ],
+                        correctIndex: 2
+                    },
+                    {
+                        question: "Droga de escolha para tratamento de distonia aguda fármaco-induzida:",
+                        options: [
+                            "Biperideno.",
+                            "Dantrolene.",
+                            "Sertralina.",
+                            "Flunarizina.",
+                            "Haloperidol."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem de 64 anos com tremor bilateral, lentificação de marcha, em uso de flunarizina e metoclopramida. Diagnóstico e conduta:",
+                        options: [
+                            "Parkinsonismo secundário; suspender medicações com efeitos colaterais.",
+                            "Parkinsonismo secundário; associar agonista.",
+                            "Doença de Parkinson; suspender medicações.",
+                            "Doença de Parkinson; iniciar inibidor da COMT."
+                        ],
+                        correctIndex: 0
+                    },
+                    {
+                        question: "Homem com dificuldade para escrever. Ao começar a escrita está normal, mas há lenta e progressiva flexão do punho. Qual o distúrbio?",
+                        options: [
+                            "Mioclonia.",
+                            "Distonia.",
+                            "Hemibalismo.",
+                            "Coreia.",
+                            "Atetose."
+                        ],
+                        correctIndex: 1
+                    },
+                    {
+                        question: "Jovem, uso recente de haloperidol. Febre 40, hipertonia, CPK 12.000. Líquor e imagem normais. Diagnóstico e conduta adequados:",
+                        options: [
+                            "Sepse de origem desconhecida.",
+                            "Meningite asséptica.",
+                            "Síndrome neuroléptica maligna - suspender haloperidol e iniciar bromocriptina.",
+                            "Síndrome catatônica da esquizofrenia."
+                        ],
+                        correctIndex: 2
+                    }
+                ]
+            }
+        ];
+
+        // Formatando Módulos Internamente
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                assessment: mod.assessment,
+                lessons: mod.lessons.map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA E NAVEGAÇÃO
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const playerView = document.getElementById('player-view');
+        const playerControls = document.getElementById('player-controls');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const videoLoader = document.getElementById('videoLoader');
+        const quizState = document.getElementById('quizState');
+        const quizQuestionsContainer = document.getElementById('quizQuestionsContainer');
+        const quizControls = document.getElementById('quizControls');
+        const quizScore = document.getElementById('quizScore');
+        const btnSubmitQuiz = document.getElementById('btnSubmitQuiz');
+
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const moduleTitleDisplay = document.getElementById('moduleTitleDisplay');
+        const pulseIndicator = document.getElementById('pulseIndicator');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const lessonCountBadge = document.getElementById('lessonCountBadge');
+        const moduleSelector = document.getElementById('moduleSelector');
+        const modulesGrid = document.getElementById('modules-grid');
+        
+        const videoNavControls = document.getElementById('videoNavControls');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        let selectedLessonId = null;
+        let currentVideoList = []; 
+        let currentVideoIndex = -1;
+        let currentAssessment = null;
+        let userAnswers = {};
+        let quizSubmitted = false;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let html = '';
+            modulesData.forEach(mod => {
+                let icon = 'fa-brain';
+                let iconColor = 'text-indigo-400';
+                
+                if(mod.title.includes('Hemorrágico') || mod.title.includes('Isquêmico') || mod.title.includes('Subaracnóidea')) { icon = 'fa-heartbeat'; iconColor = 'text-rose-500'; }
+                if(mod.title.includes('Cefaleia')) { icon = 'fa-head-side-virus'; iconColor = 'text-amber-500'; }
+                if(mod.title.includes('Neuro-Oftalmologia')) { icon = 'fa-eye'; iconColor = 'text-sky-400'; }
+                if(mod.title.includes('Coma') || mod.title.includes('Delirium')) { icon = 'fa-bed'; iconColor = 'text-violet-400'; }
+                if(mod.title.includes('Epiléptico') || mod.title.includes('Crise')) { icon = 'fa-bolt'; iconColor = 'text-yellow-400'; }
+                if(mod.title.includes('Meningites') || mod.title.includes('Encefalites')) { icon = 'fa-virus'; iconColor = 'text-emerald-500'; }
+                if(mod.title.includes('Paralisias') || mod.title.includes('Mielopatia')) { icon = 'fa-wheelchair'; iconColor = 'text-teal-400'; }
+                if(mod.title.includes('Movimento')) { icon = 'fa-running'; iconColor = 'text-orange-400'; }
+
+                html += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl cursor-pointer group">
+                    <div class="module-card-header p-6 flex justify-between items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-900/80 flex items-center justify-center text-2xl shadow-lg border border-white/10 group-hover:bg-indigo-900/30 group-hover:scale-105 transition-all duration-300">
+                            <i class="fas ${icon} ${iconColor}"></i>
+                        </div>
+                        <span class="bg-slate-950/80 backdrop-blur-md text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/5 uppercase tracking-widest shadow-sm">
+                            ${mod.lessons.length} Itens
+                        </span>
+                    </div>
+                    
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors font-display leading-tight">${mod.title}</h3>
+                        <p class="text-slate-400 text-sm flex-grow leading-relaxed font-normal mb-6">${mod.description || 'Atualização clínica contínua.'}</p>
+                        
+                        <div class="pt-5 border-t border-slate-800/50 flex items-center justify-between">
+                            <div class="flex items-center text-xs font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors w-full justify-end">
+                                <span class="tracking-wide mr-2 uppercase">Acessar Módulo</span>
+                                <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            modulesGrid.innerHTML = html;
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            contentPlayer.src = "";
+            document.title = "NeuroEmergências | Plataforma Médica";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            playerControls.classList.remove('hidden');
+            
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        // --- Renderização do PLAYER e AVALIAÇÕES ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            const videoLessons = module.lessons.filter(l => !l.title.toLowerCase().includes('.pdf'));
+            const pdfMaterials = module.lessons.filter(l => l.title.toLowerCase().includes('.pdf'));
+            
+            currentVideoList = videoLessons;
+            currentVideoIndex = -1;
+
+            moduleTitleDisplay.textContent = module.title;
+            lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
+            pulseIndicator.classList.add('hidden');
+            videoNavControls.style.display = 'none';
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            videoLessons.forEach((lesson, index) => {
+                const lessonNumber = (index + 1).toString().padStart(2, '0');
+                const displayTitle = lesson.title.replace(/\.mp4$/i, ''); 
+                const hasLink = lesson.url && lesson.url !== '#';
+                
+                html += `
+                <div class="lesson-item flex items-center gap-4 p-3.5 ${hasLink ? 'cursor-pointer hover:border-slate-700/50 hover:text-white' : 'cursor-not-allowed opacity-50'} text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
+                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''}
+                     data-id="${lesson.id}"
+                     id="lesson-item-${index}">
+                    
+                    <div class="flex-shrink-0 w-8 text-center relative">
+                        <span class="text-[9px] font-mono font-bold opacity-30 block mb-1">#${lessonNumber}</span>
+                        <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 flex items-center justify-center border border-white/5">
+                            <i class="fas ${hasLink ? 'fa-play' : 'fa-lock'} text-xs lesson-icon transition-transform ${hasLink ? 'ml-0.5' : ''}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 pr-2">
+                        <p class="text-sm font-semibold lesson-text leading-tight mb-1">${displayTitle}</p>
+                        <span class="text-[9px] bg-slate-800/80 text-slate-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider inline-block">Vídeo</span>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+
+            // Renderizar Materiais Complementares e Avaliações Embaixo do Vídeo
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            
+            const hasMaterials = pdfMaterials.length > 0;
+            const hasAssessment = module.assessment && module.assessment.length > 0;
+            
+            if (hasMaterials || hasAssessment) {
+                materialsSection.classList.remove('hidden');
+                
+                // Muda ligeiramente o título para abranger avaliações
+                materialsSection.querySelector('h3').innerHTML = '<i class="fas fa-book-medical text-cyan-500"></i> Mapas Mentais, Diretrizes & Avaliações';
+                
+                let htmlMaterials = '';
+                
+                // Insere os materiais em PDF
+                if (hasMaterials) {
+                    pdfMaterials.forEach((lesson) => {
+                        const displayTitle = lesson.title.replace(/\.pdf$/i, '').replace('Mapa Mental - ', '').replace('Material Complementar - ', ''); 
+                        htmlMaterials += `
+                        <div class="material-btn group flex flex-col p-4 bg-slate-900 border border-slate-800 hover:border-cyan-500/30 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                             onclick="window.open('${lesson.url}', '_blank')">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-900/20 text-cyan-500 flex items-center justify-center shrink-0 border border-cyan-500/10 transition-transform pdf-icon">
+                                    <i class="fas fa-file-pdf text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-cyan-400 transition-colors">${displayTitle}</p>
+                                    <div class="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide gap-1.5">
+                                        <i class="fas fa-external-link-alt"></i> Abrir Material
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+
+                // Insere a avaliação como um Card adicional
+                if (hasAssessment) {
+                    htmlMaterials += `
+                    <div class="material-btn group flex flex-col p-4 bg-indigo-900/10 border border-indigo-500/20 hover:border-indigo-500/50 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                         onclick="loadAssessment('${module.id}')" id="assessment-material-btn">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-transform pdf-icon">
+                                <i class="fas fa-clipboard-check text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-white line-clamp-2 leading-snug mb-2 group-hover:text-indigo-300 transition-colors">Avaliação do Módulo</p>
+                                <div class="flex items-center text-[10px] font-bold text-indigo-400 uppercase tracking-wide gap-1.5">
+                                    <i class="fas fa-pen"></i> Iniciar Teste
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+                
+                materialsContainer.innerHTML = htmlMaterials;
+            } else {
+                materialsSection.classList.add('hidden');
+                materialsContainer.innerHTML = '';
+            }
+            
+            resetPlayerView();
+        }
+
+        function resetPlayerView() {
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            quizState.classList.add('hidden');
+            emptyState.style.display = 'flex';
+            emptyState.querySelector('h2').textContent = "Ambiente Clínico";
+            emptyState.querySelector('p').textContent = "Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.";
+            lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
+            selectedLessonId = null;
+        }
+
+        // --- SISTEMA DE AVALIAÇÃO (QUIZ) ---
+        function loadAssessment(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module || !module.assessment) return;
+
+            currentAssessment = module.assessment;
+            userAnswers = {};
+            quizSubmitted = false;
+            currentVideoIndex = -1; // Desativa a navegação dos vídeos prev/next
+
+            // UI Selection (Sidebar) - Desmarca as aulas de vídeo
+            if (selectedLessonId && selectedLessonId !== 'assessment') {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-cyan-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+            }
+            
+            selectedLessonId = 'assessment';
+
+            // Atualiza Top Bar
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = "Avaliação do Módulo";
+            videoNavControls.style.display = 'none';
+            
+            // Oculta vídeo/vazio e mostra Quiz
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            videoLoader.style.display = 'none';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            emptyState.style.display = 'none';
+            quizState.classList.remove('hidden');
+
+            renderQuizQuestions();
+        }
+
+        function renderQuizQuestions() {
+            quizQuestionsContainer.innerHTML = '';
+            quizControls.classList.remove('hidden');
+            quizScore.classList.add('hidden');
+            btnSubmitQuiz.style.display = 'flex';
+
+            let html = '';
+            currentAssessment.forEach((q, qIndex) => {
+                html += `
+                <div class="bg-slate-900/60 p-6 rounded-2xl border border-white/5 shadow-lg" id="question-${qIndex}">
+                    <h4 class="text-white text-lg font-bold mb-5 leading-snug"><span class="text-indigo-400 mr-2">${qIndex + 1}.</span> ${q.question}</h4>
+                    <div class="space-y-3">`;
+                
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <div onclick="selectQuizOption(${qIndex}, ${optIndex})" class="quiz-option cursor-pointer p-4 rounded-xl flex items-start gap-4" id="opt-${qIndex}-${optIndex}">
+                            <div class="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0 mt-0.5 option-radio transition-colors"></div>
+                            <p class="text-slate-300 text-sm font-medium leading-relaxed">${opt}</p>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
+                    <div id="explanation-${qIndex}" class="hidden mt-6 p-4 rounded-lg bg-slate-800/80 border border-slate-700 text-sm text-slate-300 leading-relaxed border-l-4 border-l-indigo-500">
+                        <span class="block text-indigo-400 font-bold mb-1"><i class="fas fa-lightbulb"></i> Explicação:</span>
+                        ${q.explanation || 'Nenhuma explicação adicional fornecida para esta questão.'}
+                    </div>
+                </div>`;
+            });
+
+            quizQuestionsContainer.innerHTML = html;
+            quizState.scrollTop = 0; // Volta para o topo
+        }
+
+        function selectQuizOption(qIndex, optIndex) {
+            if (quizSubmitted) return; // Trava seleção após envio
+
+            userAnswers[qIndex] = optIndex;
+            
+            // Remove 'selected' de todas as opções desta pergunta
+            const questionDiv = document.getElementById(`question-${qIndex}`);
+            questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+            
+            // Adiciona 'selected' à opção clicada
+            const selectedOpt = document.getElementById(`opt-${qIndex}-${optIndex}`);
+            selectedOpt.classList.add('selected');
+        }
+
+        function submitAssessment() {
+            if (!currentAssessment) return;
+            
+            // Verifica se respondeu a todas
+            if (Object.keys(userAnswers).length < currentAssessment.length) {
+                // Poderíamos adicionar um modal personalizado aqui, mas para não bloquear, apenas alertamos no console/UI.
+                // Mas um alerta simples para garantir que o usuário não envia acidentalmente.
+                const conf = confirm("Ainda tem perguntas por responder. Deseja finalizar mesmo assim?");
+                if(!conf) return;
+            }
+
+            quizSubmitted = true;
+            let score = 0;
+
+            currentAssessment.forEach((q, qIndex) => {
+                const userAnswer = userAnswers[qIndex];
+                const correctOptDiv = document.getElementById(`opt-${qIndex}-${q.correctIndex}`);
+                const explanationDiv = document.getElementById(`explanation-${qIndex}`);
+
+                // Desativa clique visualmente
+                const questionDiv = document.getElementById(`question-${qIndex}`);
+                questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
+                
+                // Mostra explicação
+                if(explanationDiv) explanationDiv.classList.remove('hidden');
+
+                if (userAnswer === q.correctIndex) {
+                    // Acertou
+                    score++;
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                } else {
+                    // Errou ou não respondeu
+                    if (userAnswer !== undefined) {
+                        const wrongOptDiv = document.getElementById(`opt-${qIndex}-${userAnswer}`);
+                        if(wrongOptDiv) wrongOptDiv.classList.add('incorrect');
+                    }
+                    // Destaca a correta mesmo assim
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                }
+            });
+
+            // Oculta botão de submit e mostra resultado
+            btnSubmitQuiz.style.display = 'none';
+            quizScore.classList.remove('hidden');
+            const percent = Math.round((score / currentAssessment.length) * 100);
+            
+            let resultColor = 'text-emerald-500';
+            let resultMessage = 'Excelente!';
+            if(percent < 50) { resultColor = 'text-rose-500'; resultMessage = 'Continue estudando!'; }
+            else if(percent < 80) { resultColor = 'text-yellow-500'; resultMessage = 'Bom trabalho!'; }
+
+            quizScore.innerHTML = `Resultado: <span class="${resultColor}">${score}/${currentAssessment.length} (${percent}%)</span> - ${resultMessage}`;
+        }
+
+
+        // --- PLAYER DE VÍDEO PADRÃO ---
+        function getDriveEmbedUrl(url) {
+            if (!url || url === '#') return '';
+            const match = url.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://drive.google.com/file/d/${match[0]}/preview`;
+            }
+            return url;
+        }
+
+        function loadVideoByIndex(index) {
+            if (index < 0 || index >= currentVideoList.length) return;
+            
+            const lesson = currentVideoList[index];
+            if (!lesson.url || lesson.url === '#') return;
+
+            currentVideoIndex = index;
+            const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+
+            // Oculta área de quiz se estivesse aberta
+            quizState.classList.add('hidden');
+
+            // UI Selection Sidebar
+            if (selectedLessonId) {
+                if (selectedLessonId !== 'assessment') {
+                    const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                    if (prev) {
+                        prev.classList.remove('selected-lesson');
+                        prev.classList.add('border-transparent');
+                        const icon = prev.querySelector('.lesson-icon');
+                        if(icon) {
+                            icon.classList.remove('fa-pause', 'text-cyan-500');
+                            icon.classList.add('fa-play');
+                        }
+                    }
+                }
+            }
+            
+            selectedLessonId = lesson.id;
+            const cur = document.getElementById(`lesson-item-${index}`);
+            if (cur) {
+                cur.classList.remove('border-transparent');
+                cur.classList.add('selected-lesson');
+                cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const icon = cur.querySelector('.lesson-icon');
+                if(icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause', 'text-cyan-500');
+                }
+            }
+
+            // Title Update
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = displayTitle;
+            
+            videoNavControls.style.display = 'flex';
+            
+            btnPrev.disabled = currentVideoIndex === 0 || currentVideoList[currentVideoIndex - 1].url === '#';
+            btnNext.disabled = currentVideoIndex === currentVideoList.length - 1 || currentVideoList[currentVideoIndex + 1].url === '#';
+
+            if (lesson.url && lesson.url !== '#') {
+                emptyState.style.display = 'none';
+                videoLoader.style.display = 'flex'; 
+                contentPlayer.style.display = 'block'; 
+                document.getElementById('externalLinkBtn').style.display = 'block';
+
+                window.currentExternalUrl = lesson.url;
+
+                const embedUrl = getDriveEmbedUrl(lesson.url);
+                contentPlayer.src = embedUrl;
+
+                contentPlayer.onload = () => {
+                    videoLoader.style.display = 'none';
+                };
+            } else {
+                contentPlayer.style.display = 'none';
+                contentPlayer.src = '';
+                videoLoader.style.display = 'none';
+                document.getElementById('externalLinkBtn').style.display = 'none';
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('h2').textContent = "Aula Indisponível";
+                emptyState.querySelector('p').textContent = "Esta aula ainda não possui um link de vídeo associado na plataforma.";
+            }
+        }
+
+        function playNext() { loadVideoByIndex(currentVideoIndex + 1); }
+        function playPrevious() { loadVideoByIndex(currentVideoIndex - 1); }
+        
+        function openCurrentVideoExternal() {
+            if (window.currentExternalUrl) {
+                window.open(window.currentExternalUrl, '_blank');
+            }
+        }
+
+        // --- Inicialização ---
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        renderHome();
+
+    </script>
+</body>
+</html>
