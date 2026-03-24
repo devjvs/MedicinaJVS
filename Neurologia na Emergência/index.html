@@ -169,7 +169,7 @@
 <body class="flex flex-col h-screen overflow-hidden text-slate-300">
 
     <!-- HEADER -->
-    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative">
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative border-b border-white/5">
         <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
                 <i class="fas fa-brain text-white text-lg"></i>
@@ -191,7 +191,11 @@
                 </div>
             </div>
 
-            <button onclick="goHome()" class="text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+            <!-- Botões de Voltar Dinâmicos -->
+            <button id="btnBackToHome" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar ao Início</span>
+            </button>
+            <button id="btnBackToModules" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
                 <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Módulos</span>
             </button>
         </div>
@@ -200,27 +204,67 @@
     <!-- HOME VIEW -->
     <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
         <div class="max-w-7xl mx-auto pb-20">
-            <div class="mb-14 relative mt-4">
+            <div class="mb-12 relative mt-4">
                 <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
                 <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Domine as <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Urgências Neurológicas</span></h2>
                 <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
-                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                
+                <!-- Fallback do Texto Descritivo (Desaparece quando as avaliações são carregadas) -->
+                <p id="home-description-fallback" class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
                     Do acidente vascular encefálico aos distúrbios do movimento. O guia completo para o diagnóstico preciso e manejo avançado no pronto-socorro.
                 </p>
+
+                <!-- BANNER CENTRAL DE AVALIAÇÕES (Destacado no topo) -->
+                <div id="assessments-banner" class="mt-2 hidden max-w-3xl relative z-20">
+                    <div onclick="goAssessments()" class="w-full bg-slate-900/80 backdrop-blur-md border border-indigo-500/30 rounded-2xl p-5 cursor-pointer hover:bg-slate-800 transition-all group flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xl shadow-indigo-900/10">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white tracking-tight font-display group-hover:text-indigo-400 transition-colors">Central de Avaliações</h3>
+                                <p class="text-slate-400 text-sm mt-0.5 line-clamp-2">Do acidente vascular encefálico aos distúrbios do movimento. Teste e consolide seus conhecimentos.</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center text-xs font-bold text-indigo-400 bg-indigo-950/50 px-4 py-2 rounded-lg border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            <span class="uppercase mr-2">Abrir</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             
             <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
-                <!-- Modules Injected via JS -->
+                <!-- Modules injected via JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ASSESSMENTS VIEW (NOVA PÁGINA CENTRAL) -->
+    <main id="assessments-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Central de <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Avaliações</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Selecione a avaliação de um módulo específico para testar e consolidar seus conhecimentos.
+                </p>
+            </div>
+            
+            <div id="assessments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Assessment cards injected here via JS -->
             </div>
         </div>
     </main>
 
     <!-- PLAYER VIEW -->
-    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-slate-950 z-10 relative">
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-[#050505] z-10 relative">
         
-        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group">
-            
-            <div class="w-full aspect-video max-h-[70vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group bg-slate-950">
+            <div class="w-full aspect-video max-h-[75vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
                 
                 <!-- Componentes de Vídeo -->
                 <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-0 hidden">
@@ -295,16 +339,18 @@
                 </div>
             </div>
 
-            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950">
+            <!-- SEÇÃO MAPAS MENTAIS & AVALIAÇÕES (ABAIXO DO VÍDEO) -->
+            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950 border-t border-white/5">
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="fas fa-book-medical text-cyan-500"></i> Mapas Mentais & Diretrizes
+                    <i class="fas fa-book-medical text-cyan-500"></i> Mapas Mentais, Diretrizes & Avaliações
                 </h3>
                 <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Materials Injected via JS -->
+                    <!-- Materials and Assessment buttons Injected via JS -->
                 </div>
             </div>
         </section>
 
+        <!-- BARRA LATERAL (APENAS AULAS) -->
         <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
             <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
                 <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
@@ -322,7 +368,7 @@
 
     <script>
         // ==================================================================================
-        // DADOS DO CURSO (NEUROEMERGÊNCIAS MÉDICAS) + ESTRUTURA DE AVALIAÇÕES
+        // ⚠️ COLE AQUI O SEU CONST COURSEDATA COMPLETO (COM OS MÓDULOS, AULAS E AVALIAÇÕES)
         // ==================================================================================
         const courseData = [
             {
@@ -1253,7 +1299,7 @@
                 ]
             },
             {
-                title: "Módulo 11 - Primeira Crise/Escape de Crise",
+                title: "Módulo 11 - Primeira Crise Escape de Crise",
                 description: "Avaliação inicial da crise convulsiva, diagnósticos diferenciais e medicação.",
                 lessons: [
                     { t: "Aula 01 - Primeira Crise e Escapes de Crise no Pronto-Socorro.mp4", u: "https://drive.google.com/file/d/1DTQnVMi7Nd6SEN6EKfjN8GiXqrIQ6VwA/view?usp=sharing" },
@@ -2075,8 +2121,8 @@
                 id: `mod_${index + 1}`,
                 title: mod.title,
                 description: mod.description,
-                assessment: mod.assessment,
-                lessons: mod.lessons.map((lesson, lIndex) => ({
+                assessment: mod.assessment || [],
+                lessons: (mod.lessons || []).map((lesson, lIndex) => ({
                     id: `vid_${index + 1}_${lIndex + 1}`,
                     title: lesson.t,
                     url: lesson.u 
@@ -2089,8 +2135,12 @@
         // ==================================================================================
 
         const homeView = document.getElementById('home-view');
+        const assessmentsView = document.getElementById('assessments-view');
         const playerView = document.getElementById('player-view');
+        
         const playerControls = document.getElementById('player-controls');
+        const btnBackToHome = document.getElementById('btnBackToHome');
+        const btnBackToModules = document.getElementById('btnBackToModules');
         
         const contentPlayer = document.getElementById('contentPlayer');
         const emptyState = document.getElementById('emptyState');
@@ -2107,8 +2157,12 @@
         const lessonsContainer = document.getElementById('lessonsContainer');
         const lessonCountBadge = document.getElementById('lessonCountBadge');
         const moduleSelector = document.getElementById('moduleSelector');
-        const modulesGrid = document.getElementById('modules-grid');
         
+        const modulesGrid = document.getElementById('modules-grid');
+        const assessmentsBanner = document.getElementById('assessments-banner');
+        const homeDescriptionFallback = document.getElementById('home-description-fallback');
+        const assessmentsGrid = document.getElementById('assessments-grid');
+
         const videoNavControls = document.getElementById('videoNavControls');
         const btnPrev = document.getElementById('btnPrev');
         const btnNext = document.getElementById('btnNext');
@@ -2122,12 +2176,16 @@
 
         // --- Renderização da HOME ---
         function renderHome() {
-            let html = '';
+            let htmlModules = '';
+            let htmlAssessments = '';
+            let hasAssessments = false;
+
             modulesData.forEach(mod => {
                 let icon = 'fa-brain';
                 let iconColor = 'text-indigo-400';
                 
-                if(mod.title.includes('Hemorrágico') || mod.title.includes('Isquêmico') || mod.title.includes('Subaracnóidea')) { icon = 'fa-heartbeat'; iconColor = 'text-rose-500'; }
+                // Adaptação dos ícones consoante o tema do módulo
+                if(mod.title.includes('Hemorrágico') || mod.title.includes('Isquêmico')) { icon = 'fa-heartbeat'; iconColor = 'text-rose-500'; }
                 if(mod.title.includes('Cefaleia')) { icon = 'fa-head-side-virus'; iconColor = 'text-amber-500'; }
                 if(mod.title.includes('Neuro-Oftalmologia')) { icon = 'fa-eye'; iconColor = 'text-sky-400'; }
                 if(mod.title.includes('Coma') || mod.title.includes('Delirium')) { icon = 'fa-bed'; iconColor = 'text-violet-400'; }
@@ -2136,7 +2194,7 @@
                 if(mod.title.includes('Paralisias') || mod.title.includes('Mielopatia')) { icon = 'fa-wheelchair'; iconColor = 'text-teal-400'; }
                 if(mod.title.includes('Movimento')) { icon = 'fa-running'; iconColor = 'text-orange-400'; }
 
-                html += `
+                htmlModules += `
                 <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl cursor-pointer group">
                     <div class="module-card-header p-6 flex justify-between items-start">
                         <div class="w-14 h-14 rounded-2xl bg-slate-900/80 flex items-center justify-center text-2xl shadow-lg border border-white/10 group-hover:bg-indigo-900/30 group-hover:scale-105 transition-all duration-300">
@@ -2161,27 +2219,91 @@
                         </div>
                     </div>
                 </div>`;
+
+                // CRIA UM CARD NA CENTRAL DE AVALIAÇÕES PARA ESTE MÓDULO (SE HOUVER)
+                if (mod.assessment && mod.assessment.length > 0) {
+                    hasAssessments = true;
+                    htmlAssessments += `
+                    <div onclick="openAssessment('${mod.id}')" class="module-card rounded-2xl p-6 cursor-pointer flex flex-col h-full group border-indigo-500/30 bg-indigo-950/20 hover:bg-indigo-900/30">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-xl shadow-inner border border-indigo-500/30 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 transition-all">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <span class="bg-slate-950/80 text-indigo-300 text-[10px] font-bold px-2.5 py-1 rounded border border-indigo-800 uppercase tracking-widest">
+                                ${mod.assessment.length} Questões
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors leading-tight line-clamp-1">Avaliação: ${mod.title.split(' - ')[0]}</h3>
+                        <p class="text-slate-400 text-xs flex-grow leading-relaxed font-medium mb-4 line-clamp-2">${mod.title.split(' - ')[1] || 'Teste seus conhecimentos'}</p>
+                        
+                        <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div class="flex-1 flex items-center text-xs font-bold text-indigo-500 group-hover:text-indigo-400 transition-colors">
+                                <span class="tracking-wide mr-2 uppercase">Iniciar Teste</span>
+                                <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                            </div>
+                        </div>
+                    </div>`;
+                }
             });
-            modulesGrid.innerHTML = html;
+            
+            modulesGrid.innerHTML = htmlModules;
+
+            // Se existirem avaliações, esconde o texto descritivo e exibe o botão/banner para a Central.
+            if (hasAssessments) {
+                assessmentsBanner.classList.remove('hidden');
+                homeDescriptionFallback.classList.add('hidden');
+                assessmentsGrid.innerHTML = htmlAssessments;
+            } else {
+                assessmentsBanner.classList.add('hidden');
+                homeDescriptionFallback.classList.remove('hidden');
+            }
         }
 
         // --- Funções de Navegação ---
         function goHome() {
             playerView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
             playerControls.classList.add('hidden');
             homeView.classList.remove('hidden');
             
-            contentPlayer.src = "";
+            resetPlayerView();
             document.title = "NeuroEmergências | Plataforma Médica";
+        }
+
+        function goAssessments() {
+            homeView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            btnBackToModules.classList.add('hidden');
+            btnBackToHome.classList.remove('hidden');
+            
+            assessmentsView.classList.remove('hidden');
+            
+            resetPlayerView();
+            document.title = "NeuroEmergências | Central de Avaliações";
         }
 
         function openModule(moduleId) {
             homeView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
             playerView.classList.remove('hidden');
+            
             playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.remove('hidden');
+            btnBackToHome.classList.add('hidden');
+            btnBackToModules.classList.remove('hidden');
             
             moduleSelector.value = moduleId;
             renderLessons(moduleId);
+        }
+
+        function openAssessment(moduleId) {
+            openModule(moduleId);
+            setTimeout(() => {
+                loadAssessment(moduleId);
+            }, 50); 
         }
 
         // --- Renderização do PLAYER e AVALIAÇÕES ---
@@ -2191,26 +2313,25 @@
 
             const videoLessons = module.lessons.filter(l => !l.title.toLowerCase().includes('.pdf'));
             const pdfMaterials = module.lessons.filter(l => l.title.toLowerCase().includes('.pdf'));
-            
+
             currentVideoList = videoLessons;
             currentVideoIndex = -1;
 
             moduleTitleDisplay.textContent = module.title;
             lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
             pulseIndicator.classList.add('hidden');
-            videoNavControls.style.display = 'none';
 
             lessonsContainer.innerHTML = '';
             
             let html = '';
             videoLessons.forEach((lesson, index) => {
                 const lessonNumber = (index + 1).toString().padStart(2, '0');
-                const displayTitle = lesson.title.replace(/\.mp4$/i, ''); 
+                const displayTitle = lesson.title.replace(/\.mp4$/i, '');
                 const hasLink = lesson.url && lesson.url !== '#';
                 
                 html += `
                 <div class="lesson-item flex items-center gap-4 p-3.5 ${hasLink ? 'cursor-pointer hover:border-slate-700/50 hover:text-white' : 'cursor-not-allowed opacity-50'} text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
-                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''}
+                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''} 
                      data-id="${lesson.id}"
                      id="lesson-item-${index}">
                     
@@ -2236,16 +2357,13 @@
             
             const hasMaterials = pdfMaterials.length > 0;
             const hasAssessment = module.assessment && module.assessment.length > 0;
-            
+
             if (hasMaterials || hasAssessment) {
                 materialsSection.classList.remove('hidden');
-                
-                // Muda ligeiramente o título para abranger avaliações
-                materialsSection.querySelector('h3').innerHTML = '<i class="fas fa-book-medical text-cyan-500"></i> Mapas Mentais, Diretrizes & Avaliações';
-                
+
                 let htmlMaterials = '';
                 
-                // Insere os materiais em PDF
+                // Insere os PDFs
                 if (hasMaterials) {
                     pdfMaterials.forEach((lesson) => {
                         const displayTitle = lesson.title.replace(/\.pdf$/i, '').replace('Mapa Mental - ', '').replace('Material Complementar - ', ''); 
@@ -2268,14 +2386,14 @@
                     });
                 }
 
-                // Insere a avaliação como um Card adicional
+                // Insere o Botão de Avaliação (Quiz) ao lado dos materiais
                 if (hasAssessment) {
                     htmlMaterials += `
-                    <div class="material-btn group flex flex-col p-4 bg-indigo-900/10 border border-indigo-500/20 hover:border-indigo-500/50 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                    <div class="material-btn group flex flex-col p-4 bg-indigo-900/10 border border-indigo-500/30 hover:border-indigo-500/50 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
                          onclick="loadAssessment('${module.id}')" id="assessment-material-btn">
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-bl-full pointer-events-none"></div>
                         <div class="flex items-start gap-3">
-                            <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-white/5 shadow-[0_0_10px_rgba(99,102,241,0.3)] transition-transform pdf-icon">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-transform pdf-icon">
                                 <i class="fas fa-clipboard-check text-lg"></i>
                             </div>
                             <div class="flex-1">
@@ -2287,7 +2405,7 @@
                         </div>
                     </div>`;
                 }
-                
+
                 materialsContainer.innerHTML = htmlMaterials;
             } else {
                 materialsSection.classList.add('hidden');
@@ -2304,7 +2422,7 @@
             quizState.classList.add('hidden');
             emptyState.style.display = 'flex';
             emptyState.querySelector('h2').textContent = "Ambiente Clínico";
-            emptyState.querySelector('p').textContent = "Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.";
+            emptyState.querySelector('p').textContent = "Selecione uma aula ou avaliação para iniciar sua jornada de aprendizado.";
             lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
             selectedLessonId = null;
         }
@@ -2312,14 +2430,14 @@
         // --- SISTEMA DE AVALIAÇÃO (QUIZ) ---
         function loadAssessment(moduleId) {
             const module = modulesData.find(m => m.id === moduleId);
-            if (!module || !module.assessment) return;
+            if (!module || !module.assessment || module.assessment.length === 0) return;
 
             currentAssessment = module.assessment;
             userAnswers = {};
             quizSubmitted = false;
-            currentVideoIndex = -1; // Desativa a navegação dos vídeos prev/next
+            currentVideoIndex = -1;
 
-            // UI Selection (Sidebar) - Desmarca as aulas de vídeo
+            // Desmarca vídeos na sidebar
             if (selectedLessonId && selectedLessonId !== 'assessment') {
                 const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
                 if (prev) {
@@ -2359,9 +2477,12 @@
 
             let html = '';
             currentAssessment.forEach((q, qIndex) => {
+                // Preserva quebras de linha na pergunta
+                const formattedQuestion = q.question.replace(/\n/g, '<br>');
+                
                 html += `
                 <div class="bg-slate-900/60 p-6 rounded-2xl border border-white/5 shadow-lg" id="question-${qIndex}">
-                    <h4 class="text-white text-lg font-bold mb-5 leading-snug"><span class="text-indigo-400 mr-2">${qIndex + 1}.</span> ${q.question}</h4>
+                    <h4 class="text-white text-lg font-bold mb-5 leading-snug"><span class="text-indigo-500 mr-2">${qIndex + 1}.</span> ${formattedQuestion}</h4>
                     <div class="space-y-3">`;
                 
                 q.options.forEach((opt, optIndex) => {
@@ -2376,26 +2497,24 @@
                 html += `
                     </div>
                     <div id="explanation-${qIndex}" class="hidden mt-6 p-4 rounded-lg bg-slate-800/80 border border-slate-700 text-sm text-slate-300 leading-relaxed border-l-4 border-l-indigo-500">
-                        <span class="block text-indigo-400 font-bold mb-1"><i class="fas fa-lightbulb"></i> Explicação:</span>
+                        <span class="block text-indigo-500 font-bold mb-1"><i class="fas fa-lightbulb"></i> Explicação:</span>
                         ${q.explanation || 'Nenhuma explicação adicional fornecida para esta questão.'}
                     </div>
                 </div>`;
             });
 
             quizQuestionsContainer.innerHTML = html;
-            quizState.scrollTop = 0; // Volta para o topo
+            quizState.scrollTop = 0;
         }
 
         function selectQuizOption(qIndex, optIndex) {
-            if (quizSubmitted) return; // Trava seleção após envio
+            if (quizSubmitted) return;
 
             userAnswers[qIndex] = optIndex;
             
-            // Remove 'selected' de todas as opções desta pergunta
             const questionDiv = document.getElementById(`question-${qIndex}`);
             questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
             
-            // Adiciona 'selected' à opção clicada
             const selectedOpt = document.getElementById(`opt-${qIndex}-${optIndex}`);
             selectedOpt.classList.add('selected');
         }
@@ -2403,10 +2522,7 @@
         function submitAssessment() {
             if (!currentAssessment) return;
             
-            // Verifica se respondeu a todas
             if (Object.keys(userAnswers).length < currentAssessment.length) {
-                // Poderíamos adicionar um modal personalizado aqui, mas para não bloquear, apenas alertamos no console/UI.
-                // Mas um alerta simples para garantir que o usuário não envia acidentalmente.
                 const conf = confirm("Ainda tem perguntas por responder. Deseja finalizar mesmo assim?");
                 if(!conf) return;
             }
@@ -2419,29 +2535,24 @@
                 const correctOptDiv = document.getElementById(`opt-${qIndex}-${q.correctIndex}`);
                 const explanationDiv = document.getElementById(`explanation-${qIndex}`);
 
-                // Desativa clique visualmente
                 const questionDiv = document.getElementById(`question-${qIndex}`);
                 questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
                 
-                // Mostra explicação
-                if(explanationDiv) explanationDiv.classList.remove('hidden');
+                // Só mostra explicação se existir
+                if(explanationDiv && q.explanation) explanationDiv.classList.remove('hidden');
 
                 if (userAnswer === q.correctIndex) {
-                    // Acertou
                     score++;
                     if(correctOptDiv) correctOptDiv.classList.add('correct');
                 } else {
-                    // Errou ou não respondeu
                     if (userAnswer !== undefined) {
                         const wrongOptDiv = document.getElementById(`opt-${qIndex}-${userAnswer}`);
                         if(wrongOptDiv) wrongOptDiv.classList.add('incorrect');
                     }
-                    // Destaca a correta mesmo assim
                     if(correctOptDiv) correctOptDiv.classList.add('correct');
                 }
             });
 
-            // Oculta botão de submit e mostra resultado
             btnSubmitQuiz.style.display = 'none';
             quizScore.classList.remove('hidden');
             const percent = Math.round((score / currentAssessment.length) * 100);
@@ -2454,8 +2565,7 @@
             quizScore.innerHTML = `Resultado: <span class="${resultColor}">${score}/${currentAssessment.length} (${percent}%)</span> - ${resultMessage}`;
         }
 
-
-        // --- PLAYER DE VÍDEO PADRÃO ---
+        // Função para extrair o ID do Drive e gerar o link correto de preview
         function getDriveEmbedUrl(url) {
             if (!url || url === '#') return '';
             const match = url.match(/[-\w]{25,}/);
@@ -2477,7 +2587,6 @@
             // Oculta área de quiz se estivesse aberta
             quizState.classList.add('hidden');
 
-            // UI Selection Sidebar
             if (selectedLessonId) {
                 if (selectedLessonId !== 'assessment') {
                     const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
@@ -2507,7 +2616,6 @@
                 }
             }
 
-            // Title Update
             pulseIndicator.classList.remove('hidden');
             lessonTitleEl.querySelector('span:last-child').textContent = displayTitle;
             
@@ -2540,9 +2648,6 @@
                 emptyState.querySelector('p').textContent = "Esta aula ainda não possui um link de vídeo associado na plataforma.";
             }
         }
-
-        function playNext() { loadVideoByIndex(currentVideoIndex + 1); }
-        function playPrevious() { loadVideoByIndex(currentVideoIndex - 1); }
         
         function openCurrentVideoExternal() {
             if (window.currentExternalUrl) {
@@ -2555,6 +2660,7 @@
             renderLessons(e.target.value);
         });
 
+        // Inicia
         renderHome();
 
     </script>
