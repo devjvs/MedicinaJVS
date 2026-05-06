@@ -1,0 +1,33 @@
+{
+  "titulo": "Sistema Nervoso",
+  "materiais": [
+    {
+      "title": "Sistema Nervoso - Slides Completos",
+      "slug": "slides-sistema-nervoso-completo",
+      "pages": 209,
+      "path": "slides-sistema-nervoso-completo/index.html"
+    }
+  ],
+  "partes": [
+    {
+      "inicio": 1,
+      "fim": 55,
+      "titulo": "Parte 1 - páginas 1-55"
+    },
+    {
+      "inicio": 56,
+      "fim": 105,
+      "titulo": "Parte 2 - páginas 56-105"
+    },
+    {
+      "inicio": 106,
+      "fim": 155,
+      "titulo": "Parte 3 - páginas 106-155"
+    },
+    {
+      "inicio": 156,
+      "fim": 209,
+      "titulo": "Parte 4 - páginas 156-209"
+    }
+  ]
+}

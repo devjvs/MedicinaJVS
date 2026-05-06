@@ -1,0 +1,17 @@
+{
+  "titulo": "18.1 Resumo - Sistema Cardiovascular",
+  "arquivo_original": "18.1 Resumo - Sistema Cardiovascular.pdf",
+  "paginas": 28,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 28,
+      "largura": 590,
+      "altura": 590
+    }
+  ]
+}

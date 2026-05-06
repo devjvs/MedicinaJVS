@@ -1,0 +1,17 @@
+{
+  "titulo": "Propedêutica",
+  "materiais": [
+    {
+      "title": "17.1 Resumo - Propedêutica",
+      "slug": "17-1-resumo-propedeutica",
+      "pages": 23,
+      "path": "17-1-resumo-propedeutica/index.html"
+    },
+    {
+      "title": "17.2 Mapa Mental - Propedêutica",
+      "slug": "17-2-mapa-mental-propedeutica",
+      "pages": 18,
+      "path": "17-2-mapa-mental-propedeutica/index.html"
+    }
+  ]
+}

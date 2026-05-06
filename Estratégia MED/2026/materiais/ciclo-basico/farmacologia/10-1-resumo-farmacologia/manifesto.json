@@ -1,0 +1,103 @@
+{
+  "titulo": "10.1 Resumo - Farmacologia",
+  "arquivo_original": "10.1 Resumo - Farmacologia.pdf",
+  "paginas": 15,
+  "formato": "HTML com páginas renderizadas em JPG",
+  "assets": "assets",
+  "limpeza_aplicada": [
+    "remoção de imagem ofensiva recorrente quando identificada como objeto separado",
+    "remoção de textos NÃO COMPRE DRIVE quando identificados como texto pesquisável"
+  ],
+  "paginas_renderizadas": [
+    {
+      "page": 1,
+      "file": "page-001.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 2,
+      "file": "page-002.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 3,
+      "file": "page-003.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 4,
+      "file": "page-004.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 5,
+      "file": "page-005.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 6,
+      "file": "page-006.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 7,
+      "file": "page-007.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 8,
+      "file": "page-008.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 9,
+      "file": "page-009.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 10,
+      "file": "page-010.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 11,
+      "file": "page-011.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 12,
+      "file": "page-012.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 13,
+      "file": "page-013.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 14,
+      "file": "page-014.jpg",
+      "width": 1050,
+      "height": 1345
+    },
+    {
+      "page": 15,
+      "file": "page-015.jpg",
+      "width": 1050,
+      "height": 1345
+    }
+  ]
+}

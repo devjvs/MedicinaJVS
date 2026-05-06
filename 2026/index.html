@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo Básico | Estratégia MED</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neuro: {
+                            dark: '#020617',    /* Slate 950 */
+                            card: '#0f172a',    /* Slate 900 */
+                            primary: '#4f46e5', /* Indigo 500 */
+                            primaryLight: '#6366f1', /* Indigo 500 */
+                            accent: '#06b6d4',  /* Cyan 400 */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.05), transparent 25%),
+                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: #e2e8f0; 
+            overflow: hidden;
+        }
+        
+        h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar Premium */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Estilos da Lista de Aulas */
+        .lesson-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+        }
+        .lesson-item:hover { 
+            background-color: rgba(79, 70, 229, 0.08); 
+            border-left-color: #475569;
+        }
+        .selected-lesson { 
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.15) 0%, transparent 100%);
+            border-left-color: #6366f1; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+        .selected-lesson .lesson-icon { color: #06b6d4; transform: scale(1.1); }
+        .selected-lesson .lesson-text { color: #ffffff; font-weight: 600; }
+        
+        /* Cards da Home */
+        .module-card {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .module-card-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        .module-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.25);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .module-card:hover::after { left: 150%; }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border-top: 3px solid #06b6d4;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        .active-indicator { animation: pulse-ring 2s infinite; }
+        .hidden { display: none !important; }
+        .material-btn:hover .pdf-icon { transform: translateY(-2px); color: #fff; }
+
+        /* Estilos do Quiz / Avaliação */
+        .quiz-option {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .quiz-option:hover:not(.disabled) {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .quiz-option.selected {
+            background-color: rgba(99, 102, 241, 0.15);
+            border-color: #6366f1;
+            box-shadow: inset 0 0 0 1px #6366f1;
+        }
+        .quiz-option.selected .option-radio {
+            border-color: #06b6d4;
+            background-color: #06b6d4;
+        }
+        .quiz-option.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+        }
+        .quiz-option.correct .option-radio {
+            border-color: #10b981;
+            background-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: rgba(225, 29, 72, 0.1);
+            border-color: #e11d48;
+        }
+        .quiz-option.incorrect .option-radio {
+            border-color: #e11d48;
+            background-color: #e11d48;
+        }
+        .quiz-option.disabled { cursor: default; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-300">
+
+    <!-- HEADER -->
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative border-b border-white/5">
+        <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
+                <i class="fas fa-microscope text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-none uppercase">Ciclo Básico MED</h1>
+                <p class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mt-0.5">Estratégia MED</p>
+            </div>
+        </div>
+        
+        <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
+            <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+            
+            <div class="relative group hidden sm:block">
+                <select id="moduleSelector" class="appearance-none bg-slate-900/80 text-white text-xs font-semibold py-2.5 pl-4 pr-10 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer min-w-[280px] max-w-[350px] truncate transition-all hover:bg-slate-800">
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Botões de Voltar Dinâmicos -->
+            <button id="btnBackToHome" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar ao Início</span>
+            </button>
+            <button id="btnBackToModules" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Módulos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-12 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Domine o <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Ciclo Básico</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                
+                <!-- Fallback do Texto Descritivo (Desaparece quando as avaliações são carregadas) -->
+                <p id="home-description-fallback" class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Da Bioquímica à Farmacologia. O guia completo e estruturado para consolidar a sua base médica com excelência.
+                </p>
+
+                <!-- BANNER CENTRAL DE AVALIAÇÕES (Destacado no topo) -->
+                <div id="assessments-banner" class="mt-2 hidden max-w-3xl relative z-20">
+                    <div onclick="goAssessments()" class="w-full bg-slate-900/80 backdrop-blur-md border border-indigo-500/30 rounded-2xl p-5 cursor-pointer hover:bg-slate-800 transition-all group flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xl shadow-indigo-900/10">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white tracking-tight font-display group-hover:text-indigo-400 transition-colors">Central de Avaliações</h3>
+                                <p class="text-slate-400 text-sm mt-0.5 line-clamp-2">Do acidente vascular encefálico aos distúrbios do movimento. Teste e consolide os seus conhecimentos.</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center text-xs font-bold text-indigo-400 bg-indigo-950/50 px-4 py-2 rounded-lg border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            <span class="uppercase mr-2">Abrir</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <!-- Modules injected via JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ASSESSMENTS VIEW (NOVA PÁGINA CENTRAL) -->
+    <main id="assessments-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Central de <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Avaliações</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Selecione a avaliação de um módulo específico para testar e consolidar os seus conhecimentos.
+                </p>
+            </div>
+            
+            <div id="assessments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Assessment cards injected here via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- PLAYER VIEW -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-[#050505] z-10 relative">
+        
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group bg-slate-950">
+            <div class="w-full aspect-video max-h-[75vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
+                
+                <!-- Componentes de Vídeo -->
+                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-0 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Botão de emergência sobreposto -->
+                <div id="externalLinkBtn" class="absolute top-4 right-4 z-20" style="display:none;">
+                    <button onclick="openCurrentVideoExternal()" class="bg-black/60 hover:bg-indigo-600 text-white backdrop-blur-md px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 border border-white/10 transition-colors shadow-lg" title="Se o vídeo não carregar, abra noutra aba">
+                        <i class="fas fa-external-link-alt"></i> Abrir em nova aba
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-slate-900 to-[#050505] w-full absolute inset-0 z-10">
+                    <div class="w-24 h-24 bg-slate-900/80 rounded-2xl flex items-center justify-center mb-8 border border-white/5 shadow-[0_0_50px_rgba(99,102,241,0.15)] transform rotate-3">
+                        <i class="fas fa-user-md text-4xl text-indigo-500 -rotate-3"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3 font-display">Ambiente Clínico</h2>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+                        Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.
+                    </p>
+                </div>
+
+                <!-- STATE DO QUIZ / AVALIAÇÃO -->
+                <div id="quizState" class="hidden absolute inset-0 w-full h-full z-20 bg-slate-950 overflow-y-auto custom-scroll p-6 sm:p-10">
+                    <div class="max-w-3xl mx-auto pb-10">
+                        <div class="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white font-display">Avaliação do Módulo</h2>
+                                <p class="text-slate-400 text-sm">Teste os seus conhecimentos adquiridos</p>
+                            </div>
+                        </div>
+
+                        <div id="quizQuestionsContainer" class="space-y-10">
+                            <!-- Perguntas injetadas via JS -->
+                        </div>
+
+                        <div id="quizControls" class="mt-10 pt-6 border-t border-white/10 flex justify-between items-center hidden">
+                            <div id="quizScore" class="hidden text-lg font-bold"></div>
+                            <button id="btnSubmitQuiz" onclick="submitAssessment()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 ml-auto">
+                                Finalizar Avaliação <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="bg-slate-900 p-5 border-b border-white/5 shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 z-20">
+                <div class="flex-1">
+                    <h2 id="lessonTitle" class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 active-indicator hidden" id="pulseIndicator"></span>
+                        <span class="line-clamp-1">Nenhuma aula selecionada</span>
+                    </h2>
+                    <p id="moduleTitleDisplay" class="text-xs text-cyan-400 mt-1.5 font-bold uppercase tracking-wider pl-5 hidden sm:block">Módulo</p>
+                </div>
+                
+                <!-- Navegação de Vídeo -->
+                <div class="flex items-center gap-2" id="videoNavControls" style="display: none;">
+                    <button onclick="playPrevious()" id="btnPrev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border border-slate-700">
+                        <i class="fas fa-step-backward"></i> Anterior
+                    </button>
+                    <button onclick="playNext()" id="btnNext" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        Próxima <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO MAPAS MENTAIS & AVALIAÇÕES (ABAIXO DO VÍDEO) -->
+            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950 border-t border-white/5">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-book-medical text-cyan-500"></i> Materiais de Estudo & Avaliações
+                </h3>
+                <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Materials and Assessment buttons Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- BARRA LATERAL (APENAS AULAS) -->
+        <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
+            <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
+                <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ul text-indigo-500"></i> Programa do Módulo
+                </h3>
+                <span id="lessonCountBadge" class="bg-indigo-500/10 text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-500/20">0 Aulas</span>
+            </div>
+            
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5 pb-20">
+                <!-- Lessons Injected via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DOS MÓDULOS, AULAS E AVALIAÇÕES
+        // ==================================================================================
+        const courseData = [
+            {
+                title: "Módulo 01 - Bioquímica",
+                description: "Componentes Químicos das Células, Enzimologia e Regulação Enzimática.",
+                lessons: [
+                    { t: "Aula 02 - Lipídios: Componentes Químicos das Células.mp4", u: "https://drive.google.com/file/d/1HNC2-zzBSZYdQjGACodLVKGOwMVXf8Uv/view?usp=sharing" },
+                    { t: "Aula 03 - Carboidratos: Componentes Químicos das Células.mp4", u: "https://drive.google.com/file/d/1puZeBe5xXTfLTpU68aQIERBRkTa6yTaC/view?usp=sharing" },
+                    { t: "Aula 04 - Proteínas: Componentes Químicos das Células.mp4", u: "https://drive.google.com/file/d/1ayUM22JwFTv5jyUpD9vTs3J4zs4Ha-87/view?usp=sharing" },
+                    { t: "Aula 05 - Ácidos Nucleicos: Componentes Químicos das Células.mp4", u: "https://drive.google.com/file/d/1hy-4l6ciNUzCafcI8Z-oy9huZnTxZPPG/view?usp=sharing" },
+                    { t: "Aula 06 - Enzimologia: Estrutura e Função das Enzimas.mp4", u: "https://drive.google.com/file/d/1DBHRi1Zy9TbaFCd50IhGQZBkPLPuw9UM/view?usp=sharing" },
+                    { t: "Aula 07 - Atividade Enzimática: Atividade e Cinética.mp4", u: "https://drive.google.com/file/d/1MxBpl7FXG7J_PLFrlWQCGY6jTos6Q42L/view?usp=sharing" },
+                    { t: "Aula 08 - Atividade Enzimática: Regulação Enzimática.mp4", u: "https://drive.google.com/file/d/1P1Ut_FGwRt_yFxjhI_zznasfn6JFJmyl/view?usp=sharing" },
+                    { t: "Aula 09 - Classificação das Enzimas.mp4", u: "https://drive.google.com/file/d/1NbddEUN0014LTeHDudosBUR8cAtnldKN/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 02 - Biologia Molecular",
+                description: "Biologia Molecular Básica, Replicação, Transcrição, Tradução e Epigenética.",
+                lessons: [
+                    { t: "Aula 01 - Biologia Molecular Básica.mp4", u: "https://drive.google.com/file/d/1pn8gF1bSZnqtN2xXCONJmyWRc5Nl6_Dh/view?usp=sharing" },
+                    { t: "Aula 02 - Conceitos Básicos.mp4", u: "https://drive.google.com/file/d/1zH1PEpmgvoKDQ36grt-spRIxWTHVKcpN/view?usp=sharing" },
+                    { t: "Aula 03 - A Replicação.mp4", u: "https://drive.google.com/file/d/1mdfkvJEmhhUa7z8pqcFMw4BMIhJti0mZ/view?usp=sharing" },
+                    { t: "Aula 04 - Variantes e Reparo.mp4", u: "https://drive.google.com/file/d/1gIjdzfpfWx7YezsIaFs9cgk1-yrVlW5f/view?usp=sharing" },
+                    { t: "Aula 05 - A Transcrição, Regulação e Processamento.mp4", u: "https://drive.google.com/file/d/1bj5KmaQe9gERds3oaLWbTSGlorFcrERg/view?usp=sharing" },
+                    { t: "Aula 06 - A Tradução e Modificações Pós-Traducionais.mp4", u: "https://drive.google.com/file/d/1S2716fw03My7l67pfQZOWe0jiaaAiujR/view?usp=sharing" },
+                    { t: "Aula 07 - Epigenética.mp4", u: "https://drive.google.com/file/d/17efRuDdY8afIq-bK-hhBcrE8-JWLtQct/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 03 - Biologia Celular",
+                description: "Membrana Plasmática, Citoplasma, Núcleo, Síntese Proteica e Ciclo Celular.",
+                lessons: [
+                    { t: "Aula 01 - Membrana Plasmática: O Que é a Membrana Plasmática.mp4", u: "https://drive.google.com/file/d/1jAFaQXP4bOkwsKXK9-OZsRsEavZ-DpT9/view?usp=sharing" },
+                    { t: "Aula 02 - Membrana Plasmática: Composição da Membrana.mp4", u: "https://drive.google.com/file/d/1-JqETeqDMa1buE-YBFdvQyb9ma-bDz6w/view?usp=sharing" },
+                    { t: "Aula 03 - Membrana Plasmática: Especialização da Membrana.mp4", u: "https://drive.google.com/file/d/1HEtr_amYJz_MM1F5PpPdNQSV5CCkfUDJ/view?usp=sharing" },
+                    { t: "Aula 04 - Membrana Plasmática: Transporte Pela Membrana (Transporte Passivo).mp4", u: "https://drive.google.com/file/d/1gXZqgGLRwWbHzNK41YYshwPmTAIOqEnr/view?usp=sharing" },
+                    { t: "Aula 05 - Membrana Plasmática: Transporte Pela Membrana (Transporte Ativo).mp4", u: "https://drive.google.com/file/d/1LtE3MDvtsJEj1N_K8W6XWbCBvJydkvcc/view?usp=sharing" },
+                    { t: "Aula 06 - Citoplasma: Composição.mp4", u: "https://drive.google.com/file/d/1JWg6qoEFoJvQgGi15zO-b64SVgqmzSAR/view?usp=sharing" },
+                    { t: "Aula 07 - Citoplasma: Citoesqueleto.mp4", u: "https://drive.google.com/file/d/13ZG4x7EnRQYDLB83guNSr_6IeapuMa5M/view?usp=sharing" },
+                    { t: "Aula 08 - Citoplasma: Organelas Citoplasmáticas.mp4", u: "https://drive.google.com/file/d/1f0fqkHkwI7tFxCYmdmxdK0SqDkAeK21O/view?usp=sharing" },
+                    { t: "Aula 09 - Citoplasma: Organelas Membranosas.mp4", u: "https://drive.google.com/file/d/10lkNZwLJn8d7PuX7CVNVfWCbf_Q-gTZn/view?usp=sharing" },
+                    { t: "Aula 10 - Núcleo: Composição.mp4", u: "https://drive.google.com/file/d/1ysGKb78o-k3xRPM2t22o7WC6gjLgGSZT/view?usp=sharing" },
+                    { t: "Aula 11 - Núcleo: Cromatina e Cromossomo.mp4", u: "https://drive.google.com/file/d/1lK1OKFBvQWIDFzXmgbaq0AK9gY9qkQna/view?usp=sharing" },
+                    { t: "Aula 12 - Síntese Proteica: Mecanismo Geral.mp4", u: "https://drive.google.com/file/d/1L8hMcjpluUPVVa3l4vpI8nLEC75C50qi/view?usp=sharing" },
+                    { t: "Aula 13 - Síntese Proteica: Transcrição.mp4", u: "https://drive.google.com/file/d/1YuDywK5s6DEuGtxWIorbCSTXt7WymvTe/view?usp=sharing" },
+                    { t: "Aula 14 - Síntese Proteica: Tradução.mp4", u: "https://drive.google.com/file/d/1mcMqGZSG4yoKvHlKcWwWfH9uPTMwHc--/view?usp=sharing" },
+                    { t: "Aula 15 - Síntese Proteica: Eucariontes versus Procariontes.mp4", u: "https://drive.google.com/file/d/1kbWqirPxK-Ng9nPM3Y8hjfaNpVL2QHDg/view?usp=sharing" },
+                    { t: "Aula 16 - Mutações Gênicas: Tipos de Mutação.mp4", u: "https://drive.google.com/file/d/1ar7JhP9xk8ey4AA2WlkCM4jiNH7dWaXd/view?usp=sharing" },
+                    { t: "Aula 17 - Ciclo Celular.mp4", u: "https://drive.google.com/file/d/1gaa8vYpeMP3M-l4wAymtdbbY0eIefEJt/view?usp=sharing" },
+                    { t: "Aula 18 - Intérfase.mp4", u: "https://drive.google.com/file/d/10EIYxHNN4hH_zyWMqXd6NLNUWeMWjE7Y/view?usp=sharing" },
+                    { t: "Aula 19 - Replicação do DNA.mp4", u: "https://drive.google.com/file/d/1vBEpHOoK53TquA2PniiXVeUh0Fe5X05j/view?usp=sharing" },
+                    { t: "Aula 20 - Mitose.mp4", u: "https://drive.google.com/file/d/1CLZu3kOijrkXB4NqZWiOxRv73RfP6GVN/view?usp=sharing" },
+                    { t: "Aula 21 - Meiose.mp4", u: "https://drive.google.com/file/d/19V6_7RvnmjKRMCBIGVbV7D393sLovi-X/view?usp=sharing" },
+                    { t: "Aula 22 - Regulação do Ciclo Celular.mp4", u: "https://drive.google.com/file/d/1ZOY2bCRu6dMb8Fa8olb05nf4A0UEPUdN/view?usp=sharing" },
+                    { t: "Aula 23 - Respiração Celular: Um Processo do Metabolismo Energético.mp4", u: "https://drive.google.com/file/d/1U_WQzgihuQpU-YCHNh-yXTK_qlLfAQY5/view?usp=sharing" },
+                    { t: "Aula 24 - Respiração Celular: Uma Visão Geral.mp4", u: "https://drive.google.com/file/d/10M2XpBt2iIWZF-IHmsr3DV8e9EXB-9Aw/view?usp=sharing" },
+                    { t: "Aula 25 - Respiração Celular: Etapas do Processo.mp4", u: "https://drive.google.com/file/d/1gisQFAy1JQQH7JnoYuM1A0_hlJ3lO85y/view?usp=sharing" },
+                    { t: "Aula 26 - Respiração Celular: Metabolismo de Lipídios e Proteínas.mp4", u: "https://drive.google.com/file/d/1NBm0ZjOsvjaM__D8F3fk3DGKVTlzbDy_/view?usp=sharing" },
+                    { t: "Aula 27 - Comunicação Celular.mp4", u: "https://drive.google.com/file/d/19J7Z2jocwQt_AQvwsuWUWvb9kCNc9H93/view?usp=sharing" },
+                    { t: "Aula 28 - Tipos de Sinalização Celular.mp4", u: "https://drive.google.com/file/d/1MhtFe-dRcdIANBbICLHED9jOagJG3lUX/view?usp=sharing" },
+                    { t: "Aula 29 - Tipos de Receptores.mp4", u: "https://drive.google.com/file/d/1rsTdmhcptrXNJR1LDiTWw7fgoJB3J2cr/view?usp=sharing" },
+                    { t: "Aula 30 - Amplificação de Sinal e Segundos Mensageiros.mp4", u: "https://drive.google.com/file/d/1LJG1YxKr9nknV7zraZjoepb3ukzxSErN/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 04 - Biofísica",
+                description: "Biofísica da Audição, Termodinâmica, Mecânica dos Fluidos e Físicoquímica.",
+                lessons: [
+                    { t: "Aula 01 - Biofísica Básica.mp4", u: "https://drive.google.com/file/d/1-n7AP6KSFFcF1XwcNFqwtyBbWgN3ulB0/view?usp=sharing" },
+                    { t: "Aula 02 - Biofísica da Audição.mp4", u: "https://drive.google.com/file/d/1H4EjmPvNAfN6HKHtywuLb3dNQ4Wsgq2W/view?usp=sharing" },
+                    { t: "Aula 03 - Termodinâmica e Medicina.mp4", u: "https://drive.google.com/file/d/1G4eUs5KP3mLEfcCjMv4GrcVg1ajl1Svn/view?usp=sharing" },
+                    { t: "Aula 04 - Mecânica dos Fluidos e Gases.mp4", u: "https://drive.google.com/file/d/176_2Qe9gO2WzzTknH1-xr8nF0eM9xvat/view?usp=sharing" },
+                    { t: "Aula 05 - Auto Regulação da Circulação Cerebral.mp4", u: "https://drive.google.com/file/d/1Q8h_6xTil1gkcmLJLXxKqUHdcxalgoVP/view?usp=sharing" },
+                    { t: "Aula 06 - Mecânica dos Gases.mp4", u: "https://drive.google.com/file/d/1x58eDPMRRRk7yFP-R53ZNALCMOXxfuKL/view?usp=sharing" },
+                    { t: "Aula 07 - Físicoquímica e Membranas Biológicas.mp4", u: "https://drive.google.com/file/d/1iw8oi-TJmLSE22GTOKJM7-A-1hq4Vv99/view?usp=sharing" },
+                    { t: "Aula 08 - Biogênese do Potencial de Ação.mp4", u: "https://drive.google.com/file/d/1UtZ-A9A_lz2jqvNRpGC2YviieDKDwPWr/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 05 - Genética",
+                description: "Genética Básica, Populações, Padrões de Doença e Epigenética.",
+                lessons: [
+                    { t: "Aula 01 - Genética Básica.mp4", u: "https://drive.google.com/file/d/1XSXro0ZTI2gSMKSqt1WqJTFFWWdMC4tL/view?usp=sharing" },
+                    { t: "Aula 02 - Variação Genética e Mutação.mp4", u: "https://drive.google.com/file/d/1ZSpzxgEnJDq-ZWp8WQEhBfdIqhGz1qZn/view?usp=sharing" },
+                    { t: "Aula 03 - Genética de Populações.mp4", u: "https://drive.google.com/file/d/1duoG0hV5MKxy9iQiPdIF5kYUlOAtrvFo/view?usp=sharing" },
+                    { t: "Aula 04 - Genética Humana: Padrões de Doença e Noções Básicas de Tratamento.mp4", u: "https://drive.google.com/file/d/1cETqLnL_LHr1Ahzy1fUzy86h7zIwNmI1/view?usp=sharing" },
+                    { t: "Aula 05 - Epigenética.mp4", u: "https://drive.google.com/file/d/1LZvqoWaRQcPRm65ZGGJkVb9oanCtq1HT/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 06 - Imunologia",
+                description: "Sistema Imune Inato, Adaptativo e Imunizações.",
+                lessons: [
+                    { t: "Aula 01 - Conceitos Iniciais e SI Inato: Parte I.mp4", u: "https://drive.google.com/file/d/10axsOFhFf6sjKSSG8UPbt7Qs5pXapUEZ/view?usp=sharing" },
+                    { t: "Aula 02 - Conceitos Iniciais e SI Inato: Parte II.mp4", u: "https://drive.google.com/file/d/1gNE8KsppzUpjwPfdzkUexGJEu7lNXvkm/view?usp=sharing" },
+                    { t: "Aula 03 - Conceitos Iniciais e SI Inato: Parte III.mp4", u: "https://drive.google.com/file/d/1A9ixkEGDJYlmZzOcy64w1e7Rfdq7sh1p/view?usp=sharing" },
+                    { t: "Aula 04 - Conceitos Iniciais e SI Inato: Parte IV.mp4", u: "https://drive.google.com/file/d/1ewXfK_FafhjX2ejM7N6M-_YW0jLuVvtf/view?usp=sharing" },
+                    { t: "Aula 05 - SI Adaptativo: Parte I.mp4", u: "https://drive.google.com/file/d/12-icw8rFV93qtpjF8JP007YX8Y7T_2NS/view?usp=sharing" },
+                    { t: "Aula 06 - SI Adaptativo: Parte II.mp4", u: "https://drive.google.com/file/d/1basWk4vZpREQfGeslhAexX61E2T-U3ZB/view?usp=sharing" },
+                    { t: "Aula 07 - SI Adaptativo: Parte III.mp4", u: "https://drive.google.com/file/d/1XsjbVvqwiiJs2uKC_5GAVPiFkLtF8cUo/view?usp=sharing" },
+                    { t: "Aula 08 - Imunizações: Parte I.mp4", u: "https://drive.google.com/file/d/1JRpUkUkXquwkNkWM103H-DvAsnRtneXI/view?usp=sharing" },
+                    { t: "Aula 09 - Imunizações: Parte II.mp4", u: "https://drive.google.com/file/d/1X-h9e3of3gOJXyFOturOZqxzfgRotS9d/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 07 - Patologia",
+                description: "Adaptação Celular, Inflamação, Neoplasias, Carcinogênese e Imunopatologia.",
+                lessons: [
+                    { t: "Aula 01 - Adaptação e Diferenciação Celular.mp4", u: "https://drive.google.com/file/d/1PC2saF7AaOzrurW1wFrjvjzsU1-vaosb/view?usp=sharing" },
+                    { t: "Aula 02 - Causas e Mecanismos de Lesão Celular.mp4", u: "https://drive.google.com/file/d/1S4g02sTWMnCJEYTAcJvJ3AP2XgyB3dWM/view?usp=sharing" },
+                    { t: "Aula 03 - Padrões de Morte Celular: Necrose e Apoptose.mp4", u: "https://drive.google.com/file/d/1gmD4g1w2cEYxFlFtVGA8puCYzahdzlhf/view?usp=sharing" },
+                    { t: "Aula 04 - Acúmulos Intracelulares e Envelhecimento Celular.mp4", u: "https://drive.google.com/file/d/13vb0JXf4S8auR2NhRQsh1j50jEcX2KGV/view?usp=sharing" },
+                    { t: "Aula 05 - Resposta Inflamatória e Seus Agentes Causadores.mp4", u: "https://drive.google.com/file/d/1x0Iu9mgFbRVLqL4fa5rJRs3v_aMYodv4/view?usp=sharing" },
+                    { t: "Aula 06 - Diferenças entre Inflamação Aguda e Crônica.mp4", u: "https://drive.google.com/file/d/1a-o7MOXC4eHesk5CbY_rF5R3ls35xLi0/view?usp=sharing" },
+                    { t: "Aula 07 - Processos de Reparo e Cicatrização.mp4", u: "https://drive.google.com/file/d/1NeTZMlEAMkc5AU1yTJh441PNI7Dlmouu/view?usp=sharing" },
+                    { t: "Aula 08 - Edema e Efusões.mp4", u: "https://drive.google.com/file/d/1DBiEcsVw7KvnjYOvj4R4BF2mv1lse2pX/view?usp=sharing" },
+                    { t: "Aula 09 - Hemostasia.mp4", u: "https://drive.google.com/file/d/1NXLAxmoI2j2GG2ROUQ9qXTTMfVmZK4ar/view?usp=sharing" },
+                    { t: "Aula 10 - Distúrbios Hemorrágicos, Trombose, Embolia e Infarto.mp4", u: "https://drive.google.com/file/d/12vbCIBBgjaEy_AquQqLOwjP6k3WJbDn-/view?usp=sharing" },
+                    { t: "Aula 11 - Choque.mp4", u: "https://drive.google.com/file/d/1MfKfxg4GH8S17QEyioMMrYdCjOwd9zib/view?usp=sharing" },
+                    { t: "Aula 12 - Neoplasias Benignas e Malignas.mp4", u: "https://drive.google.com/file/d/1Aze7-QfmiS4dC3-Xn0qmWoH2XHsf0CwO/view?usp=sharing" },
+                    { t: "Aula 13 - Carcinogênese e Fatores de Risco.mp4", u: "https://drive.google.com/file/d/11H_a4NRXFVqXf4zTOqiAUEaO8gLTmpkD/view?usp=sharing" },
+                    { t: "Aula 14 - Processo de Invasão e Metástase.mp4", u: "https://drive.google.com/file/d/1m4wjMYfCyHyeYNJA-LVAFw7l0WDeaEiy/view?usp=sharing" },
+                    { t: "Aula 15 - Genética e Imunopatologia: Parte I.mp4", u: "https://drive.google.com/file/d/1HiGUJMQrxIf9CvyeiMO3Gm7VAIyHcovQ/view?usp=sharing" },
+                    { t: "Aula 16 - Genética e Imunopatologia: Parte II.mp4", u: "https://drive.google.com/file/d/1iedvwWlsGh_3gwP72f11s7eqpj3IUhvc/view?usp=sharing" },
+                    { t: "Aula 17 - Genética e Imunopatologia: Parte III.mp4", u: "https://drive.google.com/file/d/1WdRx3koqXXDksfQHzUEpUXvrT7AACNLD/view?usp=sharing" },
+                    { t: "Aula 18 - Genética e Imunopatologia: Parte IV.mp4", u: "https://drive.google.com/file/d/1pfNl1Qi6RtiyOyTgCCqSN6WC9hBMZMd9/view?usp=sharing" },
+                    { t: "Aula 19 - Genética e Imunopatologia: Parte V.mp4", u: "https://drive.google.com/file/d/1HlIrP9tiNJshPHb0Zah9ZiJM25-fDBK5/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 08 - Embriologia",
+                description: "Desenvolvimento desde a Fertilização até a Formação de Órgãos e Sistemas.",
+                lessons: [
+                    { t: "Aula 01 - Fertilização e Formação do Zigoto.mp4", u: "https://drive.google.com/file/d/1HjA8YyHca29uaQu-YH0Uxlt1bAgGWIQY/view?usp=sharing" },
+                    { t: "Aula 02 - Gastrulação, Neurulação e Formação do Tubo Neural.mp4", u: "https://drive.google.com/file/d/1IeuvP23rvW3oFR9mnGTHkGu4AbVJS--F/view?usp=sharing" },
+                    { t: "Aula 03 - Desenvolvimento dos Órgãos e Sistemas.mp4", u: "https://drive.google.com/file/d/1yxjGz4v9L0jQiNN18ZjIJT9LzD1A5zBD/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 09 - Farmacologia",
+                description: "Introdução à Farmacologia, Farmacocinética e Efeitos dos Fármacos.",
+                lessons: [
+                    { t: "Aula 01 - Introdução à Farmacologia.mp4", u: "https://drive.google.com/file/d/1wCGtxOaZSMnSoKUcNTj_JZD0btIuVeAB/view?usp=sharing" },
+                    { t: "Aula 02 - Farmacocinética: Parte I.mp4", u: "https://drive.google.com/file/d/1_8JSETk_NWse1n7i7n_sxsL8sZRp2HLN/view?usp=sharing" },
+                    { t: "Aula 03 - Farmacocinética: Parte II.mp4", u: "https://drive.google.com/file/d/1hdmwHLLVvGqXdhDQmpKazQzrDGirGvb9/view?usp=sharing" },
+                    { t: "Aula 04 - Farmacocinética: Parte III.mp4", u: "https://drive.google.com/file/d/1q9CTkHFNDL98NLxpiFswYlhU05D7vFhM/view?usp=sharing" },
+                    { t: "Aula 05 - Afinal de Contas, Como Funciona a Magia dos Fármacos?.mp4", u: "https://drive.google.com/file/d/1vMrSYUHujB52NB31TdSFF6mmPQ7K-6sQ/view?usp=sharing" },
+                    { t: "Aula 06 - Efeitos Nocivos dos Fármacos.mp4", u: "https://drive.google.com/file/d/1zJI5fgKgCoGftxaUW0YFQe-HPYl2WugT/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 10 - Histologia",
+                description: "Estudo detalhado dos Tecidos Epiteliais, Conjuntivo, Muscular e Nervoso.",
+                lessons: [
+                    { t: "Aula 01 - Tecidos Epiteliais: Parte I.mp4", u: "https://drive.google.com/file/d/1EDMXVXEtYKPZXRy6b1C6cI8b2L3EoOh8/view?usp=sharing" },
+                    { t: "Aula 02 - Tecidos Epiteliais: Parte II.mp4", u: "https://drive.google.com/file/d/14rnEdn9Ohyn1b_pE5PRyXCKgeOUvoPyo/view?usp=sharing" },
+                    { t: "Aula 03 - Tecidos Epiteliais: Parte III.mp4", u: "https://drive.google.com/file/d/1QLj_zycNRPZendbmdSq_nTmP_i_DbSx4/view?usp=sharing" },
+                    { t: "Aula 04 - Tecidos Epiteliais: Parte IV.mp4", u: "https://drive.google.com/file/d/1qCLeXKJquYMT8-COmVpvtKlAHTQUn0fV/view?usp=sharing" },
+                    { t: "Aula 05 - Tecidos Epiteliais: Parte V.mp4", u: "https://drive.google.com/file/d/1TSpxtmBus3NCSEP57-ocX6QyAAACT1Um/view?usp=sharing" },
+                    { t: "Aula 06 - Tecido Conjuntivo: Parte I.mp4", u: "https://drive.google.com/file/d/1so3S-8nSCkubAmqtIRb9EooVtJCrXO21/view?usp=sharing" },
+                    { t: "Aula 07 - Tecido Conjuntivo: Parte II.mp4", u: "https://drive.google.com/file/d/11s3sKgLBVnrxroinzGIZ8JDovv9NaIcg/view?usp=sharing" },
+                    { t: "Aula 08 - Tecido Conjuntivo: Parte III.mp4", u: "https://drive.google.com/file/d/1aMyGAoX6xlJq2T7XFhhM3U_ynYh8HlBm/view?usp=sharing" },
+                    { t: "Aula 09 - Tecido Conjuntivo: Parte IV.mp4", u: "https://drive.google.com/file/d/1yogpUwPfvmSJvpW54k20YGT2NlDVPQ-I/view?usp=sharing" },
+                    { t: "Aula 10 - Tecidos Musculares: Parte I.mp4", u: "https://drive.google.com/file/d/15rLTAnzpZzjr95ShFmKP18YDBZYWixAJ/view?usp=sharing" },
+                    { t: "Aula 11 - Tecidos Musculares: Parte II.mp4", u: "https://drive.google.com/file/d/117gMGobwRN1uQNqGKhwRnW_-iWgJLLZk/view?usp=sharing" },
+                    { t: "Aula 12 - Tecidos Musculares: Parte III.mp4", u: "https://drive.google.com/file/d/1O7GyMO6UVLkMDvnRQzKEFxlYOrpjJEQv/view?usp=sharing" },
+                    { t: "Aula 13 - Tecido Nervoso: Parte I.mp4", u: "https://drive.google.com/file/d/1eOfh9EKcLtO8k6LgyFI9ASoDKe3zcjyw/view?usp=sharing" },
+                    { t: "Aula 14 - Tecido Nervoso: Parte II.mp4", u: "https://drive.google.com/file/d/1DXUNHQs2vzpbGNvZeFPx5hPGgmY12QLw/view?usp=sharing" },
+                    { t: "Aula 15 - Tecido Nervoso: Parte III.mp4", u: "https://drive.google.com/file/d/1AA0VHQMbHCDB_AkPHQ3akZnahlduNraT/view?usp=sharing" },
+                    { t: "Aula 16 - Tecido Nervoso: Parte IV.mp4", u: "https://drive.google.com/file/d/1R3ZHsVN9wHOEmjY7axIhm5LfM3raBdKm/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 11 - Microbiologia",
+                description: "Introdução à Microbiologia, Bacteriologia e Virologia.",
+                lessons: [
+                    { t: "Aula 01 - Introdução à Microbiologia: Parte I.mp4", u: "https://drive.google.com/file/d/1ishUwHcRg6kzMYZ30zjsBDxr27KHmI9z/view?usp=sharing" },
+                    { t: "Aula 02 - Introdução à Microbiologia: Parte II.mp4", u: "https://drive.google.com/file/d/1hBLV-_C0u0bYrUyUh37sDixxtnNVg6-y/view?usp=sharing" },
+                    { t: "Aula 03 - Introdução à Microbiologia: Parte III.mp4", u: "https://drive.google.com/file/d/1CWGMKFNqPhCas4czyHS5HEsim-EsPzvu/view?usp=sharing" },
+                    { t: "Aula 04 - Bacteriologia: Parte I.mp4", u: "https://drive.google.com/file/d/1ii6P44lP7RcdV5fdo4mlUE3u335iRNCa/view?usp=sharing" },
+                    { t: "Aula 05 - Bacteriologia: Parte II.mp4", u: "https://drive.google.com/file/d/1LiYgFKF1klZ8-ymlzFc1mjK0bL0j5Xt3/view?usp=sharing" },
+                    { t: "Aula 06 - Bacteriologia: Parte III.mp4", u: "https://drive.google.com/file/d/1r3yudf4qpozv87W6NIgcoQKLn9_1EYDS/view?usp=sharing" },
+                    { t: "Aula 07 - Virologia: Parte I.mp4", u: "https://drive.google.com/file/d/1Hq8BKHtAF5G6LvOdrSwYzwWicqPac3iD/view?usp=sharing" },
+                    { t: "Aula 08 - Virologia: Parte II.mp4", u: "https://drive.google.com/file/d/1gEC1dRyQJto9sd-So6QK903F1x_Ar3MM/view?usp=sharing" },
+                    { t: "Aula 09 - Virologia: Parte III.mp4", u: "https://drive.google.com/file/d/1_theS9F6UMi3Z5MfzZ2yhEx1jiOx55sG/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 12 - Parasitologia",
+                description: "Estudo de Ectoparasitoses, Protozooses e Helmintíases.",
+                lessons: [
+                    { t: "Aula 01 - Introdução à Parasitologia.mp4", u: "https://drive.google.com/file/d/1Pjh0nuRyT8DkUZkD_nLY8Hzho1E3go5J/view?usp=sharing" },
+                    { t: "Aula 02 - Ectoparasitoses e Artrópodes.mp4", u: "https://drive.google.com/file/d/1I1cszL0TM0JNHE5w8hFThfF1KaiSPPuH/view?usp=sharing" },
+                    { t: "Aula 03 - Protozooses: Parte I.mp4", u: "https://drive.google.com/file/d/14ez4fQdvYhD4WSMcRXfTo_U7EfLAp8RE/view?usp=sharing" },
+                    { t: "Aula 04 - Protozooses: Parte II.mp4", u: "https://drive.google.com/file/d/1Qi-SHqoOifN_ZWkylhbcwo5GR_Tdi_Qd/view?usp=sharing" },
+                    { t: "Aula 05 - Protozooses: Parte III.mp4", u: "https://drive.google.com/file/d/10Pcgin2lMdNWs4s7C0fXbMOeRAWbn8n7/view?usp=sharing" },
+                    { t: "Aula 06 - Protozooses: Parte IV.mp4", u: "https://drive.google.com/file/d/1x1jP-NFSG5ySI5zn-9dd-zlTNimLFOUB/view?usp=sharing" },
+                    { t: "Aula 07 - Protozooses: Parte V.mp4", u: "https://drive.google.com/file/d/12k7JW82bKsYwZkYNHZeg-2vHW5PZonfG/view?usp=sharing" },
+                    { t: "Aula 08 - Helmintíases: Parte I.mp4", u: "https://drive.google.com/file/d/1nG7sFNrsjG8WP452HOvthwLAiJOKFZm3/view?usp=sharing" },
+                    { t: "Aula 09 - Helmintíases: Parte II.mp4", u: "https://drive.google.com/file/d/1eyS9s3PukP658wskCu72fVzWYEIz9a5P/view?usp=sharing" },
+                    { t: "Aula 10 - Helmintíases: Parte III.mp4", u: "https://drive.google.com/file/d/1lWzbv2flQ7MHgWLfRp4yzLqg_fNea5sg/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 13 - Metodologia Científica",
+                description: "Desenhos de Estudo, Viéses em Pesquisa e Ensaios Clínicos.",
+                lessons: [
+                    { t: "Aula 01 - Metodologia Ciêntifica.mp4", u: "https://drive.google.com/file/d/1202qKTu5NoEAv4TG102A5tsb14e-jFFA/view?usp=sharing" },
+                    { t: "Aula 02 - Desenhos de Estudo: Parte I.mp4", u: "https://drive.google.com/file/d/1PvBexGKcApkqvjF7SCHEmDOFUQNPsmhR/view?usp=sharing" },
+                    { t: "Aula 03 - Desenhos de Estudo: Parte II.mp4", u: "https://drive.google.com/file/d/17W71y1ivOFu7p8j7Xuc2hK3t_FKg-_uv/view?usp=sharing" },
+                    { t: "Aula 04 - Critérios de Bradford Hill.mp4", u: "https://drive.google.com/file/d/1sg8GPud3Nz7TGGlHRBgcoZU75QUnxWO-/view?usp=sharing" },
+                    { t: "Aula 05 - Ensaios Clínicos.mp4", u: "https://drive.google.com/file/d/116XRo42ay-SBN4XDnYS-cUj8yMOdJ0gP/view?usp=sharing" },
+                    { t: "Aula 06 - Viéses em Pesquisa.mp4", u: "https://drive.google.com/file/d/1hg3GfsJC8ltE368fge4jtGEs8fUh6KtR/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 14 - Bioestatística",
+                description: "Estatística Descritiva, Inferencial e Medidas de Associação.",
+                lessons: [
+                    { t: "Aula 01 - Introdução à Bioestatística.mp4", u: "https://drive.google.com/file/d/177HIzXx5lwShFPkxbiVmAKk1qhF2i8cn/view?usp=sharing" },
+                    { t: "Aula 02 - Estatística Descritiva.mp4", u: "https://drive.google.com/file/d/1UEJQRyDUqsJSsRxtvTcW-6HqVH6KTC8B/view?usp=sharing" },
+                    { t: "Aula 03 - Visualização de Dados.mp4", u: "https://drive.google.com/file/d/1Cz2_j9rx2p3cMVhSpA3oGfeU6iHpp2D8/view?usp=sharing" },
+                    { t: "Aula 04 - Estatística Inferencial: Parte I.mp4", u: "https://drive.google.com/file/d/18ypi7EZSN9tY1ECR--l6L0vRwVAZdpq3/view?usp=sharing" },
+                    { t: "Aula 05 - Estatística Inferencial: Parte II.mp4", u: "https://drive.google.com/file/d/16Eqi9LNlQfe5yPLB4CFdFN8LhHJiflWJ/view?usp=sharing" },
+                    { t: "Aula 06 - Medidas de Associação e Intervalos de Confiança.mp4", u: "https://drive.google.com/file/d/1MOW7jE14lygWj8cAWWC6C7mmbW2xrrW3/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 15 - Epidemiologia",
+                description: "Processos Epidêmicos, Doenças Infecciosas e Medidas de Saúde Coletiva.",
+                lessons: [
+                    { t: "Aula 01 - Processos Epidêmicos: Parte I.mp4", u: "https://drive.google.com/file/d/16ShJXnlXnc6xi8uXp4qEeRMhVX2XIA2W/view?usp=sharing" },
+                    { t: "Aula 02 - Processos Epidêmicos: Parte II.mp4", u: "https://drive.google.com/file/d/1O4LyRw72y6rbh-kfQvQMSg6tO_gdi_IF/view?usp=sharing" },
+                    { t: "Aula 03 - Aspectos Epidêmicos das Doenças Infecciosas.mp4", u: "https://drive.google.com/file/d/1_ouYuN3E1m3xn1fFp2Au2FWOPwMayX1y/view?usp=sharing" },
+                    { t: "Aula 04 - Medidas de Saúde Coletiva: Parte I.mp4", u: "https://drive.google.com/file/d/1ioEjeXjES5SGZHAxyiBF1Blp8ek5Z_zk/view?usp=sharing" },
+                    { t: "Aula 05 - Medidas de Saúde Coletiva: Parte II.mp4", u: "https://drive.google.com/file/d/1F8wgWKcO_CSWYB6SA_gEtzpzKgvmAHs6/view?usp=sharing" },
+                    { t: "Aula 06 - Medidas de Saúde Coletiva: Parte III.mp4", u: "https://drive.google.com/file/d/1JWwSI5rEdT_FfLEbri1PQQ_QQbc6pwne/view?usp=sharing" },
+                    { t: "Aula 07 - Medidas de Saúde Coletiva: Parte IV.mp4", u: "https://drive.google.com/file/d/1NkZlsImpe-gJPuDu9L2HSTPJRBrdoH6h/view?usp=sharing" },
+                    { t: "Aula 08 - Processo Saúde-Doença: Parte I.mp4", u: "https://drive.google.com/file/d/1IPsr4JKHYH_x4clY7Vvx-vNzOeukyKGx/view?usp=sharing" },
+                    { t: "Aula 09 - Processo Saúde-Doença: Parte II.mp4", u: "https://drive.google.com/file/d/14qlEhDv2d8aS_6K2UgNUSS3jT7g4yVIh/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 16 - Propedêutica",
+                description: "Introdução à Semiologia, Exame Físico Geral e Específico.",
+                lessons: [
+                    { t: "Aula 01 - Introdução à Semiologia.mp4", u: "https://drive.google.com/file/d/1qdUxrDacCB8cTKALM8KJ13vsNk6cbg2V/view?usp=sharing" },
+                    { t: "Aula 02 - Introdução ao Exame Físico.mp4", u: "https://drive.google.com/file/d/15eqEBsMDFmdLT5OLBTLhPhzGag0VNrJX/view?usp=sharing" },
+                    { t: "Aula 03 - Sinais Vitais.mp4", u: "https://drive.google.com/file/d/1INBFsK4dsGlbCpWZ0Kc_jhPu7I0dKzk7/view?usp=sharing" },
+                    { t: "Aula 04 - Exame Geral.mp4", u: "https://drive.google.com/file/d/1DMypPQ_MrCT1CJhCgUxC4Hn40AGh7yz7/view?usp=sharing" },
+                    { t: "Aula 05 - Exame Cérvical.mp4", u: "https://drive.google.com/file/d/1JhMXDYOrvvWMW5hpCtsV9wMhbDTR8VAv/view?usp=sharing" },
+                    { t: "Aula 06 - O Estetoscópio.mp4", u: "https://drive.google.com/file/d/1c07wzx2N9iHapjt3q75snDM2XIHE4FyR/view?usp=sharing" },
+                    { t: "Aula 07 - Exame Cardiovascular.mp4", u: "https://drive.google.com/file/d/1izaBQJ3CmFEerCpoF_2r-ZgylagB-FMW/view?usp=sharing" },
+                    { t: "Aula 08 - Pulsos Arteriais: Parte I.mp4", u: "https://drive.google.com/file/d/1J0UvlQhZfaW6zfm5a-mFb5XT3_gCMsTZ/view?usp=sharing" },
+                    { t: "Aula 09 - Pulsos Arteriais: Parte II.mp4", u: "https://drive.google.com/file/d/1hgBBm2EMQBwwZqz3_TDJ9WaYGB9nZtV6/view?usp=sharing" },
+                    { t: "Aula 10 - Pulso Venoso.mp4", u: "https://drive.google.com/file/d/1aUTpYg_rJXMdocgiuamiBAG916RlnQqB/view?usp=sharing" },
+                    { t: "Aula 11 - Exame Pulmonar.mp4", u: "https://drive.google.com/file/d/1D3f4qrqZDbMPA-kNcwpvlagef-n5oWZm/view?usp=sharing" },
+                    { t: "Aula 12 - Exame Abdominal.mp4", u: "https://drive.google.com/file/d/18fVwGc6yNK36gD3_SwKjYuq7UO1rLalt/view?usp=sharing" },
+                    { t: "Aula 13 - Introdução ao Exame Neurológico.mp4", u: "https://drive.google.com/file/d/11_dmMHCfEbEQ7EGubsxArGBpnZxNc9Xo/view?usp=sharing" },
+                    { t: "Aula 14 - Nível de Consciência.mp4", u: "https://drive.google.com/file/d/1XWu0QGDOVH6OTRSRjJxffEw9e6VEdRWr/view?usp=sharing" },
+                    { t: "Aula 15 - Exame da Cognição.mp4", u: "https://drive.google.com/file/d/1zhkJYzWAFK0XGuwARLI6EfiC-CYS3REW/view?usp=sharing" },
+                    { t: "Aula 16 - Exame Motor.mp4", u: "https://drive.google.com/file/d/1WKqmJP0NZc3ije7shoe-MjxhX-l1mPQ4/view?usp=sharing" },
+                    { t: "Aula 17 - Exame da Sensibilidade.mp4", u: "https://drive.google.com/file/d/1JH2cxB0coSw9kLs7CHXl-JnwMx0D1KB5/view?usp=sharing" },
+                    { t: "Aula 18 - Exame da Coordenação.mp4", u: "https://drive.google.com/file/d/16yy45-vzNeeuUHHMOQCA35YpruZsUNXj/view?usp=sharing" },
+                    { t: "Aula 19 - Nervos Cranianos.mp4", u: "https://drive.google.com/file/d/12y0s0EqYHurWGoZ6i7X1JrxvrXD1OkG1/view?usp=sharing" },
+                    { t: "Aula 20 - Escala de Coma de Glasgow.mp4", u: "https://drive.google.com/file/d/1ACe3zrKK39us6dEC0NN8zvqgZK-I8iFz/view?usp=sharing" },
+                    { t: "Aula 21 - Exame Físico Musculoesquelético.mp4", u: "https://drive.google.com/file/d/13bI2lEcWX-nj1i7pYCz9YAUITy4rdgRE/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 17 - Sistema Cardiovascular",
+                description: "Anatomia, Fisiologia e Embriologia Cardiovascular.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia do Sistema Cardiovascular.mp4", u: "https://drive.google.com/file/d/1b2_QOzmXREVWxekFARbcT0hCe0EaPaeO/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiologia do Sistema Cardiovascular.mp4", u: "https://drive.google.com/file/d/13GhFgOcsaTpd0w90ol8kQl448ix4SMri/view?usp=sharing" },
+                    { t: "Aula 03 - Embriologia do Sistema Cardiovascular.mp4", u: "https://drive.google.com/file/d/1dXy2ZgSxW7KgokXz_9Z2YGn-b2eYtu5r/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 18 - Sistema Respiratório",
+                description: "Anatomia, Fisiologia e Embriologia do Sistema Pulmonar.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia do Sistema Pulmonar.mp4", u: "https://drive.google.com/file/d/1U0xmW_fs0m-0uWlVG5dXfmIw-54meVOK/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiologia do Sistema Pulmonar.mp4", u: "https://drive.google.com/file/d/1u4_ZthFbz5F1uh4W_YIhiMzamKBgCO_-/view?usp=sharing" },
+                    { t: "Aula 03 - Embriologia do Sistema Pulmonar.mp4", u: "https://drive.google.com/file/d/1uhYSsTqRwWGtSaBLyEnE_dmwzB2wmM_2/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 19 - Sistema Digestório",
+                description: "Embriologia, Histologia, Fisiologia e Anatomia do Sistema Digestivo.",
+                lessons: [
+                    { t: "Aula 01 - Introdução ao Sistema Digestivo.mp4", u: "https://drive.google.com/file/d/1QfzYRPT02yG4rWYE56uJXSh6k_63zOIe/view?usp=sharing" },
+                    { t: "Aula 02 - Embriologia: Aparelho Faríngeo.mp4", u: "https://drive.google.com/file/d/1LUiaFtVwQ4jpHt955xPm-xAY-h5nUVOn/view?usp=sharing" },
+                    { t: "Aula 03 - Embriologia: Intestino Anterior.mp4", u: "https://drive.google.com/file/d/1kQLzDGfWmlwyxJ0mF46EdPONXBrgE7Mn/view?usp=sharing" },
+                    { t: "Aula 04 - Embriologia: Intestino Médio e Posterior.mp4", u: "https://drive.google.com/file/d/1wGMk9CL-TPJEOKVzMaEd1xccKGYxILH4/view?usp=sharing" },
+                    { t: "Aula 05 - Histologia do Trato Gastrointestinal I.mp4", u: "https://drive.google.com/file/d/1a94ce6HhRaacbX1LLCV49YiUVXOk5Gyn/view?usp=sharing" },
+                    { t: "Aula 06 - Histologia do Trato Gastrointestinal II.mp4", u: "https://drive.google.com/file/d/1VwmA09jWY46rHySPJhc485cw9w3VkhhN/view?usp=sharing" },
+                    { t: "Aula 08 - Fisiologia: Motilidade.mp4", u: "https://drive.google.com/file/d/17F4rtt5IpemoxMl_KJJrkSLobh9LLeNb/view?usp=sharing" },
+                    { t: "Aula 09 - Fisiologia: Digestão.mp4", u: "https://drive.google.com/file/d/165P7qlTLW5qw6RLbKTOmUx0yVxr1zfQt/view?usp=sharing" },
+                    { t: "Aula 10 - Anatomia: Trato Digestório Superior.mp4", u: "https://drive.google.com/file/d/1L_B2TMJhp2XPjFrt2DVa5rKgy2wqZO2F/view?usp=sharing" },
+                    { t: "Aula 11 - Anatomia: Trato Digestório Inferior.mp4", u: "https://drive.google.com/file/d/1_VLgLi_05_m8HPO5k3-606xRj8ud_9Y2/view?usp=sharing" },
+                    { t: "Aula 12 - Anatomia: Órgãos Anexos.mp4", u: "https://drive.google.com/file/d/1RVLMbLQHAhD9NHfpgz5mDbLRe9J9DX0-/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 20 - Sistema Endócrino",
+                description: "Estudo das Glândulas Endócrinas, Neuroendocrinologia e Eixos Metabólicos.",
+                lessons: [
+                    { t: "Aula 01 - Adrenal.mp4", u: "https://drive.google.com/file/d/1ZQN-dWZPfWx2KCkqyON4ohXGfpIF6I1y/view?usp=sharing" },
+                    { t: "Aula 02 - Pâncreas.mp4", u: "https://drive.google.com/file/d/1WkldhSmDSrcUeICLc28RIhO235VzmTcK/view?usp=sharing" },
+                    { t: "Aula 03 - Paratireoide.mp4", u: "https://drive.google.com/file/d/1nmbc_Rb-mztfC3htU-GwDhJ9BWEBRXZy/view?usp=sharing" },
+                    { t: "Aula 04 - Neuroendrocrinologia: Parte I.mp4", u: "https://drive.google.com/file/d/1B6pq6MoQUl1OL0kBllSr1o_T4HYOr50-/view?usp=sharing" },
+                    { t: "Aula 05 - Neuroendrocrinologia: Parte II.mp4", u: "https://drive.google.com/file/d/159gwtZ3RfZJXl4wILwjjxb7f2UWGfckH/view?usp=sharing" },
+                    { t: "Aula 06 - Tireoide.mp4", u: "https://drive.google.com/file/d/1W-PM19v-l-nbPY0_mRvsT0i7r6q13p3z/view?usp=sharing" },
+                    { t: "Aula 07 - Resposta Metabólica ao Estresse.mp4", u: "https://drive.google.com/file/d/1Jgxrj1Xe43nFJCCsVHwN_fL06favnBRw/view?usp=sharing" },
+                    { t: "Aula 08 - Gônadas e Diferenciação Sexual.mp4", u: "https://drive.google.com/file/d/1xVmkGqY4QJF2j6e-5Wonh9CcaZt6Bzvh/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 21 - Sistema Locomotor",
+                description: "Anatomia do Sistema Musculoesquelético.",
+                lessons: [
+                    { t: "Aula 01 - Introdução ao Sistema Musculoesquelético.mp4", u: "https://drive.google.com/file/d/1pJ-JhQw_FZWCVJ6zK6jFnxpY7hzmyaWD/view?usp=sharing" },
+                    { t: "Aula 02 - Anatomia da Coluna.mp4", u: "https://drive.google.com/file/d/1n2u_MfP2V_spfiApA2QT0eSDn5PVxH5T/view?usp=sharing" },
+                    { t: "Aula 03 - Anatomia do Ombro e do Braço.mp4", u: "https://drive.google.com/file/d/1VYcS_L7t4whyZHuu00UCQrZMEomeumLG/view?usp=sharing" },
+                    { t: "Aula 04 - Anatomia da Coxa.mp4", u: "https://drive.google.com/file/d/1-w7OK9NzxtRzR9wNfMUjmfbZQMFjVcou/view?usp=sharing" },
+                    { t: "Aula 05 - Anatomia do Cotovelo e Antebraço: Parte I.mp4", u: "https://drive.google.com/file/d/1mhP-cxXukwwulkdud2DrVXwBBY927Tyh/view?usp=sharing" },
+                    { t: "Aula 06 - Anatomia do Cotovelo e Antebraço: Parte II.mp4", u: "https://drive.google.com/file/d/1z_L2J2E5fLQ3US3OIaGWmUcjwffZlsgR/view?usp=sharing" },
+                    { t: "Aula 07 - Anatomia do Punho e da Mão: Parte I.mp4", u: "https://drive.google.com/file/d/1go8M3qNoMjqOWgNkvviepQklNC68ic2j/view?usp=sharing" },
+                    { t: "Aula 08 - Anatomia do Punho e da Mão: Parte II.mp4", u: "https://drive.google.com/file/d/1EMJkVxYHYbsK9tB0eRusctQzYzPmBmRi/view?usp=sharing" },
+                    { t: "Aula 09 - Anatomia da Bacia.mp4", u: "https://drive.google.com/file/d/1vh3ibyBX9pIKir53try8UHN8qCy7vJ5x/view?usp=sharing" },
+                    { t: "Aula 10 - Anatomia do Joelho e da Perna: Parte I.mp4", u: "https://drive.google.com/file/d/1gHEzmMca-9dZgb8peo-qbDfQ-A2lrt2b/view?usp=sharing" },
+                    { t: "Aula 11 - Anatomia do Joelho e da Perna: Parte II.mp4", u: "https://drive.google.com/file/d/189R5thZk7-qG4zUTl-Eck3mYplRATnWS/view?usp=sharing" },
+                    { t: "Aula 12 - Anatomia do Pé e Tornozelo.mp4", u: "https://drive.google.com/file/d/1AEuACeVnbFuZZPIUjPS4ErADPR_ljm2B/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 22 - Sistema Nervoso",
+                description: "Anatomia Básica e Fisiologia das Estruturas do Sistema Nervoso.",
+                lessons: [
+                    { t: "Aula 01 - Embriologia do Sistema Nervoso.mp4", u: "https://drive.google.com/file/d/10sRLSShO9-mGXQKfleCCjXNrQ1gRnY3C/view?usp=sharing" },
+                    { t: "Aula 02 - Anatomia Microscópica Básica do Sistema Nervoso.mp4", u: "https://drive.google.com/file/d/1xkmODGhsezuxwrrX54lBZLdDkZPXsmXm/view?usp=sharing" },
+                    { t: "Aula 03 - Anatomia Macroscópica Básica do Sistema Nervoso: Parte I.mp4", u: "https://drive.google.com/file/d/1wGyMQCuJqKEIVN0SHylp9uS976Uq2k1u/view?usp=sharing" },
+                    { t: "Aula 04 - Anatomia Macroscópica Básica do Sistema Nervoso: Parte II.mp4", u: "https://drive.google.com/file/d/14qVwM6b4ys25jzAtMgDC2yjSj0tKqhS_/view?usp=sharing" },
+                    { t: "Aula 05 - Medula Espinhal e Nervos Periféricos.mp4", u: "https://drive.google.com/file/d/1K4KcTWEBc5h1M32N_3lSf0WlYcnzEglv/view?usp=sharing" },
+                    { t: "Aula 06 - Sistema Nervoso Autônomo.mp4", u: "https://drive.google.com/file/d/1Lk0lr5vegTaGNAFgkNJodR6axAMB_dJL/view?usp=sharing" },
+                    { t: "Aula 07 - Nervos Cranianos.mp4", u: "https://drive.google.com/file/d/1gjJZnp3tLCzeRv36gs9kvQsJyG-nU4Gn/view?usp=sharing" },
+                    { t: "Aula 08 - Sistema Liquórico, Vascularização e Barreiras Encefálicas.mp4", u: "https://drive.google.com/file/d/1uiVDJ0i8oRPAMBNdAHGaS0irJA5Brk29/view?usp=sharing" },
+                    { t: "Aula 09 - As Grandes Vias Aferentes e Eferentes.mp4", u: "https://drive.google.com/file/d/1SrvkQuxOOXNO2eAcZQp6rrHsTOBzW36i/view?usp=sharing" },
+                    { t: "Aula 10 - Dinâmica da Pressão Intracraniana.mp4", u: "https://drive.google.com/file/d/1-qMlQJEoqUupgJlw7cOau85yG94vSP-G/view?usp=sharing" },
+                    { t: "Aula 11 - Físicoquímica e Membranas Biológicas.mp4", u: "https://drive.google.com/file/d/1KHkT2Rz71MFUedP0OhYXTud68gn3VBpf/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 23 - Sistema Hemato-Imunológico",
+                description: "Hematopoiese, Sistema Imune, Coagulação e Sistema Circulatório.",
+                lessons: [
+                    { t: "Aula 01 - Medula Óssea.mp4", u: "https://drive.google.com/file/d/1-Rg006_lns6FGOpeOf0I7I_sjAcH8SHL/view?usp=sharing" },
+                    { t: "Aula 03 - Hematopoiese.mp4", u: "https://drive.google.com/file/d/1JaZuCMJkajRkGkrsl60WhpIGgBA0QQ9e/view?usp=sharing" },
+                    { t: "Aula 04 - Sistema Imune.mp4", u: "https://drive.google.com/file/d/1CBGMdFmXMURyIe6av9Ke8Cyp4n9PNqXp/view?usp=sharing" },
+                    { t: "Aula 05 - Coagulação e Hemostasia.mp4", u: "https://drive.google.com/file/d/1reZW2hSwbTcrRq9uBVO7JJr0gBQoMAmh/view?usp=sharing" },
+                    { t: "Aula 06 - Sistema Circulatório: Embrião e Feto - Parte I.mp4", u: "https://drive.google.com/file/d/1itSCxKG0JoWjxbldcvf20QToGi-eNL-r/view?usp=sharing" },
+                    { t: "Aula 07 - Sistema Circulatório: Embrião e Feto - Parte II.mp4", u: "https://drive.google.com/file/d/1JRg03owsxkaANNmwOk5SBusTAOzIykO2/view?usp=sharing" },
+                    { t: "Aula 08 - Baço.mp4", u: "https://drive.google.com/file/d/14L-L4OXMRGm95kVRmg9dKNNz_fwNAfla/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 24 - Sistemas Sensoriais",
+                description: "Anatomia e Fisiologia da Visão, Audição, Paladar e Olfato.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia do Olho.mp4", u: "https://drive.google.com/file/d/1sOJyGmD3WpdGMwHCDhwAubYZysi-R9On/view?usp=sharing" },
+                    { t: "Aula 02 - Sentidos Químicos (Paladar e Olfato).mp4", u: "https://drive.google.com/file/d/1v0l4nP1Vmy56PirBkmo_mR2n3Ae0CzJN/view?usp=sharing" },
+                    { t: "Aula 03 - Audição e Equilíbrio.mp4", u: "https://drive.google.com/file/d/1vaVBTggH-dxzJ2H4DSER-ej3bJYXri8k/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 25 - Sistema Tegumentar",
+                description: "Anatomia, Fisiologia e Cicatrização da Pele e Anexos.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia, Fisiologia e Histologia da Pele e Anexos.mp4", u: "https://drive.google.com/file/d/1_XWY97fAI1iGA-FSS5Bdx2ZmCRWKWhYy/view?usp=sharing" },
+                    { t: "Aula 02 - Cicatrização de Feridas.mp4", u: "https://drive.google.com/file/d/1OARqgrPVqfoYr__sw_aRS7TGfyrG-8Tx/view?usp=sharing" },
+                    { t: "Aula 03 - Embriologia do Sistema Tegumentar.mp4", u: "https://drive.google.com/file/d/1tGpHUqwnIAjkQY7d4-qwJoAuYeFG3e2b/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 26 - Sistema Urinário",
+                description: "Fisiologia Renal e Formação da Urina.",
+                lessons: [
+                    { t: "Aula 02 - Fisiologia Renal: A Formação da Urina - Parte I.mp4", u: "https://drive.google.com/file/d/1Ku0WtvWfOPyCiQSfe8l3_voW-ALYL_4y/view?usp=sharing" },
+                    { t: "Aula 03 - Fisiologia Renal: A Formação da Urina - Parte II.mp4", u: "https://drive.google.com/file/d/1MpSi5A11AmY5wk9-BAi09-KP-6ldALDj/view?usp=sharing" },
+                    { t: "Aula 04 - Histologia Renal.mp4", u: "https://drive.google.com/file/d/1BqJz8CIm4oVdw07nzeYwLceoK3vpE5Sw/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 27 - Sistema Reprodutor Masculino",
+                description: "Anatomia, Fisiologia e Embriologia do Sistema Reprodutor Masculino.",
+                lessons: [
+                    { t: "Aula 01 - Anatomia Reprodutora Masculina.mp4", u: "https://drive.google.com/file/d/1z6wHAbojA2sjxukN4acvtpe3AcN-RXA6/view?usp=sharing" },
+                    { t: "Aula 02 - Fisiologia Reprodutora Masculina.mp4", u: "https://drive.google.com/file/d/1EEqTvp_Qooq4R4J33tHPteXXs9Nq0FnU/view?usp=sharing" },
+                    { t: "Aula 03 - Embriologia Reprodutora Masculina.mp4", u: "https://drive.google.com/file/d/1sgINfU3m4T06jDfIhL66Yu8D31uz2651/view?usp=sharing" }
+                ],
+                assessment: []
+            },
+            {
+                title: "Módulo 28 - Sistema Reprodutor Feminino",
+                description: "Embriologia, Anatomia, Ciclo Menstrual e Lactação.",
+                lessons: [
+                    { t: "Aula 01 - Embriologia do Trato Genital Feminino.mp4", u: "https://drive.google.com/file/d/1XiHIk2iwYIjfjBI4bya6Dl5ITi4Q920L/view?usp=sharing" },
+                    { t: "Aula 02 - Anatomia do Trato Genital Feminino.mp4", u: "https://drive.google.com/file/d/1JFfTt3gMFPqzWtEcU80HPwSQRFL5O4fc/view?usp=sharing" },
+                    { t: "Aula 03 - Ciclo Menstrual.mp4", u: "https://drive.google.com/file/d/1WujCkXUcMelwJw8E-6vNp8jVjCEOCF-T/view?usp=sharing" },
+                    { t: "Aula 04 - Endocrinologia Reprodutiva.mp4", u: "https://drive.google.com/file/d/1tmXFTJRU7llPxzG5jnZ-6AqP0m3KiMsf/view?usp=sharing" },
+                    { t: "Aula 05 - Anatomia e Desenvolvimento das Mamas.mp4", u: "https://drive.google.com/file/d/1alnad3Suojsng_ZyETNbmABh3O6pRbUR/view?usp=sharing" },
+                    { t: "Aula 06 - Fisiologia da Lactação.mp4", u: "https://drive.google.com/file/d/1r3fMWIbKXUQS2q8z89Ok36_TKlZJXpm_/view?usp=sharing" }
+                ],
+                assessment: []
+            }
+        ];
+
+        // Estrutura gerada com base nas pastas reais dentro de materiais/ciclo-basico.
+        // Use underscore (_) nos nomes das pastas, pois é assim que elas estão salvas no seu relatório.
+        const materialWordMap = {
+            "acao": "ação",
+            "acidos": "ácidos",
+            "adaptativo": "adaptativo",
+            "adrenal": "adrenal",
+            "anatomia": "anatomia",
+            "anexos": "anexos",
+            "aparelho": "aparelho",
+            "artropodes": "artrópodes",
+            "associacao": "associação",
+            "audicao": "audição",
+            "basica": "básica",
+            "basico": "básico",
+            "bioestatistica": "bioestatística",
+            "biofisica": "biofísica",
+            "biogenese": "biogênese",
+            "biologia": "biologia",
+            "bioquimica": "bioquímica",
+            "braco": "braço",
+            "celular": "celular",
+            "celulas": "células",
+            "cervical": "cervical",
+            "ciclo": "ciclo",
+            "ciencia": "ciência",
+            "cientifica": "científica",
+            "cientifico": "científico",
+            "classificacao": "classificação",
+            "coagulacao": "coagulação",
+            "composicao": "composição",
+            "confianca": "confiança",
+            "conjuntivo": "conjuntivo",
+            "coracao": "coração",
+            "cranianos": "cranianos",
+            "diferenciacao": "diferenciação",
+            "digestivo": "digestivo",
+            "digestorio": "digestório",
+            "disturbios": "distúrbios",
+            "doenca": "doença",
+            "embolia": "embolia",
+            "embriao": "embrião",
+            "embriologia": "embriologia",
+            "endocrino": "endócrino",
+            "endrocrinologia": "endocrinologia",
+            "energetico": "energético",
+            "enzimatica": "enzimática",
+            "enzimologia": "enzimologia",
+            "epidemiologia": "epidemiologia",
+            "epiteliais": "epiteliais",
+            "equilibrio": "equilíbrio",
+            "estatistica": "estatística",
+            "farmacocinetica": "farmacocinética",
+            "farmacologia": "farmacologia",
+            "feminino": "feminino",
+            "fertilizacao": "fertilização",
+            "fisicoquimica": "físico-química",
+            "fisiologia": "fisiologia",
+            "formacao": "formação",
+            "funcao": "função",
+            "gastrulacao": "gastrulação",
+            "genetica": "genética",
+            "gonadas": "gônadas",
+            "hemato": "hemato",
+            "hematopoiese": "hematopoiese",
+            "hemorragicos": "hemorrágicos",
+            "hemostasia": "hemostasia",
+            "histologia": "histologia",
+            "imune": "imune",
+            "imunizacoes": "imunizações",
+            "imunologia": "imunologia",
+            "imunopatologia": "imunopatologia",
+            "inferencial": "inferencial",
+            "inflamacao": "inflamação",
+            "invasao": "invasão",
+            "lactacao": "lactação",
+            "lesao": "lesão",
+            "linfonodos": "linfonodos",
+            "lipidios": "lipídios",
+            "locomotor": "locomotor",
+            "masculino": "masculino",
+            "metabolica": "metabólica",
+            "metabolismo": "metabolismo",
+            "metodologia": "metodologia",
+            "microbiologia": "microbiologia",
+            "musculares": "musculares",
+            "musculoesqueletico": "musculoesquelético",
+            "musculos": "músculos",
+            "mutacao": "mutação",
+            "mutacoes": "mutações",
+            "nervoso": "nervoso",
+            "neuroendrocrinologia": "neuroendocrinologia",
+            "nocoes": "noções",
+            "nucleo": "núcleo",
+            "orgaos": "órgãos",
+            "ossea": "óssea",
+            "pancreas": "pâncreas",
+            "parasitologia": "parasitologia",
+            "paratireoide": "paratireoide",
+            "patologia": "patologia",
+            "pe": "pé",
+            "pele": "pele",
+            "populacoes": "populações",
+            "pos": "pós",
+            "potencial": "potencial",
+            "procariontes": "procariontes",
+            "proteica": "proteica",
+            "proteinas": "proteínas",
+            "pulmonar": "pulmonar",
+            "quimicos": "químicos",
+            "regulacao": "regulação",
+            "renal": "renal",
+            "replicacao": "replicação",
+            "reprodutor": "reprodutor",
+            "respiracao": "respiração",
+            "respiratorio": "respiratório",
+            "sensoriais": "sensoriais",
+            "sintese": "síntese",
+            "sistema": "sistema",
+            "sistemas": "sistemas",
+            "tegumentar": "tegumentar",
+            "tireoide": "tireoide",
+            "traducao": "tradução",
+            "transcricao": "transcrição",
+            "urinario": "urinário",
+            "variacao": "variação",
+            "vieses": "vieses",
+            "visao": "visão",
+            "visualizacao": "visualização",
+            "zigoto": "zigoto"
+        };
+
+        const materialSmallWords = new Set(["a", "as", "ao", "da", "das", "de", "do", "dos", "e", "em", "o", "os", "um", "uma"]);
+
+        function formatMaterialTitleFromSlug(slug) {
+            const rawTitle = slug
+                .replace(/^\d+-\d+-/, "")
+                .replace(/^resumo-/, "")
+                .replace(/^mapa-mental-/, "");
+
+            const words = rawTitle.split("-").map((word, index) => {
+                if (["i", "ii", "iii", "iv", "v", "vi"].includes(word)) return word.toUpperCase();
+                if (word === "si") return "SI";
+                const mapped = materialWordMap[word] || word;
+                if (index > 0 && materialSmallWords.has(mapped)) return mapped;
+                return mapped.charAt(0).toUpperCase() + mapped.slice(1);
+            });
+
+            return words.join(" ");
+        }
+
+        function getMaterialType(slug) {
+            if (slug.includes("-resumo-")) return "Resumo";
+            if (slug.includes("-mapa-mental-")) return "Mapa Mental";
+            if (slug.includes("slides")) return "Slides";
+            return "Aula";
+        }
+
+        function getMaterialTitle(slug) {
+            const type = getMaterialType(slug);
+            const title = formatMaterialTitleFromSlug(slug);
+
+            if (type === "Resumo") return `Resumo - ${title}`;
+            if (type === "Mapa Mental") return `Mapa Mental - ${title}`;
+            return title;
+        }
+
+        function makeMaterials(folder, slugs, collectionTitle = "Abrir todos os materiais") {
+            return [
+                ...slugs.map((slug) => ({
+                    title: getMaterialTitle(slug),
+                    type: getMaterialType(slug),
+                    url: `materiais/ciclo-basico/${folder}/${slug}/index.html`
+                })),
+                {
+                    title: collectionTitle,
+                    type: "Coleção",
+                    url: `materiais/ciclo-basico/${folder}/abrir_todos.html`
+                }
+            ];
+        }
+
+        const htmlMaterialsByModule = {
+            "Módulo 01 - Bioquímica": makeMaterials("bioquimica", [
+                "2-1-resumo-bioquimica",
+                "2-2-mapa-mental-bioquimica",
+                "2-3-vitaminas-e-sais-minerais",
+                "2-4-lipidios-componentes-quimicos-das-celulas",
+                "2-5-carboidratos-componentes-quimicos-das-celulas",
+                "2-6-proteinas-componentes-quimicos-das-celulas",
+                "2-7-acidos-nucleicos-componentes-quimicos-das-celulas",
+                "2-8-enzimologia-estrutura-e-funcao-das-enzimas",
+                "2-9-atividade-enzimatica-atividade-e-cinetica",
+                "2-10-atividade-enzimatica-regulacao-enzimatica",
+                "2-11-classificacao-das-enzimas"
+            ]),
+
+            "Módulo 02 - Biologia Molecular": makeMaterials("biologia_molecular", [
+                "3-1-resumo-biologia-molecular",
+                "3-2-mapa-mental-biologia-celular",
+                "3-3-biologia-molecular-basica",
+                "3-4-conceitos-basicos",
+                "3-5-a-replicacao",
+                "3-6-variantes-e-reparo",
+                "3-7-a-transcricao-regulacao-e-processamento",
+                "3-8-a-traducao-e-modificacoes-pos-traducionais",
+                "3-9-epigenetica"
+            ]),
+
+            "Módulo 03 - Biologia Celular": makeMaterials("biologia_celular", [
+                "4-1-resumo-biologia-celular",
+                "4-2-mapa-mental-biologia-celular",
+                "4-3-membrana-plasmatica-o-que-e-a-membrana-plasmatica",
+                "4-4-membrana-plasmatica-composicao-da-membrana",
+                "4-5-membrana-plasmatica-especializacao-da-membrana",
+                "4-6-membrana-plasmatica-transporte-passivo",
+                "4-7-membrana-plasmatica-transporte-ativo",
+                "4-8-citoplasma-composicao",
+                "4-9-citoplasma-citoesqueleto",
+                "4-10-citoplasma-organelas-citoplasmaticas",
+                "4-11-citoplasma-organelas-membranosas-parte-i",
+                "4-11-citoplasma-organelas-membranosas-parte-ii",
+                "4-12-nucleo-composicao",
+                "4-13-nucleo-cromatina-e-cromossomo",
+                "4-14-sintese-proteica-mecanismo-geral",
+                "4-15-sintese-proteica-transcricao",
+                "4-16-sintese-proteica-traducao",
+                "4-17-sintese-proteica-eucariontes-versus-procariontes",
+                "4-18-mutacoes-genicas-tipos-de-mutacao",
+                "4-19-ciclo-celular",
+                "4-20-interfase",
+                "4-21-replicacao-do-dna",
+                "4-22-mitose",
+                "4-23-meiose",
+                "4-24-regulacao-do-ciclo-celular",
+                "4-25-respiracao-celular-um-processo-do-metabolismo-energetico",
+                "4-26-respiracao-celular-uma-visao-geral",
+                "4-27-respiracao-celular-etapas-do-processo",
+                "4-28-respiracao-celular-metabolismo-de-lipidios-e-proteinas",
+                "4-29-comunicacao-celular",
+                "4-30-tipos-de-sinalizacao-celular",
+                "4-31-tipos-de-receptores"
+            ]),
+
+            "Módulo 04 - Biofísica": makeMaterials("biofisica", [
+                "5-1-resumo-biofisica",
+                "5-2-mapa-mental-biofisica",
+                "5-3-biofisica-basica",
+                "5-4-biofisica-da-audicao",
+                "5-5-termodinamica-e-medicina",
+                "5-6-mecanica-dos-fluidos-e-gases",
+                "5-7-auto-regulacao-da-circulacao-cerebral",
+                "5-8-mecanica-dos-gases",
+                "5-9-fisicoquimica-e-membranas-biologicas",
+                "5-10-biogenese-do-potencial-de-acao"
+            ]),
+
+            "Módulo 05 - Genética": makeMaterials("genetica", [
+                "6-1-resumo-genetica",
+                "6-2-mapa-mental-genetica",
+                "6-3-genetica-basica",
+                "6-4-variacao-genetica-e-mutacao",
+                "6-5-genetica-de-populacoes",
+                "6-6-genetica-humana-padroes-de-doenca-e-nocoes-basicas-de-tratamento",
+                "6-7-epigenetica"
+            ]),
+
+            "Módulo 06 - Imunologia": makeMaterials("imunologia", [
+                "7-1-resumo-imunologia",
+                "7-2-mapa-mental-imunologia",
+                "7-3-conceitos-iniciais-e-si-inato-parte-1",
+                "7-4-si-adaptativo",
+                "7-5-imunizacoes"
+            ]),
+
+            "Módulo 07 - Patologia": makeMaterials("patologia", [
+                "8-1-resumo-patologia",
+                "8-2-mapa-mental-patologia",
+                "8-3-adaptacao-e-diferenciacao-celular",
+                "8-4-causas-e-mecanismos-de-lesao-celular",
+                "8-5-padroes-de-morte-celular-necrose-e-apoptose",
+                "8-6-acumulos-intracelulares-e-envelhecimento-celular",
+                "8-7-resposta-inflamatoria-e-seus-agentes-causadores",
+                "8-8-diferencas-entre-inflamacao-aguda-e-cronica",
+                "8-9-processos-de-reparo-e-cicatrizacao",
+                "8-10-edema-e-efusoes",
+                "8-11-hemostasia",
+                "8-12-disturbios-hemorragicos-trombose-embolia-e-infarto",
+                "8-13-choque",
+                "8-14-neoplasias-benignas-e-malignas",
+                "8-15-carcinogenese-e-fatores-de-risco",
+                "8-16-processo-de-invasao-e-metastase",
+                "8-17-genetica-e-imunopatologia"
+            ]),
+
+            "Módulo 08 - Embriologia": makeMaterials("embriologia", [
+                "9-1-resumo-embriologia",
+                "9-2-mapa-mental-embriologia",
+                "9-3-fertilizacao-e-formacao-do-zigoto",
+                "9-4-gastrulacao-neurulacao-e-formacao-do-tubo-neural",
+                "9-5-desenvolvimento-dos-orgaos-e-sistemas"
+            ]),
+
+            "Módulo 09 - Farmacologia": makeMaterials("farmacologia", [
+                "10-1-resumo-farmacologia",
+                "10-2-mapa-mental-farmacologia",
+                "10-3-introducao-a-farmacologia",
+                "10-4-farmacocinetica"
+            ]),
+
+            "Módulo 10 - Histologia": makeMaterials("histologia", [
+                "11-1-resumo-histologia",
+                "11-2-mapa-mental-histologia",
+                "11-3-tecidos-epiteliais",
+                "11-4-tecido-conjuntivo",
+                "11-5-tecidos-musculares",
+                "11-6-tecido-nervoso"
+            ]),
+
+            "Módulo 11 - Microbiologia": makeMaterials("microbiologia", [
+                "12-1-resumo-microbiologia",
+                "12-2-mapa-mental-microbiologia",
+                "12-3-introducao-a-microbiologia",
+                "12-3-slides-introducao-a-microbiologia",
+                "12-4-bacteriologia",
+                "12-5-virologia"
+            ]),
+
+            "Módulo 12 - Parasitologia": makeMaterials("parasitologia", [
+                "13-1-resumo-parasitologia",
+                "13-2-mapa-mental-parasitologia",
+                "13-3-introducao-a-parasitologia",
+                "13-4-ectoparasitoses-e-artropodes",
+                "13-5-protozooses",
+                "13-6-helmintiases"
+            ]),
+
+            "Módulo 13 - Metodologia Científica": makeMaterials("metodologia_cientifica", [
+                "14-1-resumo-metodologia-cientifica",
+                "14-2-mapa-mental-metodologia-cientifica",
+                "14-3-metodologia-cientifica",
+                "14-4-desenhos-de-estudo",
+                "14-5-criterios-de-bradford-hill",
+                "14-6-ensaios-clinicos",
+                "14-7-vieses-em-pesquisa"
+            ]),
+
+            "Módulo 14 - Bioestatística": makeMaterials("bioestatistica", [
+                "15-1-resumo-bioestatistica",
+                "15-2-mapa-mental-bioestatistica",
+                "15-3-introducao-a-bioestatistica",
+                "15-4-estatistica-descritiva",
+                "15-5-visualizacao-de-dados",
+                "15-6-estatistica-inferencial",
+                "15-7-medidas-associacao-intervalos-confianca"
+            ]),
+
+            "Módulo 15 - Epidemiologia": makeMaterials("epidemiologia", [
+                "16-1-resumo-epidemiologia",
+                "16-2-mapa-mental-epidemiologia",
+                "16-3-processos-epidemicos",
+                "16-6-processo-saude-doenca"
+            ]),
+
+            "Módulo 16 - Propedêutica": makeMaterials("propedeutica", [
+                "17-1-resumo-propedeutica",
+                "17-2-mapa-mental-propedeutica"
+            ]),
+
+            "Módulo 17 - Sistema Cardiovascular": makeMaterials("sistema_cardiovascular", [
+                "18-1-resumo-sistema-cardiovascular",
+                "18-2-mapa-mental-sistema-cardiovascular",
+                "18-3-anatomia-sistema-cardiovascular",
+                "18-4-fisiologia-sistema-cardiovascular",
+                "18-5-embriologia-sistema-cardiovascular"
+            ]),
+
+            "Módulo 18 - Sistema Respiratório": makeMaterials("sistema_respiratorio", [
+                "19-1-resumo-sistema-respiratorio",
+                "19-2-mapa-mental-sistema-respiratorio",
+                "19-3-anatomia-sistema-pulmonar",
+                "19-4-fisiologia-sistema-pulmonar",
+                "19-5-embriologia-sistema-pulmonar"
+            ]),
+
+            "Módulo 19 - Sistema Digestório": makeMaterials("sistema_digestorio", [
+                "20-1-resumo-sistema-digestorio",
+                "20-2-mapa-mental-sistema-digestorio",
+                "20-3-introducao-ao-sistema-digestivo",
+                "20-4-embriologia-aparelho-faringeo",
+                "20-5-embriologia-intestino-anterior",
+                "20-6-embriologia-intestino-medio-e-posterior",
+                "20-7-histologia-do-trato-gastrointestinal-1",
+                "20-7-histologia-do-trato-gastrointestinal-2",
+                "20-7-histologia-do-trato-gastrointestinal-3",
+                "20-8-fisiologia-motilidade",
+                "20-9-fisiologia-digestao",
+                "20-10-anatomia-trato-digestorio-superior",
+                "20-11-anatomia-trato-digestorio-inferior",
+                "20-12-anatomia-orgaos-anexos"
+            ]),
+
+            "Módulo 20 - Sistema Endócrino": makeMaterials("sistema_endocrino", [
+                "21-1-resumo-sistema-endocrino",
+                "21-2-mapa-mental-sistema-endocrino",
+                "21-3-adrenal",
+                "21-4-pancreas",
+                "21-5-paratireoide",
+                "21-6-neuroendrocrinologia-parte-1",
+                "21-6-neuroendrocrinologia-parte-2",
+                "21-7-tireoide",
+                "21-8-resposta-metabolica-ao-estresse",
+                "21-9-gonadas-e-diferenciacao-sexual"
+            ]),
+
+            "Módulo 21 - Sistema Locomotor": makeMaterials("sistema_locomotor", [
+                "22-1-resumo-sistema-locomotor",
+                "22-2-mapa-mental-sistema-locomotor",
+                "22-3-introducao-ao-sistema-musculoesqueletico",
+                "22-4-anatomia-da-coluna",
+                "22-5-anatomia-do-ombro-e-do-braco",
+                "22-6-anatomia-da-coxa",
+                "22-7-anatomia-do-cotovelo-e-antebraco",
+                "22-8-anatomia-do-punho-e-da-mao",
+                "22-9-anatomia-da-bacia",
+                "22-10-anatomia-do-joelho-e-da-perna",
+                "22-11-anatomia-do-pe-e-tornozelo"
+            ]),
+
+            "Módulo 22 - Sistema Nervoso": [
+                ...makeMaterials("sistema_nervoso", [
+                    "23-1-resumo-sistema-nervoso",
+                    "23-2-mapa-mental-sistema-nervoso"
+                ], "Abrir resumo e mapa mental"),
+                ...makeMaterials("sistema_nervoso_completo", [
+                    "slides-sistema-nervoso-completo"
+                ], "Abrir slides completos")
+            ],
+
+            "Módulo 23 - Sistema Hemato-Imunológico": makeMaterials("sistema_hemato_imunologico", [
+                "24-1-resumo-sistema-hemato-imunologico",
+                "24-2-mapa-mental-sistema-hemato-imunologico",
+                "24-3-medula-ossea",
+                "24-4-linfonodos",
+                "24-5-hematopoiese",
+                "24-6-sistema-imune",
+                "24-7-coagulacao-e-hemostasia",
+                "24-8-sistema-circulatorio-embriao-e-feto-parte-1",
+                "24-8-sistema-circulatorio-embriao-e-feto-parte-2",
+                "24-9-baco"
+            ]),
+
+            "Módulo 24 - Sistemas Sensoriais": makeMaterials("sistemas_sensoriais", [
+                "25-1-resumo-sistemas-sensoriais",
+                "25-2-mapa-mental-sistemas-sensoriais",
+                "25-3-anatomia-do-olho",
+                "25-4-sentidos-quimicos-paladar-e-olfato",
+                "25-5-audicao-e-equilibrio"
+            ]),
+
+            "Módulo 25 - Sistema Tegumentar": makeMaterials("sistema_tegumentar", [
+                "26-1-resumo-sistema-tegumentar",
+                "26-2-mapa-mental-sistema-tegumentar",
+                "26-3-anatomia-fisiologia-e-histologia-da-pele-e-anexos",
+                "26-4-cicatrizacao-de-feridas",
+                "26-5-embriologia-do-sistema-tegumentar"
+            ]),
+
+            "Módulo 26 - Sistema Urinário": makeMaterials("sistema_urinario", [
+                "27-1-resumo-sistema-urinario",
+                "27-2-mapa-mental-sistema-urinario",
+                "27-3-anatomia-do-sistema-urinario",
+                "27-4-fisiologia-renal-a-formacao-da-urina-parte-i",
+                "27-4-fisiologia-renal-a-formacao-da-urina-parte-ii",
+                "27-5-histologia-renal"
+            ]),
+
+            "Módulo 27 - Sistema Reprodutor Masculino": makeMaterials("sistema_reprodutor_masculino", [
+                "28-1-resumo-sistema-reprodutor-masculino",
+                "28-2-mapa-mental-sistema-reprodutor-masculino",
+                "28-3-anatomia-reprodutora-masculina",
+                "28-4-fisiologia-reprodutora-masculina",
+                "28-5-embriologia-reprodutora-masculina"
+            ]),
+
+            "Módulo 28 - Sistema Reprodutor Feminino": makeMaterials("sistema_reprodutor_feminino", [
+                "29-1-resumo-sistema-reprodutor-feminino",
+                "29-2-mapa-mental-sistema-reprodutor-feminino",
+                "29-3-embriologia-do-trato-genital-feminino",
+                "29-4-anatomia-do-trato-genital-feminino",
+                "29-5-ciclo-menstrual",
+                "29-6-endocrinologia-reprodutiva",
+                "29-7-anatomia-e-desenvolvimento-das-mamas",
+                "29-8-fisiologia-da-lactacao"
+            ])
+        };
+
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                title: mod.title,
+                description: mod.description,
+                assessment: mod.assessment || [],
+                materials: htmlMaterialsByModule[mod.title] || [],
+                lessons: (mod.lessons || []).map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        // ==================================================================================
+        // INTERFACE LÓGICA E NAVEGAÇÃO
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const assessmentsView = document.getElementById('assessments-view');
+        const playerView = document.getElementById('player-view');
+        
+        const playerControls = document.getElementById('player-controls');
+        const btnBackToHome = document.getElementById('btnBackToHome');
+        const btnBackToModules = document.getElementById('btnBackToModules');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const videoLoader = document.getElementById('videoLoader');
+        const quizState = document.getElementById('quizState');
+        const quizQuestionsContainer = document.getElementById('quizQuestionsContainer');
+        const quizControls = document.getElementById('quizControls');
+        const quizScore = document.getElementById('quizScore');
+        const btnSubmitQuiz = document.getElementById('btnSubmitQuiz');
+
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const moduleTitleDisplay = document.getElementById('moduleTitleDisplay');
+        const pulseIndicator = document.getElementById('pulseIndicator');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const lessonCountBadge = document.getElementById('lessonCountBadge');
+        const moduleSelector = document.getElementById('moduleSelector');
+        
+        const modulesGrid = document.getElementById('modules-grid');
+        const assessmentsBanner = document.getElementById('assessments-banner');
+        const homeDescriptionFallback = document.getElementById('home-description-fallback');
+        const assessmentsGrid = document.getElementById('assessments-grid');
+
+        const videoNavControls = document.getElementById('videoNavControls');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        let selectedLessonId = null;
+        let currentVideoList = []; 
+        let currentMaterialsList = [];
+        let currentVideoIndex = -1;
+        let currentAssessment = null;
+        let userAnswers = {};
+        let quizSubmitted = false;
+
+        // --- Renderização da HOME ---
+        function renderHome() {
+            let htmlModules = '';
+            let htmlAssessments = '';
+            let hasAssessments = false;
+
+            modulesData.forEach(mod => {
+                let icon = 'fa-brain';
+                let iconColor = 'text-indigo-400';
+                
+                // Adaptação dos ícones consoante o tema do módulo
+                if(mod.title.includes('Bioquímica') || mod.title.includes('Biologia')) { icon = 'fa-dna'; iconColor = 'text-emerald-400'; }
+                else if(mod.title.includes('Biofísica')) { icon = 'fa-wave-square'; iconColor = 'text-blue-400'; }
+                else if(mod.title.includes('Genética')) { icon = 'fa-fingerprint'; iconColor = 'text-indigo-400'; }
+                else if(mod.title.includes('Imunologia') || mod.title.includes('Patologia')) { icon = 'fa-shield-virus'; iconColor = 'text-rose-400'; }
+                else if(mod.title.includes('Embriologia') || mod.title.includes('Reprodutor')) { icon = 'fa-baby'; iconColor = 'text-pink-400'; }
+                else if(mod.title.includes('Farmacologia')) { icon = 'fa-pills'; iconColor = 'text-cyan-400'; }
+                else if(mod.title.includes('Histologia') || mod.title.includes('Microbiologia') || mod.title.includes('Parasitologia')) { icon = 'fa-microscope'; iconColor = 'text-lime-400'; }
+                else if(mod.title.includes('Metodologia') || mod.title.includes('Bioestatística') || mod.title.includes('Epidemiologia')) { icon = 'fa-chart-pie'; iconColor = 'text-amber-400'; }
+                else if(mod.title.includes('Propedêutica')) { icon = 'fa-stethoscope'; iconColor = 'text-teal-400'; }
+                else if(mod.title.includes('Cardiovascular')) { icon = 'fa-heartbeat'; iconColor = 'text-red-500'; }
+                else if(mod.title.includes('Respiratório')) { icon = 'fa-lungs'; iconColor = 'text-sky-400'; }
+                else if(mod.title.includes('Digestório')) { icon = 'fa-apple-alt'; iconColor = 'text-orange-500'; }
+                else if(mod.title.includes('Endócrino')) { icon = 'fa-vial'; iconColor = 'text-purple-400'; }
+                else if(mod.title.includes('Locomotor')) { icon = 'fa-bone'; iconColor = 'text-slate-300'; }
+                else if(mod.title.includes('Nervoso')) { icon = 'fa-brain'; iconColor = 'text-indigo-500'; }
+                else if(mod.title.includes('Sensoriais') || mod.title.includes('Tegumentar')) { icon = 'fa-eye'; iconColor = 'text-yellow-400'; }
+                else if(mod.title.includes('Urinário')) { icon = 'fa-tint'; iconColor = 'text-blue-300'; }
+
+                htmlModules += `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl cursor-pointer group">
+                    <div class="module-card-header p-6 flex justify-between items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-900/80 flex items-center justify-center text-2xl shadow-lg border border-white/10 group-hover:bg-indigo-900/30 group-hover:scale-105 transition-all duration-300">
+                            <i class="fas ${icon} ${iconColor}"></i>
+                        </div>
+                        <span class="bg-slate-950/80 backdrop-blur-md text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/5 uppercase tracking-widest shadow-sm">
+                            ${mod.lessons.length} Itens
+                        </span>
+                    </div>
+                    
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors font-display leading-tight">${mod.title}</h3>
+                        <p class="text-slate-400 text-sm flex-grow leading-relaxed font-normal mb-6">${mod.description || 'Atualização clínica contínua.'}</p>
+                        
+                        <div class="pt-5 border-t border-slate-800/50 flex items-center justify-between">
+                            <div class="flex items-center text-xs font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors w-full justify-end">
+                                <span class="tracking-wide mr-2 uppercase">Acessar Módulo</span>
+                                <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+                // CRIA UM CARD NA CENTRAL DE AVALIAÇÕES PARA ESTE MÓDULO (SE HOUVER)
+                if (mod.assessment && mod.assessment.length > 0) {
+                    hasAssessments = true;
+                    htmlAssessments += `
+                    <div onclick="openAssessment('${mod.id}')" class="module-card rounded-2xl p-6 cursor-pointer flex flex-col h-full group border-indigo-500/30 bg-indigo-950/20 hover:bg-indigo-900/30">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-xl shadow-inner border border-indigo-500/30 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 transition-all">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <span class="bg-slate-950/80 text-indigo-300 text-[10px] font-bold px-2.5 py-1 rounded border border-indigo-800 uppercase tracking-widest">
+                                ${mod.assessment.length} Questões
+                            </span>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors leading-tight line-clamp-1">Avaliação: ${mod.title.split(' - ')[0]}</h3>
+                        <p class="text-slate-400 text-xs flex-grow leading-relaxed font-medium mb-4 line-clamp-2">${mod.title.split(' - ')[1] || 'Teste seus conhecimentos'}</p>
+                        
+                        <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                            <div class="flex-1 flex items-center text-xs font-bold text-indigo-500 group-hover:text-indigo-400 transition-colors">
+                                <span class="tracking-wide mr-2 uppercase">Iniciar Teste</span>
+                                <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+            });
+
+            moduleSelector.innerHTML = modulesData.map(mod => `
+                <option value="${mod.id}">${mod.title}</option>
+            `).join('');
+            
+            modulesGrid.innerHTML = htmlModules;
+
+            // Se existirem avaliações, esconde o texto descritivo e exibe o botão/banner para a Central.
+            if (hasAssessments) {
+                assessmentsBanner.classList.remove('hidden');
+                homeDescriptionFallback.classList.add('hidden');
+                assessmentsGrid.innerHTML = htmlAssessments;
+            } else {
+                assessmentsBanner.classList.add('hidden');
+                homeDescriptionFallback.classList.remove('hidden');
+            }
+        }
+
+        // --- Funções de Navegação ---
+        function goHome() {
+            playerView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            resetPlayerView();
+            document.title = "Ciclo Básico | Estratégia MED";
+        }
+
+        function goAssessments() {
+            homeView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            btnBackToModules.classList.add('hidden');
+            btnBackToHome.classList.remove('hidden');
+            
+            assessmentsView.classList.remove('hidden');
+            
+            resetPlayerView();
+            document.title = "Ciclo Básico | Central de Avaliações";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.remove('hidden');
+            btnBackToHome.classList.add('hidden');
+            btnBackToModules.classList.remove('hidden');
+            
+            moduleSelector.value = moduleId;
+            renderLessons(moduleId);
+        }
+
+        function openAssessment(moduleId) {
+            openModule(moduleId);
+            setTimeout(() => {
+                loadAssessment(moduleId);
+            }, 50); 
+        }
+
+        // --- Renderização do PLAYER e AVALIAÇÕES ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            const videoLessons = module.lessons;
+            const htmlMaterials = module.materials || [];
+
+            currentVideoList = videoLessons;
+            currentMaterialsList = htmlMaterials;
+            currentVideoIndex = -1;
+
+            moduleTitleDisplay.textContent = module.title;
+            lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
+            pulseIndicator.classList.add('hidden');
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            videoLessons.forEach((lesson, index) => {
+                const lessonNumber = (index + 1).toString().padStart(2, '0');
+                const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+                const hasLink = lesson.url && lesson.url !== '#';
+                
+                html += `
+                <div class="lesson-item flex items-center gap-4 p-3.5 ${hasLink ? 'cursor-pointer hover:border-slate-700/50 hover:text-white' : 'cursor-not-allowed opacity-50'} text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
+                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''} 
+                     data-id="${lesson.id}"
+                     id="lesson-item-${index}">
+                    
+                    <div class="flex-shrink-0 w-8 text-center relative">
+                        <span class="text-[9px] font-mono font-bold opacity-30 block mb-1">#${lessonNumber}</span>
+                        <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 flex items-center justify-center border border-white/5">
+                            <i class="fas ${hasLink ? 'fa-play' : 'fa-lock'} text-xs lesson-icon transition-transform ${hasLink ? 'ml-0.5' : ''}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 pr-2">
+                        <p class="text-sm font-semibold lesson-text leading-tight mb-1">${displayTitle}</p>
+                        <span class="text-[9px] bg-slate-800/80 text-slate-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider inline-block">Vídeo</span>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+
+            // Renderizar Materiais Complementares e Avaliações Embaixo do Vídeo
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            
+            const hasMaterials = htmlMaterials.length > 0;
+            const hasAssessment = module.assessment && module.assessment.length > 0;
+
+            if (hasMaterials || hasAssessment) {
+                materialsSection.classList.remove('hidden');
+
+                let htmlMaterialsStr = '';
+                
+                // Insere os Materiais HTML
+                if (hasMaterials) {
+                    htmlMaterials.forEach((material, index) => {
+                        // Define ícones apropriados por tipo
+                        let icon = 'fa-file-lines';
+                        if (material.type === 'Resumo') icon = 'fa-book-open';
+                        if (material.type === 'Mapa Mental') icon = 'fa-diagram-project';
+                        if (material.type === 'Coleção') icon = 'fa-layer-group';
+                        
+                        htmlMaterialsStr += `
+                        <div class="material-btn group flex flex-col p-4 bg-slate-900 border border-slate-800 hover:border-cyan-500/30 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                             onclick="loadHtmlMaterialByIndex(${index})">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-900/20 text-cyan-500 flex items-center justify-center shrink-0 border border-cyan-500/10 transition-transform pdf-icon">
+                                    <i class="fas ${icon} text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-cyan-400 transition-colors">${material.title}</p>
+                                    <div class="flex items-center text-[10px] font-bold text-slate-500 uppercase tracking-wide gap-1.5">
+                                        <i class="fas fa-play"></i> Abrir Material
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+
+                // Insere o Botão de Avaliação (Quiz) ao lado dos materiais
+                if (hasAssessment) {
+                    htmlMaterialsStr += `
+                    <div class="material-btn group flex flex-col p-4 bg-indigo-900/10 border border-indigo-500/30 hover:border-indigo-500/50 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                         onclick="loadAssessment('${module.id}')" id="assessment-material-btn">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-transform pdf-icon">
+                                <i class="fas fa-clipboard-check text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-white line-clamp-2 leading-snug mb-2 group-hover:text-indigo-300 transition-colors">Avaliação do Módulo</p>
+                                <div class="flex items-center text-[10px] font-bold text-indigo-400 uppercase tracking-wide gap-1.5">
+                                    <i class="fas fa-pen"></i> Iniciar Teste
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                materialsContainer.innerHTML = htmlMaterialsStr;
+            } else {
+                materialsSection.classList.add('hidden');
+                materialsContainer.innerHTML = '';
+            }
+            
+            resetPlayerView();
+        }
+
+        function resetPlayerView() {
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            quizState.classList.add('hidden');
+            emptyState.style.display = 'flex';
+            emptyState.querySelector('h2').textContent = "Ambiente Clínico";
+            emptyState.querySelector('p').textContent = "Selecione uma aula ou avaliação para iniciar sua jornada de aprendizado.";
+            lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
+            selectedLessonId = null;
+        }
+
+        // --- SISTEMA DE AVALIAÇÃO (QUIZ) ---
+        function loadAssessment(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module || !module.assessment || module.assessment.length === 0) return;
+
+            currentAssessment = module.assessment;
+            userAnswers = {};
+            quizSubmitted = false;
+            currentVideoIndex = -1;
+
+            // Desmarca vídeos na sidebar
+            if (selectedLessonId && selectedLessonId !== 'assessment') {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-cyan-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+            }
+            
+            selectedLessonId = 'assessment';
+
+            // Atualiza Top Bar
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = "Avaliação do Módulo";
+            videoNavControls.style.display = 'none';
+            
+            // Oculta vídeo/vazio e mostra Quiz
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            videoLoader.style.display = 'none';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            emptyState.style.display = 'none';
+            quizState.classList.remove('hidden');
+
+            renderQuizQuestions();
+        }
+
+        function renderQuizQuestions() {
+            quizQuestionsContainer.innerHTML = '';
+            quizControls.classList.remove('hidden');
+            quizScore.classList.add('hidden');
+            btnSubmitQuiz.style.display = 'flex';
+
+            let html = '';
+            currentAssessment.forEach((q, qIndex) => {
+                // Preserva quebras de linha na pergunta
+                const formattedQuestion = q.question.replace(/\n/g, '<br>');
+                
+                html += `
+                <div class="bg-slate-900/60 p-6 rounded-2xl border border-white/5 shadow-lg" id="question-${qIndex}">
+                    <h4 class="text-white text-lg font-bold mb-5 leading-snug"><span class="text-indigo-500 mr-2">${qIndex + 1}.</span> ${formattedQuestion}</h4>
+                    <div class="space-y-3">`;
+                
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <div onclick="selectQuizOption(${qIndex}, ${optIndex})" class="quiz-option cursor-pointer p-4 rounded-xl flex items-start gap-4" id="opt-${qIndex}-${optIndex}">
+                            <div class="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0 mt-0.5 option-radio transition-colors"></div>
+                            <p class="text-slate-300 text-sm font-medium leading-relaxed">${opt}</p>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
+                    <div id="explanation-${qIndex}" class="hidden mt-6 p-4 rounded-lg bg-slate-800/80 border border-slate-700 text-sm text-slate-300 leading-relaxed border-l-4 border-l-indigo-500">
+                        <span class="block text-indigo-500 font-bold mb-1"><i class="fas fa-lightbulb"></i> Explicação:</span>
+                        ${q.explanation || 'Nenhuma explicação adicional fornecida para esta questão.'}
+                    </div>
+                </div>`;
+            });
+
+            quizQuestionsContainer.innerHTML = html;
+            quizState.scrollTop = 0;
+        }
+
+        function selectQuizOption(qIndex, optIndex) {
+            if (quizSubmitted) return;
+
+            userAnswers[qIndex] = optIndex;
+            
+            const questionDiv = document.getElementById(`question-${qIndex}`);
+            questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+            
+            const selectedOpt = document.getElementById(`opt-${qIndex}-${optIndex}`);
+            selectedOpt.classList.add('selected');
+        }
+
+        function submitAssessment() {
+            if (!currentAssessment) return;
+            
+            if (Object.keys(userAnswers).length < currentAssessment.length) {
+                const conf = confirm("Ainda tem perguntas por responder. Deseja finalizar mesmo assim?");
+                if(!conf) return;
+            }
+
+            quizSubmitted = true;
+            let score = 0;
+
+            currentAssessment.forEach((q, qIndex) => {
+                const userAnswer = userAnswers[qIndex];
+                const correctOptDiv = document.getElementById(`opt-${qIndex}-${q.correctIndex}`);
+                const explanationDiv = document.getElementById(`explanation-${qIndex}`);
+
+                const questionDiv = document.getElementById(`question-${qIndex}`);
+                questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
+                
+                // Só mostra explicação se existir
+                if(explanationDiv && q.explanation) explanationDiv.classList.remove('hidden');
+
+                if (userAnswer === q.correctIndex) {
+                    score++;
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                } else {
+                    if (userAnswer !== undefined) {
+                        const wrongOptDiv = document.getElementById(`opt-${qIndex}-${userAnswer}`);
+                        if(wrongOptDiv) wrongOptDiv.classList.add('incorrect');
+                    }
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                }
+            });
+
+            btnSubmitQuiz.style.display = 'none';
+            quizScore.classList.remove('hidden');
+            const percent = Math.round((score / currentAssessment.length) * 100);
+            
+            let resultColor = 'text-emerald-500';
+            let resultMessage = 'Excelente!';
+            if(percent < 50) { resultColor = 'text-rose-500'; resultMessage = 'Continue a estudar!'; }
+            else if(percent < 80) { resultColor = 'text-yellow-500'; resultMessage = 'Bom trabalho!'; }
+
+            quizScore.innerHTML = `Resultado: <span class="${resultColor}">${score}/${currentAssessment.length} (${percent}%)</span> - ${resultMessage}`;
+        }
+
+        // Função para extrair o ID do Drive e gerar o link correto de preview
+        function getDriveEmbedUrl(url) {
+            if (!url || url === '#') return '';
+            const match = url.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://drive.google.com/file/d/${match[0]}/preview`;
+            }
+            return url;
+        }
+
+        // 5. NOVA FUNÇÃO PARA EXIBIR OS SITES HTML
+        function loadHtmlMaterialByIndex(index) {
+            const material = currentMaterialsList[index];
+            if (!material || !material.url) return;
+
+            // Remove a marcação dos vídeos na lista lateral
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-cyan-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+                selectedLessonId = null;
+            }
+
+            quizState.classList.add('hidden');
+            emptyState.style.display = 'none';
+            videoLoader.style.display = 'flex';
+            contentPlayer.style.display = 'block';
+            document.getElementById('externalLinkBtn').style.display = 'block';
+
+            window.currentExternalUrl = material.url;
+            contentPlayer.src = material.url;
+
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = material.title;
+            moduleTitleDisplay.classList.remove('hidden');
+            videoNavControls.style.display = 'none';
+
+            contentPlayer.onload = () => {
+                videoLoader.style.display = 'none';
+            };
+        }
+
+        function loadVideoByIndex(index) {
+            if (index < 0 || index >= currentVideoList.length) return;
+            
+            const lesson = currentVideoList[index];
+            if (!lesson.url || lesson.url === '#') return;
+
+            currentVideoIndex = index;
+            const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+
+            // Oculta área de quiz se estivesse aberta
+            quizState.classList.add('hidden');
+
+            if (selectedLessonId) {
+                if (selectedLessonId !== 'assessment') {
+                    const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                    if (prev) {
+                        prev.classList.remove('selected-lesson');
+                        prev.classList.add('border-transparent');
+                        const icon = prev.querySelector('.lesson-icon');
+                        if(icon) {
+                            icon.classList.remove('fa-pause', 'text-cyan-500');
+                            icon.classList.add('fa-play');
+                        }
+                    }
+                }
+            }
+            
+            selectedLessonId = lesson.id;
+            const cur = document.getElementById(`lesson-item-${index}`);
+            if (cur) {
+                cur.classList.remove('border-transparent');
+                cur.classList.add('selected-lesson');
+                cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const icon = cur.querySelector('.lesson-icon');
+                if(icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause', 'text-cyan-500');
+                }
+            }
+
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = displayTitle;
+            
+            videoNavControls.style.display = 'flex';
+            
+            btnPrev.disabled = currentVideoIndex === 0 || currentVideoList[currentVideoIndex - 1].url === '#';
+            btnNext.disabled = currentVideoIndex === currentVideoList.length - 1 || currentVideoList[currentVideoIndex + 1].url === '#';
+
+            if (lesson.url && lesson.url !== '#') {
+                emptyState.style.display = 'none';
+                videoLoader.style.display = 'flex'; 
+                contentPlayer.style.display = 'block'; 
+                document.getElementById('externalLinkBtn').style.display = 'block';
+
+                window.currentExternalUrl = lesson.url;
+
+                const embedUrl = getDriveEmbedUrl(lesson.url);
+                contentPlayer.src = embedUrl;
+
+                contentPlayer.onload = () => {
+                    videoLoader.style.display = 'none';
+                };
+            } else {
+                contentPlayer.style.display = 'none';
+                contentPlayer.src = '';
+                videoLoader.style.display = 'none';
+                document.getElementById('externalLinkBtn').style.display = 'none';
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('h2').textContent = "Aula Indisponível";
+                emptyState.querySelector('p').textContent = "Esta aula ainda não possui um link de vídeo associado na plataforma.";
+            }
+        }
+
+        function playPrevious() {
+            if (currentVideoIndex <= 0) return;
+
+            for (let i = currentVideoIndex - 1; i >= 0; i--) {
+                if (currentVideoList[i]?.url && currentVideoList[i].url !== '#') {
+                    loadVideoByIndex(i);
+                    return;
+                }
+            }
+        }
+
+        function playNext() {
+            if (currentVideoIndex < 0 || currentVideoIndex >= currentVideoList.length - 1) return;
+
+            for (let i = currentVideoIndex + 1; i < currentVideoList.length; i++) {
+                if (currentVideoList[i]?.url && currentVideoList[i].url !== '#') {
+                    loadVideoByIndex(i);
+                    return;
+                }
+            }
+        }
+        
+        function openCurrentVideoExternal() {
+            if (window.currentExternalUrl) {
+                window.open(window.currentExternalUrl, '_blank');
+            }
+        }
+
+        // --- Inicialização ---
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia
+        renderHome();
+
+    </script>
+</body>
+</html>

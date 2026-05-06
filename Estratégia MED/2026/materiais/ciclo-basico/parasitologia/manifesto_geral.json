@@ -1,0 +1,41 @@
+{
+  "titulo": "Parasitologia",
+  "materiais": [
+    {
+      "title": "13.1 Resumo - Parasitologia",
+      "slug": "13-1-resumo-parasitologia",
+      "pages": 45,
+      "path": "13-1-resumo-parasitologia/index.html"
+    },
+    {
+      "title": "13.2 Mapa Mental - Parasitologia",
+      "slug": "13-2-mapa-mental-parasitologia",
+      "pages": 10,
+      "path": "13-2-mapa-mental-parasitologia/index.html"
+    },
+    {
+      "title": "13.3 Introdução à Parasitologia",
+      "slug": "13-3-introducao-a-parasitologia",
+      "pages": 18,
+      "path": "13-3-introducao-a-parasitologia/index.html"
+    },
+    {
+      "title": "13.4 Ectoparasitoses e Artrópodes",
+      "slug": "13-4-ectoparasitoses-e-artropodes",
+      "pages": 56,
+      "path": "13-4-ectoparasitoses-e-artropodes/index.html"
+    },
+    {
+      "title": "13.5 Protozooses",
+      "slug": "13-5-protozooses",
+      "pages": 94,
+      "path": "13-5-protozooses/index.html"
+    },
+    {
+      "title": "13.6 Helmintíases",
+      "slug": "13-6-helmintiases",
+      "pages": 94,
+      "path": "13-6-helmintiases/index.html"
+    }
+  ]
+}

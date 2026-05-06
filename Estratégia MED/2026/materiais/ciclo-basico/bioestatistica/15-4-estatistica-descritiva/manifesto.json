@@ -1,0 +1,17 @@
+{
+  "titulo": "15.4 Estatística Descritiva",
+  "arquivo_original": "15.4 Estatística Descritiva.pdf",
+  "paginas": 27,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 27,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

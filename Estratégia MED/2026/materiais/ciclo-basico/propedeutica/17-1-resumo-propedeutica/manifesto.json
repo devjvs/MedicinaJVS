@@ -1,0 +1,17 @@
+{
+  "titulo": "17.1 Resumo - Propedêutica",
+  "arquivo_original": "17.1 Resumo - Propedêutica.pdf",
+  "paginas": 23,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 23,
+      "largura": 590,
+      "altura": 590
+    }
+  ]
+}

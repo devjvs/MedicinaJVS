@@ -1,0 +1,97 @@
+{
+  "title": "27.1 - Resumo - Sistema Urinario",
+  "source_pdf": "27.1 Resumo - Sistema Urinário.pdf",
+  "page_count": 16,
+  "pages": [
+    "assets/page-001.webp",
+    "assets/page-002.webp",
+    "assets/page-003.webp",
+    "assets/page-004.webp",
+    "assets/page-005.webp",
+    "assets/page-006.webp",
+    "assets/page-007.webp",
+    "assets/page-008.webp",
+    "assets/page-009.webp",
+    "assets/page-010.webp",
+    "assets/page-011.webp",
+    "assets/page-012.webp",
+    "assets/page-013.webp",
+    "assets/page-014.webp",
+    "assets/page-015.webp",
+    "assets/page-016.webp"
+  ],
+  "dimensions": [
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    },
+    {
+      "w": 957,
+      "h": 1225
+    }
+  ],
+  "cover": "assets/cover.webp",
+  "cleanup": {
+    "page_count": 16,
+    "removed_center_image_xrefs": [
+      14
+    ],
+    "edge_phrase_mask": "top-right and bottom-left small edge masks"
+  }
+}

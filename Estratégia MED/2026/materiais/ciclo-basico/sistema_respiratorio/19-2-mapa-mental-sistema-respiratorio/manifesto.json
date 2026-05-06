@@ -1,0 +1,23 @@
+{
+  "titulo": "19.2 Mapa Mental - Sistema Respiratório",
+  "arquivo_original": "19.2 Mapa Mental - Sistema Respiratório.pdf",
+  "paginas": 4,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 32,
+      "repeticoes": 4,
+      "largura": 506,
+      "altura": 506
+    },
+    {
+      "xref": 195,
+      "repeticoes": 3,
+      "largura": 317,
+      "altura": 346
+    }
+  ]
+}

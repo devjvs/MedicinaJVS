@@ -1,0 +1,54 @@
+{
+  "titulo": "Metodologia Científica",
+  "materiais": [
+    {
+      "title": "14.1 Resumo - Metodologia Científica",
+      "slug": "14-1-resumo-metodologia-cientifica",
+      "pages": 17,
+      "path": "14-1-resumo-metodologia-cientifica/index.html",
+      "shared_assets": false
+    },
+    {
+      "title": "14.2 Mapa Mental - Metodologia Científica",
+      "slug": "14-2-mapa-mental-metodologia-cientifica",
+      "pages": 6,
+      "path": "14-2-mapa-mental-metodologia-cientifica/index.html",
+      "shared_assets": false
+    },
+    {
+      "title": "14.3 Metodologia Científica",
+      "slug": "14-3-metodologia-cientifica",
+      "pages": 110,
+      "path": "14-3-metodologia-cientifica/index.html",
+      "shared_assets": true
+    },
+    {
+      "title": "14.4 Desenhos de Estudo",
+      "slug": "14-4-desenhos-de-estudo",
+      "pages": 110,
+      "path": "14-4-desenhos-de-estudo/index.html",
+      "shared_assets": true
+    },
+    {
+      "title": "14.5 Critérios de Bradford Hill",
+      "slug": "14-5-criterios-de-bradford-hill",
+      "pages": 110,
+      "path": "14-5-criterios-de-bradford-hill/index.html",
+      "shared_assets": true
+    },
+    {
+      "title": "14.6 Ensaios Clínicos",
+      "slug": "14-6-ensaios-clinicos",
+      "pages": 110,
+      "path": "14-6-ensaios-clinicos/index.html",
+      "shared_assets": true
+    },
+    {
+      "title": "14.7 Vieses em Pesquisa",
+      "slug": "14-7-vieses-em-pesquisa",
+      "pages": 110,
+      "path": "14-7-vieses-em-pesquisa/index.html",
+      "shared_assets": true
+    }
+  ]
+}

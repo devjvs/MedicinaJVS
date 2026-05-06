@@ -1,0 +1,17 @@
+{
+  "titulo": "16.1 Resumo - Epidemiologia",
+  "arquivo_original": "16.1 Resumo - Epidemiologia.pdf",
+  "paginas": 32,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 32,
+      "largura": 590,
+      "altura": 590
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "titulo": "12.2 Mapa Mental - Microbiologia",
+  "arquivo_original": "12.2 Mapa Mental - Microbiologia(1).pdf",
+  "paginas": 11,
+  "formato": "HTML com páginas renderizadas em JPG",
+  "assets": "assets",
+  "limpeza_aplicada": [
+    "remoção de imagem ofensiva recorrente por substituição do objeto de imagem",
+    "limpeza visual básica das frases NÃO COMPRE DRIVE nas bordas das páginas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 27,
+      "repeticoes": 11,
+      "largura": 506,
+      "altura": 506
+    }
+  ],
+  "paginas_renderizadas": [
+    {
+      "page": 1,
+      "file": "page-001.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 2,
+      "file": "page-002.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 3,
+      "file": "page-003.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 4,
+      "file": "page-004.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 5,
+      "file": "page-005.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 6,
+      "file": "page-006.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 7,
+      "file": "page-007.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 8,
+      "file": "page-008.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 9,
+      "file": "page-009.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 10,
+      "file": "page-010.jpg",
+      "width": 1080,
+      "height": 608
+    },
+    {
+      "page": 11,
+      "file": "page-011.jpg",
+      "width": 1080,
+      "height": 608
+    }
+  ]
+}

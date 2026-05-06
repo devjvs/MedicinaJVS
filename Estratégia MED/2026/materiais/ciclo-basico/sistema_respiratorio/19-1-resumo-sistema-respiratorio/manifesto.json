@@ -1,0 +1,17 @@
+{
+  "titulo": "19.1 Resumo - Sistema Respiratório",
+  "arquivo_original": "19.1 Resumo - Sistema Respiratório.pdf",
+  "paginas": 18,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 18,
+      "largura": 590,
+      "altura": 590
+    }
+  ]
+}

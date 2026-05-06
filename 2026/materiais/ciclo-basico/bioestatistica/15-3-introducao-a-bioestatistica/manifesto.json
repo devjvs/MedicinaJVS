@@ -1,0 +1,17 @@
+{
+  "titulo": "15.3 Introdução à Bioestatística",
+  "arquivo_original": "15.3 Introdução à Bioestatística.pdf",
+  "paginas": 5,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 13,
+      "repeticoes": 5,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

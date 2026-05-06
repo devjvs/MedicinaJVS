@@ -1,0 +1,29 @@
+{
+  "titulo": "Epidemiologia",
+  "materiais": [
+    {
+      "title": "16.1 Resumo - Epidemiologia",
+      "slug": "16-1-resumo-epidemiologia",
+      "pages": 32,
+      "path": "16-1-resumo-epidemiologia/index.html"
+    },
+    {
+      "title": "16.2 Mapa Mental - Epidemiologia",
+      "slug": "16-2-mapa-mental-epidemiologia",
+      "pages": 8,
+      "path": "16-2-mapa-mental-epidemiologia/index.html"
+    },
+    {
+      "title": "16.3 Processos Epidêmicos",
+      "slug": "16-3-processos-epidemicos",
+      "pages": 121,
+      "path": "16-3-processos-epidemicos/index.html"
+    },
+    {
+      "title": "16.6 Processo Saúde-Doença",
+      "slug": "16-6-processo-saude-doenca",
+      "pages": 42,
+      "path": "16-6-processo-saude-doenca/index.html"
+    }
+  ]
+}

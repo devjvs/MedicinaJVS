@@ -1,0 +1,38 @@
+[
+  {
+    "title": "27.1 - Resumo - Sistema Urinario",
+    "slug": "27-1-resumo-sistema-urinario",
+    "page_count": 16,
+    "cover": "27-1-resumo-sistema-urinario/assets/cover.webp"
+  },
+  {
+    "title": "27.2 - Mapa Mental - Sistema Urinario",
+    "slug": "27-2-mapa-mental-sistema-urinario",
+    "page_count": 4,
+    "cover": "27-2-mapa-mental-sistema-urinario/assets/cover.webp"
+  },
+  {
+    "title": "27.3 - Anatomia do Sistema Urinario",
+    "slug": "27-3-anatomia-do-sistema-urinario",
+    "page_count": 53,
+    "cover": "27-3-anatomia-do-sistema-urinario/assets/cover.webp"
+  },
+  {
+    "title": "27.4 - Fisiologia Renal - A Formacao da Urina - Parte I",
+    "slug": "27-4-fisiologia-renal-a-formacao-da-urina-parte-i",
+    "page_count": 80,
+    "cover": "27-4-fisiologia-renal-a-formacao-da-urina-parte-i/assets/cover.webp"
+  },
+  {
+    "title": "27.4 - Fisiologia Renal - A Formacao da Urina - Parte II",
+    "slug": "27-4-fisiologia-renal-a-formacao-da-urina-parte-ii",
+    "page_count": 74,
+    "cover": "27-4-fisiologia-renal-a-formacao-da-urina-parte-ii/assets/cover.webp"
+  },
+  {
+    "title": "27.5 - Histologia Renal",
+    "slug": "27-5-histologia-renal",
+    "page_count": 55,
+    "cover": "27-5-histologia-renal/assets/cover.webp"
+  }
+]

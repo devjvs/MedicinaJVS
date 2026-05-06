@@ -1,0 +1,92 @@
+[
+  {
+    "title": "2.1 - Resumo - Bioquímica",
+    "slug": "2-1-resumo-bioquimica",
+    "pages": 23
+  },
+  {
+    "title": "2.2 - Mapa Mental - Bioquímica",
+    "slug": "2-2-mapa-mental-bioquimica",
+    "pages": 10
+  },
+  {
+    "title": "2.3 - Vitaminas e Sais Minerais",
+    "slug": "2-3-vitaminas-e-sais-minerais",
+    "pages": 41
+  },
+  {
+    "title": "2.4 - Lipídios - Componentes Químicos das Células",
+    "slug": "2-4-lipidios-componentes-quimicos-das-celulas",
+    "pages": 41
+  },
+  {
+    "title": "2.5 - Carboidratos - Componentes Químicos das Células",
+    "slug": "2-5-carboidratos-componentes-quimicos-das-celulas",
+    "pages": 41,
+    "filename": "2.5 Carboidratos Componentes Químicos das Células.pdf",
+    "page_count": 41,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 102
+  },
+  {
+    "title": "2.6 - Proteínas - Componentes Químicos das Células",
+    "slug": "2-6-proteinas-componentes-quimicos-das-celulas",
+    "pages": 41,
+    "filename": "2.6 Proteínas Componentes Químicos das Células.pdf",
+    "page_count": 41,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 82
+  },
+  {
+    "title": "2.7 - Ácidos Nucleicos - Componentes Químicos das Células",
+    "slug": "2-7-acidos-nucleicos-componentes-quimicos-das-celulas",
+    "pages": 41,
+    "filename": "2.7 Ácidos Nucleicos Componentes Químicos das Células.pdf",
+    "page_count": 41,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 82
+  },
+  {
+    "title": "2.8 - Enzimologia - Estrutura e Função das Enzimas",
+    "slug": "2-8-enzimologia-estrutura-e-funcao-das-enzimas",
+    "pages": 30,
+    "filename": "2.8 Enzimologia Estrutura e Função das Enzimas.pdf",
+    "page_count": 30,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 60
+  },
+  {
+    "title": "2.9 - Atividade Enzimática - Atividade e Cinética",
+    "slug": "2-9-atividade-enzimatica-atividade-e-cinetica",
+    "pages": 30,
+    "filename": "2.9 Atividade Enzimática Atividade e Cinética.pdf",
+    "page_count": 30,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 60
+  },
+  {
+    "title": "2.10 - Atividade Enzimática - Regulação Enzimática",
+    "slug": "2-10-atividade-enzimatica-regulacao-enzimatica",
+    "pages": 30,
+    "filename": "2.10 Atividade Enzimática Regulação Enzimática.pdf",
+    "page_count": 30,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 60
+  },
+  {
+    "title": "2.11 - Classificação das Enzimas",
+    "slug": "2-11-classificacao-das-enzimas",
+    "pages": 30,
+    "filename": "2.11 Classificação das Enzimas.pdf",
+    "page_count": 30,
+    "target_width": 1150,
+    "overlay_removed": true,
+    "text_marks_removed": 60
+  }
+]

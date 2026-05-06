@@ -1,0 +1,33 @@
+{
+  "titulo": "Farmacologia",
+  "materiais": [
+    {
+      "title": "10.1 Resumo - Farmacologia",
+      "slug": "10-1-resumo-farmacologia",
+      "pages": 15,
+      "path": "10-1-resumo-farmacologia/index.html",
+      "shared": false
+    },
+    {
+      "title": "10.2 Mapa Mental - Farmacologia",
+      "slug": "10-2-mapa-mental-farmacologia",
+      "pages": 8,
+      "path": "10-2-mapa-mental-farmacologia/index.html",
+      "shared": false
+    },
+    {
+      "title": "10.3 Introdução à Farmacologia",
+      "slug": "10-3-introducao-a-farmacologia",
+      "pages": 94,
+      "path": "10-3-introducao-a-farmacologia/index.html",
+      "shared": true
+    },
+    {
+      "title": "10.4 Farmacocinética",
+      "slug": "10-4-farmacocinetica",
+      "pages": 94,
+      "path": "10-4-farmacocinetica/index.html",
+      "shared": true
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "title": "28.2 - Mapa Mental - Sistema Reprodutor Masculino",
+  "source_pdf": "28.2 Mapa Mental - Sistema Reprodutor Masculino.pdf",
+  "page_count": 3,
+  "pages": [
+    "assets/page-001.webp",
+    "assets/page-002.webp",
+    "assets/page-003.webp"
+  ],
+  "dimensions": [
+    {
+      "w": 1318,
+      "h": 742
+    },
+    {
+      "w": 1318,
+      "h": 742
+    },
+    {
+      "w": 1318,
+      "h": 742
+    }
+  ],
+  "cover": "assets/cover.webp",
+  "cleanup": {
+    "removed_center_image_xref": 32,
+    "redacted_text_instances": 6,
+    "remaining_searchable_noise_pages": 0
+  }
+}

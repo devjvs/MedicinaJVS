@@ -1,0 +1,18 @@
+{
+  "titulo": "14.6 Ensaios Clínicos",
+  "arquivo_original": "14.6 Ensaios Clínicos.pdf",
+  "paginas": 110,
+  "assets_compartilhados": true,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 110,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

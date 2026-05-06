@@ -1,0 +1,61 @@
+{
+  "titulo": "10.2 Mapa Mental - Farmacologia",
+  "arquivo_original": "10.2 Mapa Mental - Farmacologia.pdf",
+  "paginas": 8,
+  "formato": "HTML com páginas renderizadas em JPG",
+  "assets": "assets",
+  "limpeza_aplicada": [
+    "remoção de imagem ofensiva recorrente quando identificada como objeto separado",
+    "remoção de textos NÃO COMPRE DRIVE quando identificados como texto pesquisável"
+  ],
+  "paginas_renderizadas": [
+    {
+      "page": 1,
+      "file": "page-001.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 2,
+      "file": "page-002.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 3,
+      "file": "page-003.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 4,
+      "file": "page-004.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 5,
+      "file": "page-005.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 6,
+      "file": "page-006.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 7,
+      "file": "page-007.jpg",
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "page": 8,
+      "file": "page-008.jpg",
+      "width": 1280,
+      "height": 720
+    }
+  ]
+}

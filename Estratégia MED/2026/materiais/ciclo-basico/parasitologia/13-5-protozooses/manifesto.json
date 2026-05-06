@@ -1,0 +1,17 @@
+{
+  "titulo": "13.5 Protozooses",
+  "arquivo_original": "13.5 Protozooses.pdf",
+  "paginas": 94,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 94,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

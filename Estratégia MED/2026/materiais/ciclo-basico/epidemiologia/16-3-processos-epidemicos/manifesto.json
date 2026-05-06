@@ -1,0 +1,17 @@
+{
+  "titulo": "16.3 Processos Epidêmicos",
+  "arquivo_original": "16.3 Processos Epidêmicos.pdf",
+  "paginas": 121,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 10,
+      "repeticoes": 121,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

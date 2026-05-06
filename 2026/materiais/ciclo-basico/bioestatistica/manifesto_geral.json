@@ -1,0 +1,47 @@
+{
+  "titulo": "Bioestatística",
+  "materiais": [
+    {
+      "title": "15.1 Resumo - Bioestatística",
+      "slug": "15-1-resumo-bioestatistica",
+      "pages": 13,
+      "path": "15-1-resumo-bioestatistica/index.html"
+    },
+    {
+      "title": "15.2 Mapa Mental - Bioestatística",
+      "slug": "15-2-mapa-mental-bioestatistica",
+      "pages": 5,
+      "path": "15-2-mapa-mental-bioestatistica/index.html"
+    },
+    {
+      "title": "15.3 Introdução à Bioestatística",
+      "slug": "15-3-introducao-a-bioestatistica",
+      "pages": 5,
+      "path": "15-3-introducao-a-bioestatistica/index.html"
+    },
+    {
+      "title": "15.4 Estatística Descritiva",
+      "slug": "15-4-estatistica-descritiva",
+      "pages": 27,
+      "path": "15-4-estatistica-descritiva/index.html"
+    },
+    {
+      "title": "15.5 Visualização de Dados",
+      "slug": "15-5-visualizacao-de-dados",
+      "pages": 13,
+      "path": "15-5-visualizacao-de-dados/index.html"
+    },
+    {
+      "title": "15.6 Estatística Inferencial",
+      "slug": "15-6-estatistica-inferencial",
+      "pages": 18,
+      "path": "15-6-estatistica-inferencial/index.html"
+    },
+    {
+      "title": "15.7 Medidas de Associação e Intervalos de Confiança",
+      "slug": "15-7-medidas-associacao-intervalos-confianca",
+      "pages": 15,
+      "path": "15-7-medidas-associacao-intervalos-confianca/index.html"
+    }
+  ]
+}

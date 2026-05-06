@@ -1,0 +1,17 @@
+{
+  "titulo": "17.2 Mapa Mental - Propedêutica",
+  "arquivo_original": "17.2 Mapa Mental - Propedêutica.pdf",
+  "paginas": 18,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 27,
+      "repeticoes": 18,
+      "largura": 506,
+      "altura": 506
+    }
+  ]
+}

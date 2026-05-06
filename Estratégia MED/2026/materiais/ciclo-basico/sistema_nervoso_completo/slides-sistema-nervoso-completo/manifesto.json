@@ -1,0 +1,17 @@
+{
+  "titulo": "Sistema Nervoso - Slides Completos",
+  "arquivo_original": "Slides - Sistema Nervoso - Completo.pdf",
+  "paginas": 209,
+  "limpeza_aplicada": [
+    "remoção da imagem ofensiva recorrente quando detectada",
+    "remoção visual básica de NÃO COMPRE DRIVE nas bordas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 209,
+      "largura": 449,
+      "altura": 449
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "title": "27.2 - Mapa Mental - Sistema Urinario",
+  "source_pdf": "27.2 Mapa Mental - Sistema Urinário.pdf",
+  "page_count": 4,
+  "pages": [
+    "assets/page-001.webp",
+    "assets/page-002.webp",
+    "assets/page-003.webp",
+    "assets/page-004.webp"
+  ],
+  "dimensions": [
+    {
+      "w": 1340,
+      "h": 754
+    },
+    {
+      "w": 1340,
+      "h": 754
+    },
+    {
+      "w": 1340,
+      "h": 754
+    },
+    {
+      "w": 1340,
+      "h": 754
+    }
+  ],
+  "cover": "assets/cover.webp",
+  "cleanup": {
+    "page_count": 4,
+    "removed_center_image_xrefs": [
+      41
+    ],
+    "edge_phrase_mask": "top-right and bottom-left small edge masks"
+  }
+}

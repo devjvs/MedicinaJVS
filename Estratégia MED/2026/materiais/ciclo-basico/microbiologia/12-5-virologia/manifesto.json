@@ -1,0 +1,525 @@
+{
+  "titulo": "12.5 Virologia",
+  "arquivo_original": "12.5 Virologia(1).pdf",
+  "paginas": 84,
+  "formato": "HTML com páginas renderizadas em JPG",
+  "assets": "assets",
+  "limpeza_aplicada": [
+    "remoção de imagem ofensiva recorrente por substituição do objeto de imagem",
+    "limpeza visual básica das frases NÃO COMPRE DRIVE nas bordas das páginas"
+  ],
+  "watermarks_substituidos": [
+    {
+      "xref": 14,
+      "repeticoes": 84,
+      "largura": 449,
+      "altura": 449
+    }
+  ],
+  "paginas_renderizadas": [
+    {
+      "page": 1,
+      "file": "page-001.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 2,
+      "file": "page-002.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 3,
+      "file": "page-003.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 4,
+      "file": "page-004.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 5,
+      "file": "page-005.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 6,
+      "file": "page-006.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 7,
+      "file": "page-007.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 8,
+      "file": "page-008.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 9,
+      "file": "page-009.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 10,
+      "file": "page-010.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 11,
+      "file": "page-011.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 12,
+      "file": "page-012.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 13,
+      "file": "page-013.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 14,
+      "file": "page-014.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 15,
+      "file": "page-015.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 16,
+      "file": "page-016.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 17,
+      "file": "page-017.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 18,
+      "file": "page-018.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 19,
+      "file": "page-019.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 20,
+      "file": "page-020.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 21,
+      "file": "page-021.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 22,
+      "file": "page-022.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 23,
+      "file": "page-023.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 24,
+      "file": "page-024.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 25,
+      "file": "page-025.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 26,
+      "file": "page-026.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 27,
+      "file": "page-027.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 28,
+      "file": "page-028.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 29,
+      "file": "page-029.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 30,
+      "file": "page-030.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 31,
+      "file": "page-031.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 32,
+      "file": "page-032.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 33,
+      "file": "page-033.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 34,
+      "file": "page-034.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 35,
+      "file": "page-035.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 36,
+      "file": "page-036.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 37,
+      "file": "page-037.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 38,
+      "file": "page-038.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 39,
+      "file": "page-039.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 40,
+      "file": "page-040.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 41,
+      "file": "page-041.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 42,
+      "file": "page-042.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 43,
+      "file": "page-043.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 44,
+      "file": "page-044.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 45,
+      "file": "page-045.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 46,
+      "file": "page-046.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 47,
+      "file": "page-047.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 48,
+      "file": "page-048.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 49,
+      "file": "page-049.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 50,
+      "file": "page-050.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 51,
+      "file": "page-051.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 52,
+      "file": "page-052.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 53,
+      "file": "page-053.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 54,
+      "file": "page-054.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 55,
+      "file": "page-055.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 56,
+      "file": "page-056.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 57,
+      "file": "page-057.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 58,
+      "file": "page-058.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 59,
+      "file": "page-059.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 60,
+      "file": "page-060.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 61,
+      "file": "page-061.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 62,
+      "file": "page-062.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 63,
+      "file": "page-063.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 64,
+      "file": "page-064.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 65,
+      "file": "page-065.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 66,
+      "file": "page-066.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 67,
+      "file": "page-067.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 68,
+      "file": "page-068.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 69,
+      "file": "page-069.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 70,
+      "file": "page-070.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 71,
+      "file": "page-071.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 72,
+      "file": "page-072.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 73,
+      "file": "page-073.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 74,
+      "file": "page-074.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 75,
+      "file": "page-075.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 76,
+      "file": "page-076.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 77,
+      "file": "page-077.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 78,
+      "file": "page-078.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 79,
+      "file": "page-079.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 80,
+      "file": "page-080.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 81,
+      "file": "page-081.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 82,
+      "file": "page-082.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 83,
+      "file": "page-083.jpg",
+      "width": 960,
+      "height": 540
+    },
+    {
+      "page": 84,
+      "file": "page-084.jpg",
+      "width": 960,
+      "height": 540
+    }
+  ]
+}
