@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemoriMED 2026 | Medicina JVS</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        neuro: {
+                            dark: '#020617',    /* Slate 950 */
+                            card: '#0f172a',    /* Slate 900 */
+                            primary: '#4f46e5', /* Indigo 500 */
+                            primaryLight: '#6366f1', /* Indigo 500 */
+                            accent: '#06b6d4',  /* Cyan 400 */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Montserrat', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #020617; 
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(79, 70, 229, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.05), transparent 25%),
+                linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+            color: #e2e8f0; 
+            overflow: hidden;
+        }
+        
+        h1, h2, h3, .font-display { font-family: 'Montserrat', sans-serif; }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Scrollbar Premium */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        /* Estilos da Lista de Aulas */
+        .lesson-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+        }
+        .lesson-item:hover { 
+            background-color: rgba(79, 70, 229, 0.08); 
+            border-left-color: #475569;
+        }
+        .selected-lesson { 
+            background: linear-gradient(90deg, rgba(79, 70, 229, 0.15) 0%, transparent 100%);
+            border-left-color: #6366f1; 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), inset 0 -1px 0 rgba(255,255,255,0.02);
+        }
+        .selected-lesson .lesson-icon { color: #06b6d4; transform: scale(1.1); }
+        .selected-lesson .lesson-text { color: #ffffff; font-weight: 600; }
+        
+        /* Cards da Home */
+        .module-card {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .module-card-header {
+            position: relative;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(15, 23, 42, 0) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            overflow: hidden;
+        }
+        .module-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transition: 0.5s;
+            pointer-events: none;
+        }
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(79, 70, 229, 0.25);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .module-card:hover::after { left: 150%; }
+
+        .section-heading-card {
+            grid-column: 1 / -1;
+            margin-top: 1.5rem;
+            margin-bottom: -0.25rem;
+        }
+        .section-heading-card:first-child { margin-top: 0; }
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #67e8f9;
+            background: rgba(8, 145, 178, 0.08);
+            border: 1px solid rgba(34, 211, 238, 0.18);
+            border-radius: 999px;
+            padding: 0.45rem 0.8rem;
+        }
+        .single-module-row {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+        }
+        .single-module-row .module-card {
+            width: min(100%, 32rem);
+        }
+        .single-module-centered {
+            width: min(100%, 32rem);
+        }
+
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.05);
+            border-radius: 50%;
+            border-top: 3px solid #06b6d4;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(6, 182, 212, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+        }
+        .active-indicator { animation: pulse-ring 2s infinite; }
+        .hidden { display: none !important; }
+        .material-btn:hover .pdf-icon { transform: translateY(-2px); color: #fff; }
+
+        /* Estilos do Quiz / Avaliação */
+        .quiz-option {
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .quiz-option:hover:not(.disabled) {
+            background-color: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        .quiz-option.selected {
+            background-color: rgba(99, 102, 241, 0.15);
+            border-color: #6366f1;
+            box-shadow: inset 0 0 0 1px #6366f1;
+        }
+        .quiz-option.selected .option-radio {
+            border-color: #06b6d4;
+            background-color: #06b6d4;
+        }
+        .quiz-option.correct {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+        }
+        .quiz-option.correct .option-radio {
+            border-color: #10b981;
+            background-color: #10b981;
+        }
+        .quiz-option.incorrect {
+            background-color: rgba(225, 29, 72, 0.1);
+            border-color: #e11d48;
+        }
+        .quiz-option.incorrect .option-radio {
+            border-color: #e11d48;
+            background-color: #e11d48;
+        }
+        .quiz-option.disabled { cursor: default; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-300">
+
+    <!-- HEADER -->
+    <header class="glass-panel h-16 px-6 flex items-center justify-between shrink-0 z-30 relative border-b border-white/5">
+        <div class="flex items-center space-x-4 cursor-pointer group" onclick="goHome()">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] transition-all duration-300">
+                <i class="fas fa-stethoscope text-white text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold text-white tracking-tight leading-none uppercase">MemoriMED 2026</h1>
+                <p class="text-[10px] text-cyan-400 font-bold uppercase tracking-widest mt-0.5">Medicina JVS</p>
+            </div>
+        </div>
+        
+        <div id="player-controls" class="hidden flex items-center gap-4 animate-fade-in">
+            <div class="h-8 w-px bg-white/10 mx-2 hidden md:block"></div>
+            
+            <div class="relative group hidden sm:block">
+                <select id="moduleSelector" class="appearance-none bg-slate-900/80 text-white text-xs font-semibold py-2.5 pl-4 pr-10 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 cursor-pointer min-w-[280px] max-w-[350px] truncate transition-all hover:bg-slate-800">
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                    <i class="fas fa-chevron-down text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Botões de Voltar Dinâmicos -->
+            <button id="btnBackToHome" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar ao Início</span>
+            </button>
+            <button id="btnBackToModules" onclick="goHome()" class="hidden text-slate-400 hover:text-white hover:bg-slate-800 transition-all px-4 py-2 rounded-xl flex items-center gap-2 text-xs font-bold uppercase tracking-wide border border-slate-800 hover:border-slate-600">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Voltar aos Módulos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- HOME VIEW -->
+    <main id="home-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-12 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-4 relative z-10 tracking-tight font-display"><span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">MemoriMED 2026</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                
+                <!-- Fallback do Texto Descritivo (Desaparece quando as avaliações são carregadas) -->
+                <p id="home-description-fallback" class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Aulas do MemoriMED organizadas conforme a estrutura correta de seções e módulos enviada no relatório.
+                </p>
+
+                <!-- BANNER CENTRAL DE AVALIAÇÕES (Destacado no topo) -->
+                <div id="assessments-banner" class="mt-2 hidden max-w-3xl relative z-20">
+                    <div onclick="goAssessments()" class="w-full bg-slate-900/80 backdrop-blur-md border border-indigo-500/30 rounded-2xl p-5 cursor-pointer hover:bg-slate-800 transition-all group flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xl shadow-indigo-900/10">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white tracking-tight font-display group-hover:text-indigo-400 transition-colors">Central de Avaliações</h3>
+                                <p class="text-slate-400 text-sm mt-0.5 line-clamp-2">Do acidente vascular encefálico aos distúrbios do movimento. Teste e consolide os seus conhecimentos.</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center text-xs font-bold text-indigo-400 bg-indigo-950/50 px-4 py-2 rounded-lg border border-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                            <span class="uppercase mr-2">Abrir</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                <!-- Modules injected via JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ASSESSMENTS VIEW (NOVA PÁGINA CENTRAL) -->
+    <main id="assessments-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-14 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 relative z-10 tracking-tight font-display">Central de <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Avaliações</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-2xl leading-relaxed font-medium">
+                    Selecione a avaliação de um módulo específico para testar e consolidar os seus conhecimentos.
+                </p>
+            </div>
+            
+            <div id="assessments-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Assessment cards injected here via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- EBOOKS VIEW (MATERIAIS INDEPENDENTES) -->
+    <main id="ebooks-view" class="flex-grow overflow-y-auto custom-scroll p-6 lg:p-12 relative z-10 hidden">
+        <div class="max-w-7xl mx-auto pb-20">
+            <div class="mb-10 relative mt-4">
+                <div class="absolute -top-10 -left-10 w-64 h-64 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                <p class="text-xs font-black uppercase tracking-[0.25em] text-cyan-400 mb-3">SEÇÃO 00</p>
+                <h2 class="text-4xl md:text-5xl font-black text-white mb-4 relative z-10 tracking-tight font-display">E-Books <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Materiais Independentes</span></h2>
+                <div class="h-1.5 w-24 bg-gradient-to-r from-cyan-500 to-indigo-500 rounded-full mb-6 mt-6 shadow-[0_0_10px_rgba(6,182,212,0.5)]"></div>
+                <p class="text-slate-400 text-lg max-w-3xl leading-relaxed font-medium">
+                    Biblioteca de e-books/capítulos organizada por área. Abra uma categoria para visualizar os materiais no player ou em nova aba.
+                </p>
+            </div>
+
+            <div class="mb-8 bg-slate-900/80 border border-cyan-500/20 rounded-2xl p-5 shadow-xl shadow-cyan-900/10 flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 shrink-0">
+                    <i class="fas fa-book-open text-xl text-cyan-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white font-display">📚 Guia de Estudos: MemoriMED 2026 | Medicina JVS</h3>
+                    <p class="text-sm text-slate-400 mt-1">Referência geral da organização do curso e dos materiais independentes.</p>
+                </div>
+            </div>
+            
+            <div id="ebooks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Independent e-book category cards injected here via JS -->
+            </div>
+        </div>
+    </main>
+
+    <!-- PLAYER VIEW -->
+    <main id="player-view" class="flex-grow flex flex-col lg:flex-row overflow-hidden hidden bg-[#050505] z-10 relative">
+        
+        <section class="flex-1 flex flex-col overflow-y-auto custom-scroll relative group bg-slate-950">
+            <div class="w-full aspect-video max-h-[75vh] flex-shrink-0 relative bg-[#050505] flex items-center justify-center border-b border-white/5 shadow-2xl">
+                
+                <!-- Componentes de Vídeo -->
+                <div id="videoLoader" class="absolute inset-0 flex items-center justify-center bg-slate-950 z-0 hidden">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <iframe id="contentPlayer" src="" class="absolute inset-0 w-full h-full z-10" frameborder="0" allowfullscreen style="display:none;"></iframe>
+                
+                <!-- Botão de emergência sobreposto -->
+                <div id="externalLinkBtn" class="absolute top-4 right-4 z-20" style="display:none;">
+                    <button onclick="openCurrentVideoExternal()" class="bg-black/60 hover:bg-indigo-600 text-white backdrop-blur-md px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 border border-white/10 transition-colors shadow-lg" title="Se o vídeo não carregar, abra noutra aba">
+                        <i class="fas fa-external-link-alt"></i> Abrir Aula noutra Aba
+                    </button>
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyState" class="flex flex-col items-center justify-center h-full text-center p-8 bg-gradient-to-t from-slate-900 to-[#050505] w-full absolute inset-0 z-10">
+                    <div class="w-24 h-24 bg-slate-900/80 rounded-2xl flex items-center justify-center mb-8 border border-white/5 shadow-[0_0_50px_rgba(99,102,241,0.15)] transform rotate-3">
+                        <i class="fas fa-user-md text-4xl text-indigo-500 -rotate-3"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-3 font-display">Ambiente Clínico</h2>
+                    <p class="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
+                        Selecione uma aula no programa científico ao lado para iniciar a sua sessão de estudo.
+                    </p>
+                </div>
+
+                <!-- STATE DO QUIZ / AVALIAÇÃO -->
+                <div id="quizState" class="hidden absolute inset-0 w-full h-full z-20 bg-slate-950 overflow-y-auto custom-scroll p-6 sm:p-10">
+                    <div class="max-w-3xl mx-auto pb-10">
+                        <div class="flex items-center gap-3 mb-8 border-b border-white/10 pb-6">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30">
+                                <i class="fas fa-clipboard-check text-xl text-indigo-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-2xl font-bold text-white font-display">Avaliação do Módulo</h2>
+                                <p class="text-slate-400 text-sm">Teste os seus conhecimentos adquiridos</p>
+                            </div>
+                        </div>
+
+                        <div id="quizQuestionsContainer" class="space-y-10">
+                            <!-- Perguntas injetadas via JS -->
+                        </div>
+
+                        <div id="quizControls" class="mt-10 pt-6 border-t border-white/10 flex justify-between items-center hidden">
+                            <div id="quizScore" class="hidden text-lg font-bold"></div>
+                            <button id="btnSubmitQuiz" onclick="submitAssessment()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2 ml-auto">
+                                Finalizar Avaliação <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="bg-slate-900 p-5 border-b border-white/5 shrink-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 z-20">
+                <div class="flex-1">
+                    <h2 id="lessonTitle" class="text-xl font-bold text-white flex items-center gap-3">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-500 active-indicator hidden" id="pulseIndicator"></span>
+                        <span class="line-clamp-1">Nenhuma aula selecionada</span>
+                    </h2>
+                    <p id="moduleTitleDisplay" class="text-xs text-cyan-400 mt-1.5 font-bold uppercase tracking-wider pl-5 hidden sm:block">Módulo</p>
+                </div>
+                
+                <!-- Navegação de Vídeo -->
+                <div class="flex items-center gap-2" id="videoNavControls" style="display: none;">
+                    <button onclick="playPrevious()" id="btnPrev" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border border-slate-700">
+                        <i class="fas fa-step-backward"></i> Anterior
+                    </button>
+                    <button onclick="playNext()" id="btnNext" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold transition-colors flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                        Próxima <i class="fas fa-step-forward"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SEÇÃO MAPAS MENTAIS & AVALIAÇÕES (ABAIXO DO VÍDEO) -->
+            <div id="materialsSection" class="p-6 shrink-0 hidden bg-slate-950 border-t border-white/5">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-book-open text-cyan-500"></i> Materiais de Estudo & Avaliações
+                </h3>
+                <div id="materialsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Materials and Assessment buttons Injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- BARRA LATERAL (APENAS AULAS) -->
+        <aside class="w-full lg:w-[400px] xl:w-[450px] bg-slate-900/80 border-l border-white/5 flex flex-col shrink-0 h-[50vh] lg:h-auto z-20 shadow-2xl backdrop-blur-md">
+            <div class="p-6 border-b border-white/5 bg-slate-900 shrink-0 flex justify-between items-center">
+                <h3 class="font-bold text-slate-100 text-sm uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-list-ul text-indigo-500"></i> Programa do Módulo
+                </h3>
+                <span id="lessonCountBadge" class="bg-indigo-500/10 text-indigo-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-500/20">0 Aulas</span>
+            </div>
+            
+            <div id="lessonsContainer" class="flex-1 overflow-y-auto custom-scroll p-3 space-y-1.5 pb-20">
+                <!-- Lessons Injected via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        // ==================================================================================
+        // DADOS DOS MÓDULOS, AULAS E AVALIAÇÕES
+        // ==================================================================================
+        const courseData = [
+            {
+                        "title": "Módulo 00 - Comece Aqui",
+                        "description": "Aulas de Módulo 00 - Comece Aqui.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Introdução ao MemoriMED (RM)",
+                                                "u": "https://drive.google.com/file/d/153zry4I9Z0NPldelyTXrQ2mSAz9izGPh/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 01 - Preventiva",
+                        "description": "Aulas de Módulo 01 - Preventiva.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Os Princípios do SUS",
+                                                "u": "https://drive.google.com/file/d/11is_8BTutQMMdhZ7DC1q2PgkqtfZ7oWk/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Atributos da Atenção Primária à Saúde (Princípios da Atenção Básica)",
+                                                "u": "https://drive.google.com/file/d/1TMbjxTfGh1jfsTSPSWQKf3-baO1f8okN/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Testes Diagnósticos (Sensibilidade, Especificidade, VPP, VPN e Acurácia)",
+                                                "u": "https://drive.google.com/file/d/1PTQ0vBjiC73du1aLYzYyWGvdMiP9hJ2g/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Classificação dos Estudos Epidemiológicos (Coorte, Caso-Controle...)",
+                                                "u": "https://drive.google.com/file/d/1RrfA8G4clRREOkzepL12oD56wqZ1PXV5/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Lista de Doenças de Notificação Compulsória: Parte I",
+                                                "u": "https://drive.google.com/file/d/1oEmnlw9x3msTyrAI9056y2JDQGGLdWSH/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Lista de Doenças de Notificação Compulsória: Parte II",
+                                                "u": "https://drive.google.com/file/d/1PtLlTQkZssGHp8sXx7-S-S9ImQWz5YpS/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Lista de Doenças de Notificação Compulsória: Parte III",
+                                                "u": "https://drive.google.com/file/d/1Cth35CkbG5eg19npz9bDSaGOm18mfV01/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Lista de Doenças de Notificação Compulsória: Parte IV",
+                                                "u": "https://drive.google.com/file/d/1q0wEkFAY_gZb_1_Vqq1zUMhoAtQXj3c5/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 02 - Pediatria",
+                        "description": "Aulas de Módulo 02 - Pediatria.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Escala de Apgar",
+                                                "u": "https://drive.google.com/file/d/1IcyhpQasos7bywJAcMakv-qxB01YlWLn/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Imunização: Parte I - Vacinas do PNI: Os Personagens",
+                                                "u": "https://drive.google.com/file/d/1wljmJlJDOoDcQ6fLKoYOejmlaQjSwU33/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Imunização: Parte II - Vacinas do PNI: O Calendário Nacional de Vacinação 2025 (Atualizada em Julho 2025)",
+                                                "u": "https://drive.google.com/file/d/1rykLCvKHwdTibADJHpxqaQ6Xt4whsWgc/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Imunização: Parte III - Vacinas de Agentes Vivos e Não Vivos",
+                                                "u": "https://drive.google.com/file/d/1SXGSa5KMQPIrLF1xEFxWDmmFs-aSLqLw/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Doenças Exantemáticas: Parte I - Sarampo e Rubéola",
+                                                "u": "https://drive.google.com/file/d/1b0r81x3c-UPDSvj-OGwswSAL24IK0Czi/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Doenças Exantemáticas: Parte II - Eritema Infeccioso e Exantema Súbito",
+                                                "u": "https://drive.google.com/file/d/1dvYR8FHm3jKFCjXmgo_Lm8VnM5lI1ISk/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Doenças Exantemáticas: Parte III - Doença Mão-Pé-Boca e Varicela",
+                                                "u": "https://drive.google.com/file/d/1IEYNVmSXyEqWDldjmL3CcxFuRt9yS496/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Doenças Exantemáticas: Parte IV - Escarlatina, Mononucleose e Kawasaki",
+                                                "u": "https://drive.google.com/file/d/10FkW3d2lzgvRqQ1G4zyOfdConzD8UGB5/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 09 - Marcos do Desenvolvimento: Parte I - Introdução e Motor",
+                                                "u": "https://drive.google.com/file/d/18j0EEau6WgUXT1zFxpbL9hBHkTrUYU8-/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 10 - Marcos do Desenvolvimento: Parte II - Adaptativo",
+                                                "u": "https://drive.google.com/file/d/1w7uS6Cm83kqZQQaIbfF4egLu1nYiuTqI/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 11 - Marcos do Desenvolvimento: Parte III - Linguagem",
+                                                "u": "https://drive.google.com/file/d/1iNLMDOLXyil0987ZG-on0vHvKPE5NyHS/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 12 - Marcos do Desenvolvimento: Parte IV - Pessoal-Social",
+                                                "u": "https://drive.google.com/file/d/1kaOKFiR_hQfqy3u07Ob6Fkl1nBA3-tvq/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 03 - Ginecologia",
+                        "description": "Aulas de Módulo 03 - Ginecologia.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Fases do Ciclo Menstrual",
+                                                "u": "https://drive.google.com/file/d/1goR-53wHNQdmqH6pDWH_tzif4F800tey/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Gráfico do Ciclo Menstrual",
+                                                "u": "https://drive.google.com/file/d/1yI-v4-gDGtnfEJY89lKxq6w-g8Q0XHlF/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Teoria das 2 Células, 2 Gonadotrofinas",
+                                                "u": "https://drive.google.com/file/d/12mXQMwqjZ54rlj8ejRPzvJ76XxTJHbX7/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Rastreamento do Câncer de Colo Uterino I",
+                                                "u": "https://drive.google.com/file/d/1Q-GMXdZto42SnqfIXgITKCDmzeFgc_7T/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Rastreamento do Câncer de Colo Uterino II",
+                                                "u": "https://drive.google.com/file/d/1Kyg79zwjXBWruDrqyx0siMU39G0h_xXb/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Rastreamento do Câncer de Colo Uterino: Parte I - Introdução",
+                                                "u": "https://drive.google.com/file/d/1zvOLzoBNVtkss2VsCshHJpbVTkrwR-79/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Rastreamento do Câncer de Colo Uterino: Parte II - O Rastreamento",
+                                                "u": "https://drive.google.com/file/d/1i6_URLYPYPjg_tIFUEZTPS57TCk8BsKr/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Rastreamento do Câncer de Colo Uterino: Parte III - O Palácio Mental",
+                                                "u": "https://drive.google.com/file/d/1uDxi9v_xw8wgsw_DVy184ySsmnd7HZ7h/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 09 - Rastreamento do Câncer de Colo Uterino: Parte IV - Questões",
+                                                "u": "https://drive.google.com/file/d/1aotREa74pyvwTHgofIR6w-8q4FuqYJw4/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 04 - Obstetrícia",
+                        "description": "Aulas de Módulo 04 - Obstetrícia.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Estática Fetal I: Orientação Fetal",
+                                                "u": "https://drive.google.com/file/d/1-9Y9i09WxfgDtHTO3_XgH2NlCLQ0N-BE/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Estática Fetal II: Variedades de Apresentação",
+                                                "u": "https://drive.google.com/file/d/1tgLOF4CCsD79jc6TSLvZB4DNzT5582a_/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Estática Fetal III: Manobras de Leopold",
+                                                "u": "https://drive.google.com/file/d/1AZ-ufFPKPsywYInboQ2_8U8q4ruzqOnX/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 05 - Clínica Médica",
+                        "description": "Aulas de Módulo 05 - Clínica Médica.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Dermato: Erisipela e Celulite",
+                                                "u": "https://drive.google.com/file/d/1KnC6QohtJUzsI3y1dGKfrtlrRu7FqZuy/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Infecto: Dengue - Os Sinais de Alarme",
+                                                "u": "https://drive.google.com/file/d/1dEE1XR3xPiJ6POREVyzkoOCJqdWpZi-3/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Infecto: Hepatites - Sorologias da Hepatite B",
+                                                "u": "https://drive.google.com/file/d/1pvMTbDXiTMO5I4UqZEXjisl2t-pBNXcA/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Intensiva: Os 5H e 5T da Parada Cardiorrespiratória",
+                                                "u": "https://drive.google.com/file/d/1HFDCgjQJC71ZlyD0Wq2VLLbpkCsb6XGI/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Intensiva: Ritmos Chocáveis e Não Chocáveis da PCR",
+                                                "u": "https://drive.google.com/file/d/1EISXyhO_vC-lDmU2EBplr1npN5oV4Vj6/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Intensiva: Gasometria Arterial - Parte I: Explicação Teórica",
+                                                "u": "https://drive.google.com/file/d/1btC4hHMMAV3yR7j4uFJtH5LcYOTF8jRE/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Intensiva: Gasometria Arterial - Parte II: Palácio da Memória",
+                                                "u": "https://drive.google.com/file/d/1HY3QldW1cTKsPrOV0qR1Oap69fwZqLK4/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Intensiva: Gasometria Arterial - Parte III: Exemplos Práticos",
+                                                "u": "https://drive.google.com/file/d/1cHUmvw6V-uivw0v6fxI0aJ3gCvxqTzcW/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 09 - Nefro: Síndromes Glomerulares - Parte I: Introdução",
+                                                "u": "https://drive.google.com/file/d/1CE_sOEM7gdsGb_KRezyiVyOhTU5jIbQc/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 10 - Nefro: Síndromes Glomerulares - Parte II: Síndrome Nefrítica",
+                                                "u": "https://drive.google.com/file/d/12eH_WJDC1U9SJFnEvft-MXw77IHpNXGt/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 11 - Nefro: Síndromes Glomerulares - Parte III: Doença de Berger (Nefropatia por IgA)",
+                                                "u": "https://drive.google.com/file/d/1uu1WKsEfZUuj0JJDZNC5ylbfYZY_a7Yj/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 12 - Nefro: Síndromes Glomerulares - Parte IV: Glomerulonefrite Rapidamente Progressiva (GNRP)",
+                                                "u": "https://drive.google.com/file/d/1a5zPsJ_MGfeyaYsEG4soBqG9Uzj3RgaC/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 13 - Nefro: Síndromes Glomerulares - Parte V: Síndrome Hemolítico-Urêmica (SHU)",
+                                                "u": "https://drive.google.com/file/d/1Xfe-3xpBd7x6zOu31v0QXfUsi61XGsd0/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 14 - Nefro: Síndromes Glomerulares - Parte VI: Síndrome Nefrótica",
+                                                "u": "https://drive.google.com/file/d/1LiAAu5zc5vOa_WZICx1fhgVP9_Ydn6tv/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 15 - Nefro: Síndromes Glomerulares - Parte VII: Resolução de Questões",
+                                                "u": "https://drive.google.com/file/d/11ktMFZSatkjkngwuYuE09V1ucM7nloNS/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 16 - Neuro: Os 12 Pares dos Nervos Cranianos - Parte I",
+                                                "u": "https://drive.google.com/file/d/1zZgoIyRDtW0gOd1Ynb5987bUANz2_KiY/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 17 - Neuro: Os 12 Pares dos Nervos Cranianos - Parte II",
+                                                "u": "https://drive.google.com/file/d/131Y4Lnml28qrNqS22TCgeLXNIfqV6-Ki/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo 06 - Cirurgia",
+                        "description": "Aulas de Módulo 06 - Cirurgia.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Classificações de Child-Pugh e MELD (Insuficiência Hepática)",
+                                                "u": "https://drive.google.com/file/d/1AtE5avIdjWxVB1OgZm1YNagzAO9G1fSc/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Anatomia das Vias Biliares",
+                                                "u": "https://drive.google.com/file/d/11ndgOVYhgkA5t_Pjy0sKzaBuqrWZwHty/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Anatomia das Vias Biliares: Triângulo de Callot",
+                                                "u": "https://drive.google.com/file/d/1Dj5If8WtfuUMovke7QGw5lnAhyU5xmOZ/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Trauma Torácico: Tríade de Beck (Tamponamento Cardíaco)",
+                                                "u": "https://drive.google.com/file/d/1FNPR_NBeN5ovY3pqG__pM4Dl8TlVeLA0/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Trauma: Escala de Coma de Glasgow - Parte I: Teoria (Avaliação Neurológica)",
+                                                "u": "https://drive.google.com/file/d/1IGJ062v7HjXeY3jTbRRuY6u0JWjnTdg2/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Trauma: Escala de Coma de Glasgow - Parte II: Palácio da Memória (Avaliação Neurológica)",
+                                                "u": "https://drive.google.com/file/d/1KvDiXd4UGg9mSlqQRC-j_gDf9V9tzaVj/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 01 - MEMORIMED (RM)"
+            },
+            {
+                        "title": "Módulo Único - MemoriMED (ATB)",
+                        "description": "Aulas de Módulo Único - MemoriMED (ATB).",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - Comece Aqui: Introdução ao MemoriMED (ATB)",
+                                                "u": "https://drive.google.com/file/d/1bf-H0KBSVtBEhfD2w9Ktffwv04vHHls1/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Os 5 Tipos de Classificação dos Antibióticos",
+                                                "u": "https://drive.google.com/file/d/1HKvzcbMLIdTNlLlLXVnlLnRtX64X_sBs/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - A Classificação pelo Mecanismo de Ação",
+                                                "u": "https://drive.google.com/file/d/1A_EStshRNoXhPMAtb2HYqDPAfyOJrLC7/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - Os 5 Grupos da Classificação pelo Mecanismo de Ação",
+                                                "u": "https://drive.google.com/file/d/1_gMNBe1PVbfHcy1Q9hkEzcX4wCH3LC1t/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - Grupo A: Inibidores da Síntese da Parede Celular (Penicilinas, Cefalosporinas...)",
+                                                "u": "https://drive.google.com/file/d/1ORzc-gLV4iG-XK-0N8CP9xfAVxphIUFY/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Grupo B: Fármacos que Aumentam a Permeabilidade da Membrana Celular",
+                                                "u": "https://drive.google.com/file/d/1lDE9yBR2LrOO9H_2WQrvmiWXQlWC5o_E/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Grupo C: Drogas Antifólicas (Que Inibem a Síntese do Folato)",
+                                                "u": "https://drive.google.com/file/d/1pAnyu04VxB5vPliXIoKBgNiQNnz6whqB/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Grupo D: Fármacos que Afetam o Metabolismo dos Ácidos Nucleicos",
+                                                "u": "https://drive.google.com/file/d/1pFBgoDgoOj-wUDVA_YaV5nF1K9XEUM9n/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 09 - Grupo E: Fármacos Inibidores da Síntese Proteica",
+                                                "u": "https://drive.google.com/file/d/1itDih95uheG1URS42m7u8cDWxXsK_k2f/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 02 - MEMORIMED (ATB)"
+            },
+            {
+                        "title": "Módulo Único - ECG para Iniciantes",
+                        "description": "Aulas de Módulo Único - ECG para Iniciantes.",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - O Guia Definitivo para Aprender ECG do ZERO",
+                                                "u": "https://drive.google.com/file/d/15Hcv-WCodhlSEgIMaWnQcsHird8gWlqe/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Principais Macetes do ECG para Iniciantes: Como Interpretar",
+                                                "u": "https://drive.google.com/file/d/17qUpULYBcxmzgyrUQVqnxNqXKvl9vWh4/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - 10 Passos Fáceis para Interpretar ECG da Forma CERTA",
+                                                "u": "https://drive.google.com/file/d/12ZGbNp3gnVDAexSI3kJTYvRkr1GH5MUJ/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 03 - ECG PARA INICIANTES"
+            },
+            {
+                        "title": "Módulo Único - Bônus  20 Aulas do MemoriMED ECG para Alunos MemoriMed (RM)",
+                        "description": "Aulas de Módulo Único - Bônus  20 Aulas do MemoriMED ECG para Alunos MemoriMed (RM).",
+                        "lessons": [
+                                    {
+                                                "t": "Aula 01 - ECG: Comece Aqui",
+                                                "u": "https://drive.google.com/file/d/1JxvJXco3ZHChahXqy42LPZwi8Q1Di32O/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 02 - Anatomia do Sistema de Condução do Coração",
+                                                "u": "https://drive.google.com/file/d/1yrgj6iwt2_4V73aIbKQU5uy3QiY3-ueP/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 03 - Anatomia do Sistema de Condução do Coração (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1eOj0HGTXy_LNqEIt-Q4wDeD1kgGv57EU/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 04 - ECG para INICIANTES (Resumo do que Você Precisa Saber)",
+                                                "u": "https://drive.google.com/file/d/1pWuA1kL8m1agBw4UcWmRaib44whESXm_/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 05 - O Que são as Derivações do ECG",
+                                                "u": "https://drive.google.com/file/d/1NT6Y1KW7iq1R0POWXT3XGonExD1uL5dh/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 06 - Derivações Periféricas (DI, DII, DIII, aVF, aVL, aVR)",
+                                                "u": "https://drive.google.com/file/d/1DSQkBONtd9VXP3V9z0I2hM3RxYYAP0JA/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 07 - Derivações Periféricas (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1j_Rm9WybgXSYvttaBYC1guGOtIWhEOZ_/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 08 - Derivações Precordiais (V1 a V6 + V7,V8 e V9)",
+                                                "u": "https://drive.google.com/file/d/103t5D3x3NuinvlWcNUQHV9G-MkavjtkF/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 09 - Derivações Precordiais (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1XQs-4FqfxkB0XRDNRAeyyFEhBNwMhC8B/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 10 - Derivações Precordiais (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1NvC7EMzAbCGh1s6GFqkmOrxgNsd7Q5Wt/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 11 - Bradiarritmias Sinusais",
+                                                "u": "https://drive.google.com/file/d/1EqOQaHGKxlsXFRC2xFrUkr0Kzl5MzERW/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 12 - Bloqueios Atrioventriculares (BAV)",
+                                                "u": "https://drive.google.com/file/d/18XcPBhom5i6wjai91LVU5A9dHtPjX9A5/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 13 - Bloqueios Atrioventriculares (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/10QCAIQDHh08fszNEfP2HhaqtPSbu_NUs/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 14 - Taquicardias Supraventriculares (QRS Estreito)",
+                                                "u": "https://drive.google.com/file/d/1oiXhVdy2AoWGne5C0RNosnd8z410IOvu/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 15 - Fibrilação Atrial e Flutter Atrial",
+                                                "u": "https://drive.google.com/file/d/1X40rL8pawwHpKKB1uVO_YTpnqH9o7kDk/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 16 - Extrassístoles",
+                                                "u": "https://drive.google.com/file/d/1LW_xOphX0SsnxM7mxLIapebKklyhM2PN/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 17 - Taquicardias Supraventriculares: QRS Estreito (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1z0BzlVBKt9x4iXA4nNAilJGRs8DuHFf5/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 18 - Taquicardias com QRS Largo",
+                                                "u": "https://drive.google.com/file/d/1GEVUn4RkOOKw6CRhBHfiz4TfgKR-1iQn/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 19 - Taquicardias Ventriculares: QRS Largo (Palácio da Memória)",
+                                                "u": "https://drive.google.com/file/d/1KejZ8xBu0B5n-OVJAufgqnSiEU_E-ltg/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 20 - Questões de Residência: Bradiarritmias",
+                                                "u": "https://drive.google.com/file/d/1-18PWF79PMpuQ_z_bPKRYf6oxqFyfLeD/view?usp=sharing"
+                                    },
+                                    {
+                                                "t": "Aula 21 - Questões de Residência: Taquiarritmias",
+                                                "u": "https://drive.google.com/file/d/1Sfvbo8qLngPmUWcMyK7BGCUrS5MM_Ml0/view?usp=sharing"
+                                    }
+                        ],
+                        "materials": [],
+                        "assessment": [],
+                        "section": "SEÇÃO 04 - BÔNUS  20 AULAS DO MEMORIMED ECG PARA ALUNOS MEMORIMED (RM)"
+            }
+];
+
+        const independentEbooksData = [];
+
+        // Formatando Módulos Internamente
+        const modulesData = courseData.map((mod, index) => {
+            return {
+                id: `mod_${index + 1}`,
+                section: mod.section || 'SEÇÃO 01 - MEMORIMED (RM)',
+                title: mod.title,
+                description: mod.description,
+                assessment: mod.assessment || [],
+                materials: mod.materials || [],
+                lessons: (mod.lessons || []).map((lesson, lIndex) => ({
+                    id: `vid_${index + 1}_${lIndex + 1}`,
+                    title: lesson.t,
+                    url: lesson.u 
+                }))
+            };
+        });
+
+        const ebookCategoriesData = independentEbooksData.map((category, index) => ({
+            id: category.id || `ebook_${index + 1}`,
+            title: category.title,
+            description: category.description || 'Biblioteca independente de e-books.',
+            materials: category.materials || []
+        }));
+
+        // ==================================================================================
+        // INTERFACE LÓGICA E NAVEGAÇÃO
+        // ==================================================================================
+
+        const homeView = document.getElementById('home-view');
+        const assessmentsView = document.getElementById('assessments-view');
+        const ebooksView = document.getElementById('ebooks-view');
+        const playerView = document.getElementById('player-view');
+        
+        const playerControls = document.getElementById('player-controls');
+        const btnBackToHome = document.getElementById('btnBackToHome');
+        const btnBackToModules = document.getElementById('btnBackToModules');
+        
+        const contentPlayer = document.getElementById('contentPlayer');
+        const emptyState = document.getElementById('emptyState');
+        const videoLoader = document.getElementById('videoLoader');
+        const quizState = document.getElementById('quizState');
+        const quizQuestionsContainer = document.getElementById('quizQuestionsContainer');
+        const quizControls = document.getElementById('quizControls');
+        const quizScore = document.getElementById('quizScore');
+        const btnSubmitQuiz = document.getElementById('btnSubmitQuiz');
+
+        const lessonTitleEl = document.getElementById('lessonTitle');
+        const moduleTitleDisplay = document.getElementById('moduleTitleDisplay');
+        const pulseIndicator = document.getElementById('pulseIndicator');
+        const lessonsContainer = document.getElementById('lessonsContainer');
+        const lessonCountBadge = document.getElementById('lessonCountBadge');
+        const moduleSelector = document.getElementById('moduleSelector');
+        
+        const modulesGrid = document.getElementById('modules-grid');
+        const assessmentsBanner = document.getElementById('assessments-banner');
+        const homeDescriptionFallback = document.getElementById('home-description-fallback');
+        const assessmentsGrid = document.getElementById('assessments-grid');
+        const ebooksGrid = document.getElementById('ebooks-grid');
+
+        const videoNavControls = document.getElementById('videoNavControls');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+
+        let selectedLessonId = null;
+        let currentVideoList = []; 
+        let currentMaterialsList = [];
+        let currentVideoIndex = -1;
+        let currentAssessment = null;
+        let userAnswers = {};
+        let quizSubmitted = false;
+
+        // --- Renderização da HOME ---
+        function getModuleIcon(mod) {
+            let icon = 'fa-brain';
+            let iconColor = 'text-indigo-400';
+
+            if(mod.title.includes('Cardiologia')) { icon = 'fa-heartbeat'; iconColor = 'text-red-500'; }
+            else if(mod.title.includes('Dermatologia')) { icon = 'fa-allergies'; iconColor = 'text-amber-500'; }
+            else if(mod.title.includes('Endocrinologia')) { icon = 'fa-vial'; iconColor = 'text-purple-400'; }
+            else if(mod.title.includes('Gastroenterologia')) { icon = 'fa-apple-alt'; iconColor = 'text-orange-500'; }
+            else if(mod.title.includes('Geriatria')) { icon = 'fa-blind'; iconColor = 'text-slate-400'; }
+            else if(mod.title.includes('Hematologia')) { icon = 'fa-tint'; iconColor = 'text-red-600'; }
+            else if(mod.title.includes('Infectologia')) { icon = 'fa-virus'; iconColor = 'text-emerald-500'; }
+            else if(mod.title.includes('Medicina Intensiva') || mod.title.includes('Emergência')) { icon = 'fa-ambulance'; iconColor = 'text-rose-500'; }
+            else if(mod.title.includes('Nefrologia')) { icon = 'fa-water'; iconColor = 'text-blue-400'; }
+            else if(mod.title.includes('Neurologia')) { icon = 'fa-brain'; iconColor = 'text-indigo-500'; }
+            else if(mod.title.includes('Pneumologia')) { icon = 'fa-lungs'; iconColor = 'text-sky-400'; }
+            else if(mod.title.includes('Psiquiatria')) { icon = 'fa-head-side-virus'; iconColor = 'text-fuchsia-400'; }
+            else if(mod.title.includes('Reumatologia')) { icon = 'fa-bone'; iconColor = 'text-slate-300'; }
+            else if(mod.title.includes('Alergia')) { icon = 'fa-shield-virus'; iconColor = 'text-pink-400'; }
+            else if(mod.title.includes('Oncologia')) { icon = 'fa-ribbon'; iconColor = 'text-yellow-400'; }
+            else if(mod.title.includes('Cirurgia') || mod.title.includes('Urologia')) { icon = 'fa-user-md'; iconColor = 'text-teal-400'; }
+
+            return { icon, iconColor };
+        }
+
+        function renderModuleCard(mod, shouldCenter = false) {
+            const { icon, iconColor } = getModuleIcon(mod);
+            const centerClass = shouldCenter ? ' single-module-centered' : '';
+            return `
+                <div onclick="openModule('${mod.id}')" class="module-card rounded-2xl cursor-pointer group${centerClass}">
+                    <div class="module-card-header p-6 flex justify-between items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-900/80 flex items-center justify-center text-2xl shadow-lg border border-white/10 group-hover:bg-indigo-900/30 group-hover:scale-105 transition-all duration-300">
+                            <i class="fas ${icon} ${iconColor}"></i>
+                        </div>
+                        <span class="bg-slate-950/80 backdrop-blur-md text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/5 uppercase tracking-widest shadow-sm">
+                            ${mod.lessons.length} Aulas${mod.materials.length ? ` / ${mod.materials.length} Mat.` : ''}
+                        </span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors font-display leading-tight">${mod.title}</h3>
+                        <p class="text-slate-400 text-sm flex-grow leading-relaxed font-normal mb-6">${mod.description || 'Atualização clínica contínua.'}</p>
+                        <div class="pt-5 border-t border-slate-800/50 flex items-center justify-between">
+                            <div class="flex items-center text-xs font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors w-full justify-end">
+                                <span class="tracking-wide mr-2 uppercase">Acessar Módulo</span>
+                                <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderEbooksGrid() {
+            if (!ebooksGrid) return;
+            ebooksGrid.innerHTML = ebookCategoriesData.map(category => `
+                <div onclick="openEbookCategory('${category.id}')" class="module-card rounded-2xl cursor-pointer group">
+                    <div class="module-card-header p-6 flex justify-between items-start">
+                        <div class="w-14 h-14 rounded-2xl bg-slate-900/80 flex items-center justify-center text-2xl shadow-lg border border-white/10 group-hover:bg-cyan-900/30 group-hover:scale-105 transition-all duration-300">
+                            <i class="fas fa-folder-open text-cyan-400"></i>
+                        </div>
+                        <span class="bg-slate-950/80 backdrop-blur-md text-slate-300 text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/5 uppercase tracking-widest shadow-sm">
+                            ${category.materials.length} E-Books
+                        </span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold text-white mb-2 group-hover:text-cyan-400 transition-colors font-display leading-tight">${category.title}</h3>
+                        <p class="text-slate-400 text-sm flex-grow leading-relaxed font-normal mb-6">${category.description}</p>
+                        <div class="pt-5 border-t border-slate-800/50 flex items-center justify-between">
+                            <div class="flex items-center text-xs font-bold text-cyan-500 group-hover:text-cyan-400 transition-colors w-full justify-end">
+                                <span class="tracking-wide mr-2 uppercase">Abrir E-Books</span>
+                                <div class="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-xs"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateModuleSelector(activeSectionName = null, selectedModuleId = null) {
+            if (!moduleSelector) return;
+
+            moduleSelector.innerHTML = '<option value="" disabled selected>Navegar pelos módulos...</option>';
+
+            const scopedModules = activeSectionName
+                ? modulesData.filter(mod => mod.section === activeSectionName)
+                : modulesData;
+
+            scopedModules.forEach(mod => {
+                const option = document.createElement('option');
+                option.value = mod.id;
+                option.textContent = mod.title;
+                moduleSelector.appendChild(option);
+            });
+
+            if (selectedModuleId) {
+                moduleSelector.value = selectedModuleId;
+            }
+        }
+
+        function renderHome() {
+            let htmlModules = '';
+            let htmlAssessments = '';
+            let hasAssessments = false;
+
+            populateModuleSelector();
+
+            const sectionOrder = ["SEÇÃO 01 - MEMORIMED (RM)", "SEÇÃO 02 - MEMORIMED (ATB)", "SEÇÃO 03 - ECG PARA INICIANTES", "SEÇÃO 04 - BÔNUS  20 AULAS DO MEMORIMED ECG PARA ALUNOS MEMORIMED (RM)"];
+            const sectionDescriptions = {
+                "SEÇÃO 01 - MEMORIMED (RM)": "Aulas organizadas conforme a pasta SEÇÃO 01 - MEMORIMED (RM).",
+                "SEÇÃO 02 - MEMORIMED (ATB)": "Aulas organizadas conforme a pasta SEÇÃO 02 - MEMORIMED (ATB).",
+                "SEÇÃO 03 - ECG PARA INICIANTES": "Aulas organizadas conforme a pasta SEÇÃO 03 - ECG PARA INICIANTES.",
+                "SEÇÃO 04 - BÔNUS  20 AULAS DO MEMORIMED ECG PARA ALUNOS MEMORIMED (RM)": "Aulas organizadas conforme a pasta SEÇÃO 04 - BÔNUS  20 AULAS DO MEMORIMED ECG PARA ALUNOS MEMORIMED (RM)."
+};
+
+            if (ebookCategoriesData.length > 0) {
+                htmlModules += `
+                <div class="section-heading-card">
+                    <button onclick="goEbooks()" class="w-full bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 rounded-2xl p-5 cursor-pointer hover:bg-slate-800 transition-all group flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xl shadow-cyan-900/10 text-left">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30 group-hover:scale-110 transition-transform shrink-0">
+                                <i class="fas fa-book-open text-xl text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-400 mb-1">SEÇÃO 00 - E-BOOKS</p>
+                                <h3 class="text-lg font-bold text-white tracking-tight font-display group-hover:text-cyan-400 transition-colors">Materiais Independentes</h3>
+                                <p class="text-slate-400 text-sm mt-0.5 line-clamp-2">E-books e capítulos globais organizados por área, separados dos módulos de aulas.</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center text-xs font-bold text-cyan-400 bg-cyan-950/50 px-4 py-2 rounded-lg border border-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-white transition-colors">
+                            <span class="uppercase mr-2">Abrir</span>
+                            <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </button>
+                </div>`;
+            }
+
+            sectionOrder.forEach(sectionName => {
+                const sectionModules = modulesData.filter(mod => mod.section === sectionName);
+                if (!sectionModules.length) return;
+
+                htmlModules += `
+                    <div class="section-heading-card">
+                        <div class="flex flex-col gap-2">
+                            <span class="section-kicker"><i class="fas fa-layer-group"></i>${sectionName}</span>
+                            <p class="text-sm text-slate-500 max-w-3xl">${sectionDescriptions[sectionName] || ''}</p>
+                        </div>
+                    </div>`;
+
+                sectionModules.forEach(mod => {
+                    if (sectionModules.length === 1) {
+                        htmlModules += `<div class="single-module-row">${renderModuleCard(mod, true)}</div>`;
+                    } else {
+                        htmlModules += renderModuleCard(mod, false);
+                    }
+
+                    if (mod.assessment && mod.assessment.length > 0) {
+                        hasAssessments = true;
+                        htmlAssessments += `
+                        <div onclick="openAssessment('${mod.id}')" class="module-card rounded-2xl p-6 cursor-pointer flex flex-col h-full group border-indigo-500/30 bg-indigo-950/20 hover:bg-indigo-900/30">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center text-xl shadow-inner border border-indigo-500/30 group-hover:bg-indigo-500 group-hover:text-white text-indigo-500 transition-all">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <span class="bg-slate-950/80 text-indigo-300 text-[10px] font-bold px-2.5 py-1 rounded border border-indigo-800 uppercase tracking-widest">
+                                    ${mod.assessment.length} Questões
+                                </span>
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-1 group-hover:text-indigo-400 transition-colors leading-tight line-clamp-1">Avaliação: ${mod.title.split(' - ')[0]}</h3>
+                            <p class="text-slate-400 text-xs flex-grow leading-relaxed font-medium mb-4 line-clamp-2">${mod.title.split(' - ')[1] || 'Teste seus conhecimentos'}</p>
+                            <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                                <div class="flex-1 flex items-center text-xs font-bold text-indigo-500 group-hover:text-indigo-400 transition-colors">
+                                    <span class="tracking-wide mr-2 uppercase">Iniciar Teste</span>
+                                    <i class="fas fa-arrow-right transform group-hover:translate-x-1 transition-transform text-[10px]"></i>
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                });
+            });
+            
+            modulesGrid.innerHTML = htmlModules;
+            renderEbooksGrid();
+
+            if (hasAssessments) {
+                assessmentsBanner.classList.remove('hidden');
+                homeDescriptionFallback.classList.add('hidden');
+                assessmentsGrid.innerHTML = htmlAssessments;
+            } else {
+                assessmentsBanner.classList.add('hidden');
+                homeDescriptionFallback.classList.remove('hidden');
+            }
+        }
+
+        // --- Funções de Navegação ---
+        function goEbooks() {
+            homeView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            ebooksView.classList.remove('hidden');
+
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            btnBackToModules.classList.add('hidden');
+            btnBackToHome.classList.remove('hidden');
+
+            resetPlayerView();
+            renderEbooksGrid();
+            document.title = "MemoriMED 2026 | Medicina JVS | E-Books";
+        }
+
+        function buildMaterialCards(materials) {
+            return materials.map((material, index) => {
+                let icon = 'fa-book';
+                if (material.type === 'Resumo') icon = 'fa-book-open';
+                else if (material.type === 'Mapa Mental') icon = 'fa-diagram-project';
+                else if (material.type === 'Coleção') icon = 'fa-layer-group';
+                else if (material.type === 'Aula') icon = 'fa-brain';
+
+                return `
+                    <div class="material-btn group flex flex-col p-4 bg-slate-900 border border-slate-800 hover:border-cyan-500/30 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                         onclick="loadHtmlMaterialByIndex(${index})">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-cyan-900/20 text-cyan-500 flex items-center justify-center shrink-0 border border-cyan-500/10 transition-transform pdf-icon">
+                                <i class="fas ${icon} text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-cyan-400 transition-colors">${material.title}</p>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide gap-1.5 flex items-center">
+                                        <i class="fas fa-play"></i> Abrir no Player
+                                    </span>
+                                    <span class="text-[10px] font-bold text-cyan-500/70 hover:text-cyan-400 uppercase tracking-wide gap-1.5 flex items-center transition-colors" onclick="event.stopPropagation(); window.open('${material.url}', '_blank')">
+                                        <i class="fas fa-external-link-alt"></i> Nova Aba
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function openEbookCategory(categoryId) {
+            const category = ebookCategoriesData.find(item => item.id === categoryId);
+            if (!category) return;
+
+            homeView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            ebooksView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            btnBackToModules.classList.add('hidden');
+            btnBackToHome.classList.remove('hidden');
+
+            currentVideoList = [];
+            currentMaterialsList = category.materials || [];
+            currentVideoIndex = -1;
+
+            resetPlayerView();
+            moduleTitleDisplay.textContent = `SEÇÃO 00 - ${category.title}`;
+            moduleTitleDisplay.classList.remove('hidden');
+            lessonCountBadge.textContent = `${currentMaterialsList.length} E-Books`;
+            lessonTitleEl.querySelector('span:last-child').textContent = category.title;
+
+            lessonsContainer.innerHTML = `
+                <div class="p-5 rounded-2xl bg-slate-950/60 border border-cyan-500/20 text-slate-300">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                            <i class="fas fa-folder-open"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-white">${category.title}</p>
+                            <p class="text-xs text-slate-500">Categoria independente de PDFs</p>
+                        </div>
+                    </div>
+                    <p class="text-xs leading-relaxed text-slate-400">Esta seção não possui aulas próprias. Use os cards de E-Book abaixo para abrir cada material no player ou em nova aba.</p>
+                </div>`;
+
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            materialsSection.classList.remove('hidden');
+            materialsContainer.innerHTML = buildMaterialCards(currentMaterialsList);
+
+            document.title = `MemoriMED 2026 | Medicina JVS | ${category.title}`;
+        }
+
+        function goHome() {
+            playerView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            ebooksView.classList.add('hidden');
+            playerControls.classList.add('hidden');
+            homeView.classList.remove('hidden');
+            
+            resetPlayerView();
+            document.title = "MemoriMED 2026 | Medicina JVS | Medcel";
+        }
+
+        function goAssessments() {
+            homeView.classList.add('hidden');
+            playerView.classList.add('hidden');
+            ebooksView.classList.add('hidden');
+            
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.add('hidden');
+            btnBackToModules.classList.add('hidden');
+            btnBackToHome.classList.remove('hidden');
+            
+            assessmentsView.classList.remove('hidden');
+            
+            resetPlayerView();
+            document.title = "MemoriMED 2026 | Medicina JVS | Avaliações";
+        }
+
+        function openModule(moduleId) {
+            homeView.classList.add('hidden');
+            assessmentsView.classList.add('hidden');
+            ebooksView.classList.add('hidden');
+            playerView.classList.remove('hidden');
+            
+            playerControls.classList.remove('hidden');
+            moduleSelector.parentElement.classList.remove('hidden');
+            btnBackToHome.classList.add('hidden');
+            btnBackToModules.classList.remove('hidden');
+            
+            const module = modulesData.find(m => m.id === moduleId);
+            populateModuleSelector(module?.section || null, moduleId);
+            renderLessons(moduleId);
+        }
+
+        function openAssessment(moduleId) {
+            openModule(moduleId);
+            setTimeout(() => {
+                loadAssessment(moduleId);
+            }, 50); 
+        }
+
+        // --- Renderização do PLAYER e AVALIAÇÕES ---
+        function renderLessons(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module) return;
+
+            const videoLessons = module.lessons || [];
+            const htmlMaterials = module.materials || [];
+
+            currentVideoList = videoLessons;
+            currentMaterialsList = htmlMaterials;
+            currentVideoIndex = -1;
+
+            moduleTitleDisplay.textContent = module.title;
+            lessonCountBadge.textContent = `${videoLessons.length} Aulas`;
+            pulseIndicator.classList.add('hidden');
+
+            lessonsContainer.innerHTML = '';
+            
+            let html = '';
+            videoLessons.forEach((lesson, index) => {
+                const lessonNumber = (index + 1).toString().padStart(2, '0');
+                const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+                const hasLink = lesson.url && lesson.url !== '#';
+                
+                html += `
+                <div class="lesson-item flex items-center gap-4 p-3.5 ${hasLink ? 'cursor-pointer hover:border-slate-700/50 hover:text-white' : 'cursor-not-allowed opacity-50'} text-slate-400 rounded-xl bg-slate-900/30 border border-transparent" 
+                     ${hasLink ? `onclick="loadVideoByIndex(${index})"` : ''} 
+                     data-id="${lesson.id}"
+                     id="lesson-item-${index}">
+                    
+                    <div class="flex-shrink-0 w-8 text-center relative">
+                        <span class="text-[9px] font-mono font-bold opacity-30 block mb-1">#${lessonNumber}</span>
+                        <div class="w-8 h-8 mx-auto rounded-full bg-slate-800 flex items-center justify-center border border-white/5">
+                            <i class="fas ${hasLink ? 'fa-play' : 'fa-lock'} text-xs lesson-icon transition-transform ${hasLink ? 'ml-0.5' : ''}"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 pr-2">
+                        <p class="text-sm font-semibold lesson-text leading-tight mb-1">${displayTitle}</p>
+                        <span class="text-[9px] bg-slate-800/80 text-slate-400 font-bold px-2 py-0.5 rounded uppercase tracking-wider inline-block">Vídeo</span>
+                    </div>
+                </div>`;
+            });
+
+            lessonsContainer.innerHTML = html;
+
+            // Renderizar Materiais Complementares e Avaliações Embaixo do Vídeo
+            const materialsSection = document.getElementById('materialsSection');
+            const materialsContainer = document.getElementById('materialsContainer');
+            
+            const hasMaterials = htmlMaterials.length > 0;
+            const hasAssessment = module.assessment && module.assessment.length > 0;
+
+            if (hasMaterials || hasAssessment) {
+                materialsSection.classList.remove('hidden');
+
+                let htmlMaterialsStr = '';
+                
+                // Insere os Materiais HTML e E-Books
+                if (hasMaterials) {
+                    htmlMaterials.forEach((material, index) => {
+                        // Define ícones apropriados por tipo
+                        let icon = 'fa-file-lines';
+                        if (material.type === 'Resumo') icon = 'fa-book-open';
+                        else if (material.type === 'Mapa Mental') icon = 'fa-diagram-project';
+                        else if (material.type === 'Coleção') icon = 'fa-layer-group';
+                        else if (material.type === 'Aula') icon = 'fa-brain';
+                        else if (material.type === 'E-Book') icon = 'fa-book';
+
+                        htmlMaterialsStr += `
+                        <div class="material-btn group flex flex-col p-4 bg-slate-900 border border-slate-800 hover:border-cyan-500/30 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                             onclick="loadHtmlMaterialByIndex(${index})">
+                            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-cyan-900/20 text-cyan-500 flex items-center justify-center shrink-0 border border-cyan-500/10 transition-transform pdf-icon">
+                                    <i class="fas ${icon} text-lg"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-200 line-clamp-2 leading-snug mb-2 group-hover:text-cyan-400 transition-colors">${material.title}</p>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wide gap-1.5 flex items-center">
+                                            <i class="fas fa-play"></i> Abrir no Player
+                                        </span>
+                                        <span class="text-[10px] font-bold text-cyan-500/70 hover:text-cyan-400 uppercase tracking-wide gap-1.5 flex items-center transition-colors" onclick="event.stopPropagation(); window.open('${material.url}', '_blank')">
+                                            <i class="fas fa-external-link-alt"></i> Nova Aba
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>`;
+                    });
+                }
+
+                // Insere o Botão de Avaliação (Quiz) ao lado dos materiais
+                if (hasAssessment) {
+                    htmlMaterialsStr += `
+                    <div class="material-btn group flex flex-col p-4 bg-indigo-900/10 border border-indigo-500/30 hover:border-indigo-500/50 rounded-xl transition-all cursor-pointer relative overflow-hidden" 
+                         onclick="loadAssessment('${module.id}')" id="assessment-material-btn">
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/20 to-transparent rounded-bl-full pointer-events-none"></div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.4)] transition-transform pdf-icon">
+                                <i class="fas fa-clipboard-check text-lg"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-white line-clamp-2 leading-snug mb-2 group-hover:text-indigo-300 transition-colors">Avaliação do Módulo</p>
+                                <div class="flex items-center text-[10px] font-bold text-indigo-400 uppercase tracking-wide gap-1.5">
+                                    <i class="fas fa-pen"></i> Iniciar Teste
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                }
+
+                materialsContainer.innerHTML = htmlMaterialsStr;
+            } else {
+                materialsSection.classList.add('hidden');
+                materialsContainer.innerHTML = '';
+            }
+            
+            resetPlayerView();
+        }
+
+        function resetPlayerView() {
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            quizState.classList.add('hidden');
+            emptyState.style.display = 'flex';
+            emptyState.querySelector('h2').textContent = "Ambiente Clínico";
+            emptyState.querySelector('p').textContent = "Selecione uma aula ou avaliação para iniciar sua jornada de aprendizado.";
+            lessonTitleEl.querySelector('span:last-child').textContent = "Selecione um conteúdo";
+            selectedLessonId = null;
+        }
+
+        // --- SISTEMA DE AVALIAÇÃO (QUIZ) ---
+        function loadAssessment(moduleId) {
+            const module = modulesData.find(m => m.id === moduleId);
+            if (!module || !module.assessment || module.assessment.length === 0) return;
+
+            currentAssessment = module.assessment;
+            userAnswers = {};
+            quizSubmitted = false;
+            currentVideoIndex = -1;
+
+            // Desmarca vídeos na sidebar
+            if (selectedLessonId && selectedLessonId !== 'assessment') {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-cyan-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+            }
+            
+            selectedLessonId = 'assessment';
+
+            // Atualiza Top Bar
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = "Avaliação do Módulo";
+            videoNavControls.style.display = 'none';
+            
+            // Oculta vídeo/vazio e mostra Quiz
+            contentPlayer.style.display = 'none';
+            contentPlayer.src = '';
+            videoLoader.style.display = 'none';
+            document.getElementById('externalLinkBtn').style.display = 'none';
+            emptyState.style.display = 'none';
+            quizState.classList.remove('hidden');
+
+            renderQuizQuestions();
+        }
+
+        function renderQuizQuestions() {
+            quizQuestionsContainer.innerHTML = '';
+            quizControls.classList.remove('hidden');
+            quizScore.classList.add('hidden');
+            btnSubmitQuiz.style.display = 'flex';
+
+            let html = '';
+            currentAssessment.forEach((q, qIndex) => {
+                // Preserva quebras de linha na pergunta
+                const formattedQuestion = q.question.replace(/\n/g, '<br>');
+                
+                html += `
+                <div class="bg-slate-900/60 p-6 rounded-2xl border border-white/5 shadow-lg" id="question-${qIndex}">
+                    <h4 class="text-white text-lg font-bold mb-5 leading-snug"><span class="text-indigo-500 mr-2">${qIndex + 1}.</span> ${formattedQuestion}</h4>
+                    <div class="space-y-3">`;
+                
+                q.options.forEach((opt, optIndex) => {
+                    html += `
+                        <div onclick="selectQuizOption(${qIndex}, ${optIndex})" class="quiz-option cursor-pointer p-4 rounded-xl flex items-start gap-4" id="opt-${qIndex}-${optIndex}">
+                            <div class="w-5 h-5 rounded-full border-2 border-slate-600 flex-shrink-0 mt-0.5 option-radio transition-colors"></div>
+                            <p class="text-slate-300 text-sm font-medium leading-relaxed">${opt}</p>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
+                    <div id="explanation-${qIndex}" class="hidden mt-6 p-4 rounded-lg bg-slate-800/80 border border-slate-700 text-sm text-slate-300 leading-relaxed border-l-4 border-l-indigo-500">
+                        <span class="block text-indigo-500 font-bold mb-1"><i class="fas fa-lightbulb"></i> Explicação:</span>
+                        ${q.explanation || 'Nenhuma explicação adicional fornecida para esta questão.'}
+                    </div>
+                </div>`;
+            });
+
+            quizQuestionsContainer.innerHTML = html;
+            quizState.scrollTop = 0;
+        }
+
+        function selectQuizOption(qIndex, optIndex) {
+            if (quizSubmitted) return;
+
+            userAnswers[qIndex] = optIndex;
+            
+            const questionDiv = document.getElementById(`question-${qIndex}`);
+            questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+            
+            const selectedOpt = document.getElementById(`opt-${qIndex}-${optIndex}`);
+            selectedOpt.classList.add('selected');
+        }
+
+        function submitAssessment() {
+            if (!currentAssessment) return;
+            
+            if (Object.keys(userAnswers).length < currentAssessment.length) {
+                const conf = confirm("Ainda tem perguntas por responder. Deseja finalizar mesmo assim?");
+                if(!conf) return;
+            }
+
+            quizSubmitted = true;
+            let score = 0;
+
+            currentAssessment.forEach((q, qIndex) => {
+                const userAnswer = userAnswers[qIndex];
+                const correctOptDiv = document.getElementById(`opt-${qIndex}-${q.correctIndex}`);
+                const explanationDiv = document.getElementById(`explanation-${qIndex}`);
+
+                const questionDiv = document.getElementById(`question-${qIndex}`);
+                questionDiv.querySelectorAll('.quiz-option').forEach(el => el.classList.add('disabled'));
+                
+                // Só mostra explicação se existir
+                if(explanationDiv && q.explanation) explanationDiv.classList.remove('hidden');
+
+                if (userAnswer === q.correctIndex) {
+                    score++;
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                } else {
+                    if (userAnswer !== undefined) {
+                        const wrongOptDiv = document.getElementById(`opt-${qIndex}-${userAnswer}`);
+                        if(wrongOptDiv) wrongOptDiv.classList.add('incorrect');
+                    }
+                    if(correctOptDiv) correctOptDiv.classList.add('correct');
+                }
+            });
+
+            btnSubmitQuiz.style.display = 'none';
+            quizScore.classList.remove('hidden');
+            const percent = Math.round((score / currentAssessment.length) * 100);
+            
+            let resultColor = 'text-emerald-500';
+            let resultMessage = 'Excelente!';
+            if(percent < 50) { resultColor = 'text-rose-500'; resultMessage = 'Continue a estudar!'; }
+            else if(percent < 80) { resultColor = 'text-yellow-500'; resultMessage = 'Bom trabalho!'; }
+
+            quizScore.innerHTML = `Resultado: <span class="${resultColor}">${score}/${currentAssessment.length} (${percent}%)</span> - ${resultMessage}`;
+        }
+
+        // Função para extrair o ID do Drive e gerar o link correto de preview
+        function getDriveEmbedUrl(url) {
+            if (!url || url === '#') return url;
+            const match = url.match(/[-\w]{25,}/);
+            if (match && match[0]) {
+                return `https://drive.google.com/file/d/${match[0]}/preview`;
+            }
+            return url;
+        }
+
+        // NOVA FUNÇÃO PARA EXIBIR OS MATERIAIS HTML E E-BOOKS
+        function loadHtmlMaterialByIndex(index) {
+            const material = currentMaterialsList[index];
+            if (!material || !material.url) return;
+
+            // Remove a marcação dos vídeos na lista lateral
+            if (selectedLessonId) {
+                const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                if (prev) {
+                    prev.classList.remove('selected-lesson');
+                    prev.classList.add('border-transparent');
+                    const icon = prev.querySelector('.lesson-icon');
+                    if(icon) {
+                        icon.classList.remove('fa-pause', 'text-cyan-500');
+                        icon.classList.add('fa-play');
+                    }
+                }
+                selectedLessonId = null;
+            }
+
+            quizState.classList.add('hidden');
+            emptyState.style.display = 'none';
+            videoLoader.style.display = 'flex';
+            contentPlayer.style.display = 'block';
+            document.getElementById('externalLinkBtn').style.display = 'block';
+
+            window.currentExternalUrl = material.url;
+            
+            // Se for link do Drive, adapta para preview
+            if(material.url.includes("drive.google.com")) {
+                contentPlayer.src = getDriveEmbedUrl(material.url);
+            } else {
+                contentPlayer.src = material.url;
+            }
+
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = material.title;
+            moduleTitleDisplay.classList.remove('hidden');
+            videoNavControls.style.display = 'none';
+
+            contentPlayer.onload = () => {
+                videoLoader.style.display = 'none';
+            };
+        }
+
+        function loadVideoByIndex(index) {
+            if (index < 0 || index >= currentVideoList.length) return;
+            
+            const lesson = currentVideoList[index];
+            if (!lesson.url || lesson.url === '#') return;
+
+            currentVideoIndex = index;
+            const displayTitle = lesson.title.replace(/\.mp4$/i, '');
+
+            // Oculta área de quiz se estivesse aberta
+            quizState.classList.add('hidden');
+
+            if (selectedLessonId) {
+                if (selectedLessonId !== 'assessment') {
+                    const prev = document.querySelector(`[data-id="${selectedLessonId}"]`);
+                    if (prev) {
+                        prev.classList.remove('selected-lesson');
+                        prev.classList.add('border-transparent');
+                        const icon = prev.querySelector('.lesson-icon');
+                        if(icon) {
+                            icon.classList.remove('fa-pause', 'text-cyan-500');
+                            icon.classList.add('fa-play');
+                        }
+                    }
+                }
+            }
+            
+            selectedLessonId = lesson.id;
+            const cur = document.getElementById(`lesson-item-${index}`);
+            if (cur) {
+                cur.classList.remove('border-transparent');
+                cur.classList.add('selected-lesson');
+                cur.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                const icon = cur.querySelector('.lesson-icon');
+                if(icon) {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause', 'text-cyan-500');
+                }
+            }
+
+            pulseIndicator.classList.remove('hidden');
+            lessonTitleEl.querySelector('span:last-child').textContent = displayTitle;
+            
+            videoNavControls.style.display = 'flex';
+            
+            btnPrev.disabled = findAvailableVideoIndex(currentVideoIndex, -1) === -1;
+            btnNext.disabled = findAvailableVideoIndex(currentVideoIndex, 1) === -1;
+
+            if (lesson.url && lesson.url !== '#') {
+                emptyState.style.display = 'none';
+                videoLoader.style.display = 'flex'; 
+                contentPlayer.style.display = 'block'; 
+                document.getElementById('externalLinkBtn').style.display = 'block';
+
+                window.currentExternalUrl = lesson.url;
+
+                const embedUrl = getDriveEmbedUrl(lesson.url);
+                contentPlayer.src = embedUrl;
+
+                contentPlayer.onload = () => {
+                    videoLoader.style.display = 'none';
+                };
+            } else {
+                contentPlayer.style.display = 'none';
+                contentPlayer.src = '';
+                videoLoader.style.display = 'none';
+                document.getElementById('externalLinkBtn').style.display = 'none';
+                emptyState.style.display = 'flex';
+                emptyState.querySelector('h2').textContent = "Aula Indisponível";
+                emptyState.querySelector('p').textContent = "Esta aula ainda não possui um link de vídeo associado na plataforma.";
+            }
+        }
+        
+        function findAvailableVideoIndex(startIndex, direction) {
+            let index = startIndex + direction;
+
+            while (index >= 0 && index < currentVideoList.length) {
+                const lesson = currentVideoList[index];
+                if (lesson && lesson.url && lesson.url !== '#') {
+                    return index;
+                }
+                index += direction;
+            }
+
+            return -1;
+        }
+
+        function playPrevious() {
+            const previousIndex = findAvailableVideoIndex(currentVideoIndex, -1);
+            if (previousIndex !== -1) {
+                loadVideoByIndex(previousIndex);
+            }
+        }
+
+        function playNext() {
+            const nextIndex = findAvailableVideoIndex(currentVideoIndex, 1);
+            if (nextIndex !== -1) {
+                loadVideoByIndex(nextIndex);
+            }
+        }
+        
+        function openCurrentVideoExternal() {
+            if (window.currentExternalUrl) {
+                window.open(window.currentExternalUrl, '_blank');
+            }
+        }
+
+        // --- Inicialização ---
+        moduleSelector.addEventListener('change', (e) => {
+            renderLessons(e.target.value);
+        });
+
+        // Inicia
+        renderHome();
+
+    </script>
+</body>
+</html>
